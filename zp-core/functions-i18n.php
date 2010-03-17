@@ -242,6 +242,7 @@ function setupCurrentLocale($plugindomain='', $type='') {
 		$locale = getOption("locale");
 		@putenv("LANG=$locale");
 		// gettext setup
+        setlocale(LC_TIME, $locale.'.'.$encoding, $locale);
 		$result = setlocale(LC_ALL, $locale.'.'.$encoding, $locale);
 		if (!$result) { // failed to set the locale
 			if (isset($_POST['dynamic-locale'])) { // and it was chosen via dynamic-locale
@@ -253,9 +254,11 @@ function setupCurrentLocale($plugindomain='', $type='') {
 		// Set the text domain as 'messages'
 		$domain = 'zenphoto';
 		$domainpath = SERVERPATH . "/" . ZENFOLDER . "/locale/";
+
 		if (DEBUG_LOCALE) debugLogBacktrace("setupCurrentLocale($plugindomain, $type): locale=$locale, \$result=$result");
 	} else {
 		$domain = $plugindomain;
+
 		switch ($type) {
 			case "plugin":
 				$domainpath = getPlugin($domain . "/locale/");

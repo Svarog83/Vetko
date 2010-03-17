@@ -1,5 +1,4 @@
 <?php include ("header.php"); ?>
-	
 		<div id="headline" class="clearfix">
 			<h4><span><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a><?php printNewsIndexURL("News"," | "); ?><?php printCurrentNewsCategory(" | Category - "); ?><?php printNewsTitle(" | "); printCurrentNewsArchive(" | "); ?></h4>
 			<?php if(is_NewsArticle()) { ?>

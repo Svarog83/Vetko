@@ -1,5 +1,4 @@
 <?php include ("header.php"); ?>
-<?php setThemeDomain("zpgalleriffic"); ?>
 		<div id="headline" class="clearfix">	
 			<div class="headline-text"><?php printGalleryDesc(true); ?></div>
 			<table id="navbar" class="clr">
@@ -7,7 +6,7 @@
 						<td width="100%">
 							<div id="navbar-center">
 								<span>
-									<?php echo gettext('Gallery Stats: ').$_zp_gallery->getNumImages().gettext(' Images in ').$_zp_gallery->getNumAlbums().gettext(' Albums'); ?>
+									<?php echo gettext('Gallery Stats: ').$_zp_gallery->getNumImages(). '&nbsp;' . gettext(' Images in '). '&nbsp;' . $_zp_gallery->getNumAlbums() . '&nbsp;' . gettext(' Albums'); ?>
 								</span>
 							</div>
 						</td>
@@ -28,7 +27,7 @@
 		</div>
 		
 		<div id="pagination">
-			<?php printPageListWithNav( '&lsaquo; Previous','Next &rsaquo;',false,'true','clearfix','',true,'5' ); ?>
+			<?php printPageListWithNav( gettext( '&lsaquo; Previous'),gettext( 'Next &rsaquo;' ),false,'true','clearfix','',true,'5' ); ?>
 		</div>
 		
 		<?php if ( (function_exists('printLatestNews')) && ((getNumNews()) > 0) ) {

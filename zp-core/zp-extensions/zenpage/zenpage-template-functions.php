@@ -2663,15 +2663,15 @@ function getZenpageRSSHeaderLink($option='', $categorylink='', $linktext='', $la
 	switch($option) {
 		case "News":
 			if (getOption('RSS_articles')) {
-				return "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(strip_tags($linktext),ENT_QUOTES)."\" href=\"http://".$serverprotocol.$host.WEBPATH."/rss-news.php?lang=".$lang."\" />\n";
+				return "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(strip_tags($linktext),ENT_QUOTES)."\" href=\"".$serverprotocol.$host.WEBPATH."/rss-news.php?lang=".$lang."\" />\n";
 			}
 		case "Category":
 			if (getOption('RSS_articles')) {
-				return "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(strip_tags($linktext),ENT_QUOTES)."\" href=\"http://".$serverprotocol.$host.WEBPATH."/rss-news.php?lang=".$lang."&amp;category=".$categorylink."\" />\n";
+				return "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(strip_tags($linktext),ENT_QUOTES)."\" href=\"".$serverprotocol.$host.WEBPATH."/rss-news.php?lang=".$lang."&amp;category=".$categorylink."\" />\n";
 			}
 		case "NewsWithImages":
 			if (getOption('RSS_articles')) {
-				return "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(strip_tags($linktext),ENT_QUOTES)."\" href=\"http://".$serverprotocol.$host.WEBPATH."/rss-news.php?withimages&amp;lang=".$lang."\" />\n";
+				return "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(strip_tags($linktext),ENT_QUOTES)."\" href=\"".$serverprotocol.$host.WEBPATH."/rss-news.php?withimages&amp;lang=".$lang."\" />\n";
 			}
 	}
 }

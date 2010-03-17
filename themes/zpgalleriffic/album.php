@@ -1,5 +1,4 @@
 <?php include ("header.php"); ?>
-<?php setThemeDomain("zpgalleriffic"); ?>
 			<div id="headline" class="clearfix">
 				<h4><span><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a> | <?php printParentBreadcrumb(); ?></span> <?php printAlbumTitle(true);?></h4>
 				<div class="headline-text"><?php printAlbumDesc(true); ?></div>

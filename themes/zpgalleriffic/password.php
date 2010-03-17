@@ -1,5 +1,4 @@
 <?php include ("header.php"); ?>
-
 		<div id="headline" class="clearfix">
 			<h4><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Gallery Index'); ?>"><?php echo getGalleryTitle();?></a></span> | <?php echo gettext("Password Required..."); ?></h4>
 		</div>
