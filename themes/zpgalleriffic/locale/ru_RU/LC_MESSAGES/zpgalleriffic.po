@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Gallerific\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-03-17 01:02+0300\n"
-"PO-Revision-Date: 2010-03-17 10:51+0300\n"
+"PO-Revision-Date: 2010-03-17 22:20+0300\n"
 "Last-Translator: Sergey <sergey@vetko.net>\n"
 "Language-Team: Svarog <sergey@vetko.net>\n"
 "MIME-Version: 1.0\n"
@@ -348,7 +348,7 @@ msgstr "Теглайн"
 
 #: zpgalleriffic/themeoptions.php:36
 msgid "The text below the sitename on the home page (if no tusing an image) and in the copyright footer."
-msgstr ""
+msgstr "Текст под названием сайта на домашней странице(если не используется изображение) и в строке копирайта в футере"
 
 #: zpgalleriffic/themeoptions.php:37
 msgid "Homepage"
@@ -356,7 +356,7 @@ msgstr "Домой"
 
 #: zpgalleriffic/themeoptions.php:37
 msgid "Choose here any <em>unpublished Zenpage page</em> (listed by <em>titlelink</em>) to act as your site's homepage instead the normal gallery index."
-msgstr ""
+msgstr "Выберите здесь любую <em>неопубликованную страницу ZenPage</em> (отсортированную по <em>ссылке</em>) в качестве вашей первой страницы вместо обычной индексной страницы."
 
 #: zpgalleriffic/themeoptions.php:38
 msgid "Allow Search"
@@ -380,7 +380,7 @@ msgstr "Показывать копирайт ZenPhoto"
 
 #: zpgalleriffic/themeoptions.php:40
 msgid "Check to display the Powered by ZenPhoto link in the footer."
-msgstr ""
+msgstr "Отметьте, чтобы показывать ссылку в футере \"Powered by ZenPhoto\""
 
 #: zpgalleriffic/themeoptions.php:41
 msgid "Color"
@@ -388,7 +388,7 @@ msgstr "Цвет"
 
 #: zpgalleriffic/themeoptions.php:41
 msgid "Choose the primary color style. Easily customize by choosing custom and then adding the hex values in the custom.css file."
-msgstr ""
+msgstr "Выберите первичную расцветку. Легко редактировать, выбрав \"custom\" с последующим редактированием значение в файле custom.css"
 
 #: zpgalleriffic/themeoptions.php:42
 msgid "Contrast"
@@ -404,7 +404,7 @@ msgstr "Использовать Изображение как Заголово�
 
 #: zpgalleriffic/themeoptions.php:43
 msgid "Use an image for the logo/title area. If checked, enter image filename below."
-msgstr ""
+msgstr "Использовать картинку в качестве лого/заголовка. Если отмечено, введите имя файла ниже."
 
 #: zpgalleriffic/themeoptions.php:44
 msgid "Use this File as Title"
@@ -412,7 +412,7 @@ msgstr "Использовать этот файл в качестве заго�
 
 #: zpgalleriffic/themeoptions.php:44
 msgid "If using an image file for the logo/title area, enter the full filename (including extension) of the image file located in the images directory in zpGalleriffic."
-msgstr ""
+msgstr "При использовании файла изображения для логотипа / названия области, введите полное имя файла (включая расширение) файла с изображением расположен в каталоге изображений в zpGalleriffic."
 
 #: zpgalleriffic/themeoptions.php:45
 msgid "ZenPage Latest News"
@@ -420,7 +420,7 @@ msgstr "ZenPage последние новости"
 
 #: zpgalleriffic/themeoptions.php:45
 msgid "If using Zenpage, number of latest news artciles to show on the gallery page.  Make sure you enter a valid number here!"
-msgstr ""
+msgstr "Если используете ZenPage, кол-во последних новостей на страницу. Убедитесь, что введено валидное число!"
 
 #: zpgalleriffic/themeoptions.php:46
 msgid "ZenPage Latest News Truncation"
@@ -428,7 +428,7 @@ msgstr "Ограничение количества последних ново�
 
 #: zpgalleriffic/themeoptions.php:46
 msgid "If using Zenpage, and you have articles set to display on the home page, set here the number of characters to show in the article snippet (truncation).  Make sure you enter a valid number here!"
-msgstr ""
+msgstr "При использовании Zenpage, и у вас есть статья установить для отображения на главной странице, установить здесь количество символов, чтобы показать в статье, фрагмент (усечение). Убедитесь, что вы вводите правильный номер здесь!"
 
 #: zpgalleriffic/themeoptions.php:47
 msgid "Show Image EXIF Data"
@@ -444,7 +444,7 @@ msgstr "Ссылка на последнее изображение"
 
 #: zpgalleriffic/themeoptions.php:48
 msgid "Choose final link action at image.php: no link, colorbox, or default zenphoto."
-msgstr ""
+msgstr "Выберите окончательную действие в image.php: no link, colorbox, or default zenphoto."
 
 #: zpgalleriffic/themeoptions.php:49
 msgid "Use Galleriffic Script"
@@ -452,15 +452,15 @@ msgstr "Использовать скрипт Gallerific"
 
 #: zpgalleriffic/themeoptions.php:49
 msgid "Uncheck this to use the alternate album and search pages that do not use the Galleriffic Script. This alternate is also what is displayed when the user has javascript disabled in their browser."
-msgstr ""
+msgstr "Снимите этот флажок, чтобы использовать альтернативный альбом и страниц поиска, которые не используют Galleriffic Script. Это альтернативный также то, что отображается, когда пользователь отключены JavaScript в браузере."
 
 #: zpgalleriffic/themeoptions.php:50
 msgid "Show Image Statistic Strip"
-msgstr ""
+msgstr "Показывать строку со статистикой для изображения."
 
 #: zpgalleriffic/themeoptions.php:50
 msgid "Shows a strip of thumbs depending on your option selected on the gallery, news, pages, archive, and contact pages. NOTE: Anything other than random the image_statistic plugin must be activated."
-msgstr ""
+msgstr "Показывает полосу превью в зависимости от Вашего варианта, выбранного на галерею, новости, страницы, архив, а также контактную страниц. ПРИМЕЧАНИЕ: Все, кроме случайных image_statistic Плагин должен быть активирован."
 
 #: zpgalleriffic/themeoptions.php:51
 msgid "Show ZenPage Category List on Gallery Page"
