@@ -1,0 +1,6 @@
+Zenphoto Setup v1.2.9[5088] Tue, 16 Mar 2010 22:09:23 +0300
+warn: PHP <code>setlocale()</code> failed Locale functionality is not implemented on your platform or the specified locale does not exist. Language translation may not work.<br />See the troubleshooting guide on zenphoto.org for details.
+warn: File/Folder Permissions [are <em>loose</em> (<code>0777</code>)] <p>If file and folder permissions are not set to <em>strict</em> or tighter there could be a security risk. However, on some servers Zenphoto does not function correctly with tight file/folder permissions. If Zenphoto has permission errors, run setup again and select a more relaxed permission.</p><form action="#">Change file/folder permissions mask: <select id="chmod_permissions" name="chmod_permissions" onchange="this.form.submit()">	<option value="0">strict+ (0750)</option>	<option value="1">strict (0755)</option>	<option value="2">relaxed (0775)</option>	<option value="3" selected="selected">loose (0777)</option></select></form><br />
+Completed system check
+Setup cookie test successful
+Notice: "Module mod_rewrite" is working. The Zenphoto option "mod_rewrite" will be set to "enabled".

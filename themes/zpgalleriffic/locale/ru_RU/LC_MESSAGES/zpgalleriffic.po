@@ -1,0 +1,488 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Gallerific\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-17 01:02+0300\n"
+"PO-Revision-Date: 2010-03-17 10:51+0300\n"
+"Last-Translator: Sergey <sergey@vetko.net>\n"
+"Language-Team: Svarog <sergey@vetko.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: c:\\WebServers\\home\\vetko.ru\\www\\themes\\\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SearchPath-0: zpgalleriffic\n"
+
+#: zpgalleriffic/404.php:4
+#: zpgalleriffic/password.php:4
+msgid "Gallery Index"
+msgstr "Индекс Галереи"
+
+#: zpgalleriffic/404.php:4
+msgid "Page not found..."
+msgstr "Страница не найдена"
+
+#: zpgalleriffic/404.php:8
+msgid "The page you are requesting cannot be found."
+msgstr "Запрашиваемая страница не найдена"
+
+#: zpgalleriffic/404.php:10
+#, php-format
+msgid "Album: %s"
+msgstr "Альбом: %s"
+
+#: zpgalleriffic/404.php:13
+#, php-format
+msgid "Image: %s"
+msgstr "Фото: %s"
+
+#: zpgalleriffic/404.php:16
+#, php-format
+msgid "Page: %s"
+msgstr "Страница: %s"
+
+#: zpgalleriffic/album.php:4
+#: zpgalleriffic/archive.php:5
+#: zpgalleriffic/contact.php:5
+#: zpgalleriffic/image.php:5
+#: zpgalleriffic/news.php:4
+#: zpgalleriffic/pages.php:4
+#: zpgalleriffic/search.php:4
+msgid "Albums Index"
+msgstr "Индекс альбома"
+
+#: zpgalleriffic/album.php:6
+msgid "<strong>Tags:</strong>"
+msgstr "<strong>Теги:</strong>"
+
+#: zpgalleriffic/album.php:10
+#: zpgalleriffic/image.php:9
+msgid "Subalbum"
+msgstr "Подальбом"
+
+#: zpgalleriffic/album.php:10
+#: zpgalleriffic/image.php:9
+msgid "Album"
+msgstr "Альбом"
+
+#: zpgalleriffic/album.php:21
+msgid " Subalbums, "
+msgstr "Подальбомов,"
+
+#: zpgalleriffic/album.php:22
+msgid " Total Images"
+msgstr "Всего фотографий"
+
+#: zpgalleriffic/album.php:44
+#: zpgalleriffic/album.php:45
+#: zpgalleriffic/gallery.php:23
+#: zpgalleriffic/gallery.php:24
+#: zpgalleriffic/search.php:29
+#: zpgalleriffic/search.php:30
+msgid "View album:"
+msgstr "Посмотреть альбом:"
+
+#: zpgalleriffic/album.php:76
+#: zpgalleriffic/search.php:61
+msgid "Video"
+msgstr "Видео"
+
+#: zpgalleriffic/album.php:76
+#: zpgalleriffic/search.php:61
+msgid "Image"
+msgstr "Фото"
+
+#: zpgalleriffic/album.php:77
+#: zpgalleriffic/search.php:62
+msgid "Detail Page: "
+msgstr "Детали Страницы:"
+
+#: zpgalleriffic/album.php:77
+#: zpgalleriffic/search.php:62
+msgid " Details"
+msgstr "Детали"
+
+#: zpgalleriffic/album.php:78
+#: zpgalleriffic/search.php:63
+msgid "Download: "
+msgstr "Скачать:"
+
+#: zpgalleriffic/album.php:78
+#: zpgalleriffic/search.php:63
+msgid "Download "
+msgstr "Скачать"
+
+#: zpgalleriffic/album.php:99
+#: zpgalleriffic/image.php:84
+#: zpgalleriffic/news.php:41
+#: zpgalleriffic/pages.php:32
+msgid "Comments"
+msgstr "Комментарии"
+
+#: zpgalleriffic/archive.php:5
+#: zpgalleriffic/header.php:20
+msgid "Archive View"
+msgstr "Просмотр Архива"
+
+#: zpgalleriffic/archive.php:12
+msgid "Gallery Archive"
+msgstr "Архив Галереи"
+
+#: zpgalleriffic/archive.php:17
+msgid "News archive"
+msgstr "Архив новостей"
+
+#: zpgalleriffic/contact.php:5
+#: zpgalleriffic/header.php:18
+#: zpgalleriffic/header.php:88
+msgid "Contact"
+msgstr "Контакты"
+
+#: zpgalleriffic/contact.php:10
+msgid "The Contact Form plugin has not been activated."
+msgstr "Форма контактов не была активирована"
+
+#: zpgalleriffic/footer.php:4
+msgid "SEARCH"
+msgstr "ПОИСК"
+
+#: zpgalleriffic/footer.php:11
+msgid "all rights reserved"
+msgstr "все права зарегистрированы"
+
+#: zpgalleriffic/footer.php:11
+msgid "Contact Us"
+msgstr "Связаться с нами"
+
+#: zpgalleriffic/footer.php:14
+msgid "Subscribe: "
+msgstr "Подписаться:"
+
+#: zpgalleriffic/footer.php:16
+msgid "This Album"
+msgstr "Этот Альбом"
+
+#: zpgalleriffic/footer.php:17
+msgid "Gallery Images"
+msgstr "Фотографии Галереи"
+
+#: zpgalleriffic/footer.php:18
+#: zpgalleriffic/header.php:24
+#: zpgalleriffic/header.php:79
+#: zpgalleriffic/news.php:53
+msgid "News"
+msgstr "Новости"
+
+#: zpgalleriffic/gallery.php:10
+msgid "Gallery Stats: "
+msgstr "Статистика Галереи:"
+
+#: zpgalleriffic/gallery.php:10
+msgid " Images in "
+msgstr "Фотографий в"
+
+#: zpgalleriffic/gallery.php:10
+msgid " Albums"
+msgstr "Альбомов"
+
+#: zpgalleriffic/header.php:21
+#: zpgalleriffic/password.php:4
+msgid "Password Required..."
+msgstr "Требуется пароль"
+
+#: zpgalleriffic/header.php:22
+msgid "404 Not Found..."
+msgstr "404 Не найдено..."
+
+#: zpgalleriffic/header.php:23
+msgid "Search: "
+msgstr "Поиск:"
+
+#: zpgalleriffic/header.php:29
+msgid "Gallery RSS"
+msgstr "RSS Галереи"
+
+#: zpgalleriffic/header.php:30
+msgid "This Album Collection"
+msgstr "Коллекция этого альбома"
+
+#: zpgalleriffic/header.php:31
+msgid "News RSS"
+msgstr "RSS Новостей"
+
+#: zpgalleriffic/header.php:73
+#: zpgalleriffic/header.php:76
+msgid "Gallery"
+msgstr "Галерея"
+
+#: zpgalleriffic/header.php:75
+msgid "Home"
+msgstr "Домой"
+
+#: zpgalleriffic/header.php:85
+msgid "Archive"
+msgstr "Архив"
+
+#: zpgalleriffic/image.php:19
+msgid "Image "
+msgstr "Фото"
+
+#: zpgalleriffic/image.php:19
+msgid " of "
+msgstr "из"
+
+#: zpgalleriffic/image.php:39
+#: zpgalleriffic/image.php:40
+msgid "Previous Image"
+msgstr "Предыдушее фото"
+
+#: zpgalleriffic/image.php:40
+msgid "Prev"
+msgstr "Пред"
+
+#: zpgalleriffic/image.php:55
+#: zpgalleriffic/image.php:56
+msgid "Next Image"
+msgstr "Следующее фото"
+
+#: zpgalleriffic/image.php:56
+msgid "Next"
+msgstr "След"
+
+#: zpgalleriffic/image.php:65
+msgid "(Edit Description...)"
+msgstr "Редактировать описание"
+
+#: zpgalleriffic/image.php:66
+msgid "TAGS:  "
+msgstr "ТЕГИ:"
+
+#: zpgalleriffic/image.php:69
+msgid "Image Meta Data"
+msgstr "Мета данные фотографии"
+
+#: zpgalleriffic/image_statistic.php:5
+msgid "Random Images"
+msgstr "Случайные фотографии"
+
+#: zpgalleriffic/image_statistic.php:8
+msgid "Popular Images"
+msgstr "Популярные фотографии"
+
+#: zpgalleriffic/image_statistic.php:11
+#: zpgalleriffic/image_statistic.php:14
+#: zpgalleriffic/image_statistic.php:17
+msgid "Latest Images"
+msgstr "Последние фотографии"
+
+#: zpgalleriffic/image_statistic.php:20
+msgid "Most Rated Images"
+msgstr "Самые популярные фотографии"
+
+#: zpgalleriffic/image_statistic.php:23
+msgid "Top Rated Images"
+msgstr "Самые популярные фотографии"
+
+#: zpgalleriffic/news.php:29
+#: zpgalleriffic/news.php:64
+msgid "Categories: "
+msgstr "Категории:"
+
+#: zpgalleriffic/news.php:29
+#: zpgalleriffic/news.php:64
+msgid "Comments:"
+msgstr "Комментарии:"
+
+#: zpgalleriffic/news.php:58
+msgid "All News"
+msgstr "Все Новости"
+
+#: zpgalleriffic/news.php:73
+msgid "Next &rsaquo;"
+msgstr "След &rsaquo;"
+
+#: zpgalleriffic/news.php:73
+msgid "&lsaquo; Previous"
+msgstr "&lsaquo; Пред"
+
+#: zpgalleriffic/password.php:7
+msgid "A password is required for the page you requested."
+msgstr "Требуется пароль для запрошенной страницы"
+
+#: zpgalleriffic/password_form.php:10
+msgid "Login"
+msgstr "Логин"
+
+#: zpgalleriffic/password_form.php:17
+msgid "Password"
+msgstr "Пароль"
+
+#: zpgalleriffic/password_form.php:22
+msgid "Submit"
+msgstr "Ввести"
+
+#: zpgalleriffic/password_form.php:28
+#, php-format
+msgid "Hint: %s"
+msgstr "Хинт: %s"
+
+#: zpgalleriffic/search.php:4
+msgid "Search"
+msgstr "Поиск"
+
+#: zpgalleriffic/search.php:14
+#, php-format
+msgid "Total matches for <em>%1$s</em>: %2$u"
+msgstr "Всего совпадений для <em>%1$s</em>: %2$u"
+
+#: zpgalleriffic/search.php:83
+msgid "Sorry, no image matches. Try refining your search."
+msgstr "Извините, изображений не найдено. Попробуйте изменить ваш запрос"
+
+#: zpgalleriffic/themeoptions.php:36
+msgid "Tagline"
+msgstr "Теглайн"
+
+#: zpgalleriffic/themeoptions.php:36
+msgid "The text below the sitename on the home page (if no tusing an image) and in the copyright footer."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:37
+msgid "Homepage"
+msgstr "Домой"
+
+#: zpgalleriffic/themeoptions.php:37
+msgid "Choose here any <em>unpublished Zenpage page</em> (listed by <em>titlelink</em>) to act as your site's homepage instead the normal gallery index."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:38
+msgid "Allow Search"
+msgstr "Разрешить поиск"
+
+#: zpgalleriffic/themeoptions.php:38
+msgid "Check to enable search form."
+msgstr "Отметьте, чтобы разрешить форму поиска"
+
+#: zpgalleriffic/themeoptions.php:39
+msgid "Show Archive Link"
+msgstr "Показывать ссылку на Архив"
+
+#: zpgalleriffic/themeoptions.php:39
+msgid "Display a menu link to the Archive list."
+msgstr "В меню показывать ссылку на Архив"
+
+#: zpgalleriffic/themeoptions.php:40
+msgid "Show ZenPhoto Credit"
+msgstr "Показывать копирайт ZenPhoto"
+
+#: zpgalleriffic/themeoptions.php:40
+msgid "Check to display the Powered by ZenPhoto link in the footer."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:41
+msgid "Color"
+msgstr "Цвет"
+
+#: zpgalleriffic/themeoptions.php:41
+msgid "Choose the primary color style. Easily customize by choosing custom and then adding the hex values in the custom.css file."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:42
+msgid "Contrast"
+msgstr "Контраст"
+
+#: zpgalleriffic/themeoptions.php:42
+msgid "Choose a dark or light contrast style for your gallery."
+msgstr "Выберите темный или светлый контраст для вашей галереи"
+
+#: zpgalleriffic/themeoptions.php:43
+msgid "Use Image as Title"
+msgstr "Использовать Изображение как Заголовок"
+
+#: zpgalleriffic/themeoptions.php:43
+msgid "Use an image for the logo/title area. If checked, enter image filename below."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:44
+msgid "Use this File as Title"
+msgstr "Использовать этот файл в качестве заголовка"
+
+#: zpgalleriffic/themeoptions.php:44
+msgid "If using an image file for the logo/title area, enter the full filename (including extension) of the image file located in the images directory in zpGalleriffic."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:45
+msgid "ZenPage Latest News"
+msgstr "ZenPage последние новости"
+
+#: zpgalleriffic/themeoptions.php:45
+msgid "If using Zenpage, number of latest news artciles to show on the gallery page.  Make sure you enter a valid number here!"
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:46
+msgid "ZenPage Latest News Truncation"
+msgstr "Ограничение количества последних новостей ZenPage"
+
+#: zpgalleriffic/themeoptions.php:46
+msgid "If using Zenpage, and you have articles set to display on the home page, set here the number of characters to show in the article snippet (truncation).  Make sure you enter a valid number here!"
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:47
+msgid "Show Image EXIF Data"
+msgstr "Показывать EXIF данный фотографии"
+
+#: zpgalleriffic/themeoptions.php:47
+msgid "Show the Image MetaData slide on Image page."
+msgstr "Показывать Мета Данные фотографии на странице изображения"
+
+#: zpgalleriffic/themeoptions.php:48
+msgid "Final Image Link"
+msgstr "Ссылка на последнее изображение"
+
+#: zpgalleriffic/themeoptions.php:48
+msgid "Choose final link action at image.php: no link, colorbox, or default zenphoto."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:49
+msgid "Use Galleriffic Script"
+msgstr "Использовать скрипт Gallerific"
+
+#: zpgalleriffic/themeoptions.php:49
+msgid "Uncheck this to use the alternate album and search pages that do not use the Galleriffic Script. This alternate is also what is displayed when the user has javascript disabled in their browser."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:50
+msgid "Show Image Statistic Strip"
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:50
+msgid "Shows a strip of thumbs depending on your option selected on the gallery, news, pages, archive, and contact pages. NOTE: Anything other than random the image_statistic plugin must be activated."
+msgstr ""
+
+#: zpgalleriffic/themeoptions.php:51
+msgid "Show ZenPage Category List on Gallery Page"
+msgstr "Показывать категории Zenpage на странице галереи"
+
+#: zpgalleriffic/themeoptions.php:51
+msgid "Check to list the news categories on the gallery page, if you are using Zenpage...."
+msgstr "Отметьте, чтобы показывать категории новостей на странице галереи, если вы используете Zenpage"
+
+#: zpgalleriffic/themeoptions.php:52
+msgid "Show Download Link"
+msgstr "Показывать ссылку \"Скачать\""
+
+#: zpgalleriffic/themeoptions.php:52
+msgid "Show a download link for the image on the album and search pages."
+msgstr "Показывать ссылку \"Скачать\" для фото на страницах альбома и поиска"
+
+#: zpgalleriffic/themeoptions.php:203
+msgid "No unpublished pages available"
+msgstr "Нет неоплубликованных страницы"
+
+#: zpgalleriffic/themeoptions.php:215
+msgid "none"
+msgstr "нет"
+

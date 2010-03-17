@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: \/albums/
+Disallow: \/cache/
+Disallow: \/themes/
+Disallow: \/zp-core/
+Disallow: \/zp-data/
+Disallow: \/page/search/
+Disallow: \/uploaded/
+Disallow: \/rss.php
+Disallow: \/rss-comments.php
+Disallow: \/README.html
+Disallow: \/rss-news-comments.php
+Disallow: \/rss-news.php

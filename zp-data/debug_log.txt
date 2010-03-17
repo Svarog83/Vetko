@@ -1,0 +1,7 @@
+{Tue, 16 Mar 2010 22:48:49 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
