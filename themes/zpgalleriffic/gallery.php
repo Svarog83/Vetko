@@ -1,5 +1,5 @@
 <?php include ("header.php"); ?>
-	
+<?php setThemeDomain("zpgalleriffic"); ?>
 		<div id="headline" class="clearfix">	
 			<div class="headline-text"><?php printGalleryDesc(true); ?></div>
 			<table id="navbar" class="clr">

@@ -1,3 +1,4 @@
+		<?php setThemeDomain("zpgalleriffic"); ?>	
 		<div id="image-stat" class="clearfix">
 			<h2 id="image-stat-title">
 				<?php switch (getOption('image_statistic')) {

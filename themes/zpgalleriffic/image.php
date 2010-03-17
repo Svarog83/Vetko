@@ -1,5 +1,4 @@
 <?php include ("header.php"); ?>
-
 		<div id="image-page" class="clearfix">
 			<div id="headline" class="clearfix">
 				<h4><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a> | <?php printParentBreadcrumb("", " | ", " | "); printAlbumBreadcrumb("", " | "); ?></span> <?php printImageTitle(true); ?></h4>

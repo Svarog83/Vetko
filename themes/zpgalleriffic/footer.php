@@ -1,4 +1,4 @@
-		<?php setThemeDomain(”zpgalleriffic”); ?>	
+		<?php setThemeDomain("zpgalleriffic"); ?>	
 		<div id="footer">
 			<?php if ((getOption('Allow_search')) || (function_exists('printAlbumMenu'))) { ?>
 			<div id="jump-search" class="clearfix">

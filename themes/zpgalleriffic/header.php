@@ -1,4 +1,5 @@
-<?php if (!defined('WEBPATH')) die(); 
+<?php setThemeDomain("zpgalleriffic"); ?>
+<?php if (!defined('WEBPATH')) die();
 setOption('image_size','500',false); 
 setOption('image_use_side','longest',false); 
 setOption('thumb_size','75',false); 

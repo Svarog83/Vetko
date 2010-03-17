@@ -29,7 +29,7 @@ SERVER path. For these cases you will need to implement the path overrides below
 $conf['mysql_user'] = 'root';
 $conf['mysql_pass'] = '';
 $conf['mysql_host'] = 'localhost';
-$conf['mysql_database'] = 'gallery';
+$conf['mysql_database'] = 'vetko';
 
 // If you are having problems with displaying some characters you may have to change
 // the following:

@@ -1,5 +1,5 @@
 <?php include ("header.php"); ?>
-<?php setThemeDomain(”zpgalleriffic”); ?>	
+<?php setThemeDomain("zpgalleriffic"); ?>	
 		<div id="headline" class="clearfix">
 			<h4><span><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a><?php if(!isset($ishomepage)) { printParentPagesBreadcrumb(" | ",""); } ?><strong><?php if(!isset($ishomepage)) { printPageTitle(" | "); } ?></strong></h4>
 			<table id="navbar" class="clr">
