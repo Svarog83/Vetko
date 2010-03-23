@@ -58,8 +58,8 @@
 							<div class="caption">	
 								<div class="detail-download">
 									<?php if (isImageVideo()) { $downLoadText=gettext('Video'); } else { $downLoadText=gettext('Image'); } ?>
-									<a href="<?php echo htmlspecialchars(getImageLinkURL());?>" title="<?php echo gettext('Detail Page: '); ?><?php echo getImageTitle(); ?>"><?php echo $downLoadText.gettext(' Details'); ?></a>
-									<?php if (getOption('download_link')) { ?><a target="_blank" href="<?php echo htmlspecialchars(getFullImageURL());?>" title="<?php echo gettext('Download: '); ?> <?php echo getImageTitle(); ?>"><?php echo gettext('Download ').$downLoadText; ?></a><?php } ?>				
+									<a href="<?php echo htmlspecialchars(getImageLinkURL());?>" title="<?php echo gettext('Detail Page: '); ?> <?php echo getImageTitle(); ?>"><?php echo gettext(' Details'); ?></a>
+									<?php if (getOption('download_link')) { ?><a target="_blank" href="<?php echo htmlspecialchars(getFullImageURL());?>" title="<?php echo gettext('Download: '); ?> <?php echo getImageTitle(); ?>"><?php echo gettext('Download ') . '&nbsp;' . $downLoadText; ?></a><?php } ?>				
 								</div>	
 								<div class="image-title"><?php printImageTitle(false); ?></div>
 							</div>

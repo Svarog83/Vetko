@@ -80,4 +80,3 @@ function createAlbumZip($album){
 	printLargeFileContents($dest);
 	if (!$persist) { unlink($dest); }
 }
-?>

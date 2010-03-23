@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zenphoto 1.2.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-18 00:29+0300\n"
+"POT-Creation-Date: 2010-03-24 00:17+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Sergey <sergey@vetko.net>\n"
 "Language-Team: www.vetko.net <sergey@vetko.net>\n"
@@ -266,12 +266,12 @@ msgid "The page you are requesting cannot be found."
 msgstr "Объект Zenphoto, который вы запрашивали, не найден."
 
 #: www/themes/zpgalleriffic/album.php:9
-#: www/themes/zpgalleriffic/image.php:8
+#: www/themes/zpgalleriffic/image.php:13
 msgid "Subalbum"
 msgstr "Подальбомы"
 
 #: www/themes/zpgalleriffic/album.php:9
-#: www/themes/zpgalleriffic/image.php:8
+#: www/themes/zpgalleriffic/image.php:13
 msgid "Album"
 msgstr "Альбом"
 
@@ -301,14 +301,14 @@ msgstr "Подробности"
 
 #: www/themes/zpgalleriffic/album.php:77
 msgid "Download: "
-msgstr "Скачать"
+msgstr "Скачать:"
 
 #: www/themes/zpgalleriffic/album.php:77
 msgid "Download "
 msgstr "Скачать"
 
 #: www/themes/zpgalleriffic/album.php:98
-#: www/themes/zpgalleriffic/image.php:83
+#: www/themes/zpgalleriffic/image.php:88
 #: www/themes/zpgalleriffic/news.php:40
 #: www/themes/zpgalleriffic/pages.php:36
 msgid "Comments"
@@ -354,30 +354,50 @@ msgstr "Этот альбом"
 
 #: www/themes/zpgalleriffic/footer.php:17
 msgid "Gallery Images"
-msgstr "Начало галереи"
+msgstr "Фотографии Галереи"
 
 #: www/themes/zpgalleriffic/footer.php:18
 #: www/themes/zpgalleriffic/header.php:24
 #: www/themes/zpgalleriffic/header.php:79
+#: www/themes/zpgalleriffic/news.php:3
 #: www/themes/zpgalleriffic/news.php:52
 msgid "News"
 msgstr "Новости"
-
-#: www/themes/zpgalleriffic/gallery.php:9
-msgid "ssss "
-msgstr "qqqqq"
 
 #: www/themes/zpgalleriffic/gallery.php:9
 msgid "Gallery Stats: "
 msgstr "Статистика Галереи:"
 
 #: www/themes/zpgalleriffic/gallery.php:9
-msgid " Images in "
-msgstr "Изображения в"
+#, php-format
+msgid "%u Image in "
+msgid_plural "%u Images in "
+msgstr[0] "%u Изображение в"
+msgstr[1] "%u Изображения в"
+msgstr[2] "%u Изображений в"
 
 #: www/themes/zpgalleriffic/gallery.php:9
-msgid " Albums"
-msgstr "Альбомы"
+#, php-format
+msgid "%u Album "
+msgid_plural "%u Albums "
+msgstr[0] "%u альбоме"
+msgstr[1] "%u альбомах"
+msgstr[2] "%u альбомах"
+
+#: www/themes/zpgalleriffic/gallery.php:30
+#: www/themes/zpgalleriffic/news.php:72
+msgid "&lsaquo; Previous"
+msgstr "&laquo; Назад"
+
+#: www/themes/zpgalleriffic/gallery.php:30
+#: www/themes/zpgalleriffic/news.php:72
+msgid "Next &rsaquo;"
+msgstr "Вперед &raquo;"
+
+#: www/themes/zpgalleriffic/gallery.php:38
+#: www/themes/zpgalleriffic/news.php:57
+msgid "All News"
+msgstr "Все Новости"
 
 #: www/themes/zpgalleriffic/header.php:21
 msgid "Password Required..."
@@ -412,31 +432,31 @@ msgstr "Домой"
 msgid "Archive"
 msgstr "Архив"
 
-#: www/themes/zpgalleriffic/image.php:18
+#: www/themes/zpgalleriffic/image.php:23
 msgid "Image "
-msgstr "Изображение"
+msgstr "Фотография"
 
-#: www/themes/zpgalleriffic/image.php:18
+#: www/themes/zpgalleriffic/image.php:23
 msgid " of "
 msgstr " из "
 
-#: www/themes/zpgalleriffic/image.php:39
+#: www/themes/zpgalleriffic/image.php:44
 msgid "Prev"
 msgstr "Пред"
 
-#: www/themes/zpgalleriffic/image.php:55
+#: www/themes/zpgalleriffic/image.php:60
 msgid "Next"
 msgstr "След"
 
-#: www/themes/zpgalleriffic/image.php:64
+#: www/themes/zpgalleriffic/image.php:69
 msgid "(Edit Description...)"
 msgstr "(Редактировать описание…)"
 
-#: www/themes/zpgalleriffic/image.php:65
+#: www/themes/zpgalleriffic/image.php:70
 msgid "TAGS:  "
-msgstr "ТЕГИ"
+msgstr "Теги"
 
-#: www/themes/zpgalleriffic/image.php:68
+#: www/themes/zpgalleriffic/image.php:73
 msgid "Image Meta Data"
 msgstr "Мета данные изображения"
 
@@ -462,6 +482,10 @@ msgstr "Самый рейтинговые изображения"
 msgid "Top Rated Images"
 msgstr "Самые популярные изображения:"
 
+#: www/themes/zpgalleriffic/news.php:3
+msgid " | Category - "
+msgstr "| Категория - "
+
 #: www/themes/zpgalleriffic/news.php:28
 #: www/themes/zpgalleriffic/news.php:63
 msgid "Categories: "
@@ -471,18 +495,6 @@ msgstr "Категории: "
 #: www/themes/zpgalleriffic/news.php:63
 msgid "Comments:"
 msgstr "Комментарии:"
-
-#: www/themes/zpgalleriffic/news.php:57
-msgid "All News"
-msgstr "Все Новости"
-
-#: www/themes/zpgalleriffic/news.php:72
-msgid "Next &rsaquo;"
-msgstr "Следующее &raquo;"
-
-#: www/themes/zpgalleriffic/news.php:72
-msgid "&lsaquo; Previous"
-msgstr "&laquo; Предыдущее"
 
 #: www/themes/zpgalleriffic/password.php:6
 msgid "A password is required for the page you requested."
@@ -736,7 +748,7 @@ msgstr "Сортируйте изображения просто перемещ�
 #: www/zp-core/admin-cache-images.php:76
 #, php-format
 msgid "Clearing and refreshing cache for %s"
-msgstr ""
+msgstr "Очистка и обноваления кеша для %s"
 
 #: www/zp-core/admin-cache-images.php:78
 #, php-format
@@ -2603,7 +2615,7 @@ msgstr "[включен]"
 
 #: www/zp-core/admin-options.php:1183
 msgid "All news"
-msgstr "[новое]"
+msgstr "Все Новости"
 
 #: www/zp-core/admin-options.php:1188
 msgid "News/Page comments"
@@ -2684,7 +2696,7 @@ msgstr ""
 
 #: www/zp-core/admin-options.php:1245
 msgid "RSS cache"
-msgstr "Очистить кэш"
+msgstr "RSS кэш"
 
 #: www/zp-core/admin-options.php:1247
 #: www/zp-core/admin-options.php:1659
@@ -2693,7 +2705,7 @@ msgstr "Включить"
 
 #: www/zp-core/admin-options.php:1249
 msgid "RSS cache expire"
-msgstr ""
+msgstr "RSS кеш устарел"
 
 #: www/zp-core/admin-options.php:1251
 msgid "Check if you want to enable static RSS feed caching. The cached file will be placed within the <em>cache_html</em> folder.<br /> Cache expire default is 86400 seconds (1 day  = 24 hrs * 60 min * 60 sec)."
@@ -3089,7 +3101,7 @@ msgstr ""
 
 #: www/zp-core/admin-options.php:2033
 msgid "Gallery index page link:"
-msgstr "Начало галереи"
+msgstr "Начало галереи:"
 
 #: www/zp-core/admin-options.php:2052
 msgid "If this option is not empty, the Gallery Index URL that would normally link to the theme <code>index.php</code> script will instead link to this script. This frees up the <code>index.php</code> script so that you can create a customized <em>Home</em> page script. This option applies only to the main theme for the <em>Gallery</em>."
@@ -3675,7 +3687,7 @@ msgstr ""
 
 #: www/zp-core/admin-users.php:188
 msgid "You must supply a password for the Gallery guest user"
-msgstr "Ваш должны ввести гостевой пароль для галереи."
+msgstr "Вы должны ввести гостевой пароль для галереи."
 
 #: www/zp-core/admin-users.php:191
 msgid "You must supply a password for the Search guest user"
@@ -3792,11 +3804,11 @@ msgstr "Вы управляете этими альбомами, в рамках
 
 #: www/zp-core/admin.php:59
 msgid "Image cache cleared."
-msgstr "Кэш был удален."
+msgstr "Кэш Изображений был удален."
 
 #: www/zp-core/admin.php:67
 msgid "RSS cache cleared."
-msgstr "Кэш был удален."
+msgstr "Кэш RSS был удален."
 
 #: www/zp-core/admin.php:80
 msgid "All hitcounters have been set to zero"
@@ -3817,11 +3829,11 @@ msgstr "доступна версия zenphoto %s."
 
 #: www/zp-core/admin.php:115
 msgid "purge Image cache"
-msgstr "Очистить кэш"
+msgstr "Очистить кэш Изображений"
 
 #: www/zp-core/admin.php:116
 msgid "purge RSS cache"
-msgstr "Очистить кэш"
+msgstr "Очистить RSS кэш"
 
 #: www/zp-core/admin.php:117
 msgid "reset all hitcounters"
@@ -4032,19 +4044,19 @@ msgstr "Очистка базы данных и удаление зависши�
 
 #: www/zp-core/admin.php:405
 msgid "Purge Image cache"
-msgstr "Очистить кэш"
+msgstr "Очистить кэш Изображений"
 
 #: www/zp-core/admin.php:409
 msgid "Clears the image cache. Images will be re-cached as they are viewed."
-msgstr "Удаляет кэш изображений. Кэш будет создан заново,о мере просмотра изображений посетителями."
+msgstr "Удаляет кэш изображений. Кэш будет создан заново по мере просмотра изображений посетителями."
 
 #: www/zp-core/admin.php:415
 msgid "Purge RSS cache"
-msgstr "Очистить кэш"
+msgstr "Очистить RSS кэш"
 
 #: www/zp-core/admin.php:419
 msgid "Clears the RSS cache. RSS files will be re-cached as they are viewed."
-msgstr "Удаляет кэш изображений. Кэш будет создан заново,о мере просмотра изображений посетителями."
+msgstr "Удаляет кэш RSS. Кэш будет создан заново по мере просмотра RSS посетителями."
 
 #: www/zp-core/admin.php:429
 msgid "Finds newly uploaded images that have not been cached and creates the cached version. It also refreshes the numbers above. If you have a large number of images in your gallery you might consider using the pre-cache image link for each album to avoid swamping your browser."
@@ -5007,7 +5019,7 @@ msgstr ""
 
 #: www/zp-core/functions.php:98
 msgid "Focal Length"
-msgstr "Фокусная расстояние"
+msgstr "Фокусное расстояние"
 
 #: www/zp-core/functions.php:99
 msgid "Lens Type"
@@ -6130,7 +6142,7 @@ msgstr "загрузить"
 
 #: www/zp-core/setup.php:1436
 msgid "HTML cache"
-msgstr ""
+msgstr "HTML кеш"
 
 #: www/zp-core/setup.php:1437
 msgid "Third party plugins"
@@ -6421,7 +6433,7 @@ msgstr ""
 
 #: www/zp-core/template-functions.php:910
 msgid "Album Thumbnails"
-msgstr ""
+msgstr "Миниатюры альбома"
 
 #: www/zp-core/template-functions.php:1067
 #: www/zp-core/template-functions.php:1904
@@ -6466,11 +6478,11 @@ msgstr ""
 
 #: www/zp-core/template-functions.php:3068
 msgid "Download Zip of the Album"
-msgstr ""
+msgstr "Скачать альбом в виде Zip-архива"
 
 #: www/zp-core/template-functions.php:3068
 msgid "Download a zip file of this album"
-msgstr ""
+msgstr "Скачать zip-архив альбома"
 
 #: www/zp-core/template-functions.php:3407
 #, php-format
@@ -6483,7 +6495,7 @@ msgstr "(Нажмите для добавления метки…)"
 
 #: www/zp-core/template-functions.php:3787
 msgid "Latest images RSS"
-msgstr "Использовать дату последнего изображения"
+msgstr "RSS с новыми фотографиями"
 
 #: www/zp-core/template-functions.php:3792
 msgid "Latest images of this album RSS"
@@ -6491,7 +6503,7 @@ msgstr "%u хитов в этом альбоме"
 
 #: www/zp-core/template-functions.php:3797
 msgid "Latest images of this album and its subalbums RSS"
-msgstr ""
+msgstr "RSS новых фотографий этого альбома и всех подальбомов"
 
 #: www/zp-core/template-functions.php:3802
 msgid "Latest comments RSS"
@@ -7691,7 +7703,7 @@ msgstr ""
 #: www/zp-core/utilities/gallery_statistics.php:24
 #: www/zp-core/utilities/gallery_statistics.php:411
 msgid "Gallery Statistics"
-msgstr "Подробная статистика"
+msgstr "Статистика Галереи"
 
 #: www/zp-core/utilities/gallery_statistics.php:25
 msgid "Shows statistical graphs and info about your gallery's images and albums."
@@ -9905,7 +9917,7 @@ msgstr "сюда"
 
 #: www/zp-core/zp-extensions/register_user.php:167
 msgid "Zenphoto Gallery registration"
-msgstr "Панель управления zenphoto"
+msgstr "Zenphoto Gallery registration"
 
 #: www/zp-core/zp-extensions/register_user.php:168
 #, php-format
@@ -10123,11 +10135,11 @@ msgstr ""
 
 #: www/zp-core/zp-extensions/static_html_cache.php:47
 msgid "HTML cache cleared."
-msgstr "Кэш был удален."
+msgstr "HTML кэш был удален."
 
 #: www/zp-core/zp-extensions/static_html_cache.php:65
 msgid "Static html cache expire"
-msgstr ""
+msgstr "Статические HTML кеш устарел"
 
 #: www/zp-core/zp-extensions/static_html_cache.php:66
 msgid "When the cache should expire in seconds. Default is 86400 seconds (1 day  = 24 hrs * 60 min * 60 sec)."
@@ -10153,11 +10165,11 @@ msgstr ""
 
 #: www/zp-core/zp-extensions/static_html_cache.php:288
 msgid "Purge HTML cache"
-msgstr "Очистить кэш"
+msgstr "Очистить HTML кэш"
 
 #: www/zp-core/zp-extensions/static_html_cache.php:292
 msgid "Clear the static HTML cache. HTML pages will be recached as they are viewed."
-msgstr "Удаляет кэш изображений. Кэш будет создан заново,о мере просмотра изображений посетителями."
+msgstr "Удаляет HTML кэш. Кэш будет создан заново по мере просмотра страниц посетителями."
 
 #: www/zp-core/zp-extensions/tag_suggest.php:10
 msgid "Enables jQuery tag suggestions on the search field. Just activate the plugin and the feature is available on the theme's search field."
@@ -10447,7 +10459,7 @@ msgstr ""
 
 #: www/zp-core/zp-extensions/zenpage.php:80
 msgid "CombiNews: Gallery link"
-msgstr "Посмотреть галерею"
+msgstr "Ссылка на Галерею"
 
 #: www/zp-core/zp-extensions/zenpage.php:81
 msgid "album"
@@ -10586,7 +10598,7 @@ msgstr ""
 
 #: www/zp-core/zp-extensions/captcha/zenphoto.php:35
 msgid "Captcha length"
-msgstr "Фокусная расстояние"
+msgstr "Длина Капчи"
 
 #: www/zp-core/zp-extensions/captcha/zenphoto.php:37
 msgid "3"
@@ -10610,7 +10622,7 @@ msgstr "Количество знаков в защитном коде (Captcha)
 
 #: www/zp-core/zp-extensions/captcha/zenphoto.php:39
 msgid "Captcha font"
-msgstr "Фокусная расстояние"
+msgstr "Шрифт Капчи"
 
 #: www/zp-core/zp-extensions/captcha/zenphoto.php:42
 msgid "The font to use for captcha characters."
@@ -11564,6 +11576,12 @@ msgstr "Посмотреть альбом: %s"
 msgid "View %s"
 msgstr "Посмотреть: %s"
 
+#~ msgid "ssss "
+#~ msgstr "qqqqq"
+
+#~ msgid " Albums"
+#~ msgstr "Альбомы"
+
 #~ msgid "For the best viewing experience"
 #~ msgstr "Для лучшего просмотра"
 
@@ -11631,13 +11649,6 @@ msgstr "Посмотреть: %s"
 #~ msgstr[1] "%u хита у этого изображения"
 #~ msgstr[2] "%u хитов у этого изображения"
 
-#~ msgid "%u Album"
-
-#~ msgid_plural "%u Albums"
-#~ msgstr[0] "%u альбом"
-#~ msgstr[1] "%u альбома"
-#~ msgstr[2] "%u альбомов"
-
 #~ msgid "%u Subalbum"
 
 #~ msgid_plural "%u Subalbums"
@@ -11669,9 +11680,6 @@ msgstr "Посмотреть: %s"
 
 #~ msgid "Visit the photo gallery"
 #~ msgstr "Посетить галерею фотографий"
-
-#~ msgid "Category"
-#~ msgstr "Категории"
 
 #, fuzzy
 #~ msgid "%1$u Hit for <em>%2$s</em>"

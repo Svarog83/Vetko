@@ -1,10 +1,15 @@
 <?php include ("header.php"); ?>
 		<div id="image-page" class="clearfix">
 			<div id="headline" class="clearfix">
-				<h4><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a> | <?php printParentBreadcrumb("", " | ", " | "); printAlbumBreadcrumb("", " | "); ?></span> <?php printImageTitle(true); ?></h4>
+				<h4>
+                    <?php printHomeLink('', ' | '); ?>
+                    <a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a> |
+                    <?php printParentBreadcrumb("", " | ", " | "); printAlbumBreadcrumb("", " | "); ?>
+                    <?php printImageTitle(true); ?>
+                </h4>
 				<table id="navbar" class="clr">
 					<tr>
-						<td width="40%">
+						<td width="35%">
 							<?php if ($_zp_current_album->getParent()) { $linklabel=gettext('Subalbum'); } else { $linklabel=gettext('Album'); } ?>
 							<div id="navbar-prev">
 								<?php $albumnav = getPrevAlbum();
@@ -13,12 +18,12 @@
 								<?php } ?>
 							</div>
 						</td>
-						<td width="20%">
+						<td width="30%">
 							<div id="navbar-center">
-								<span><?php echo gettext('Image ').imageNumber().gettext(' of ').getNumImages(); ?></span>
+								<span><?php echo gettext('Image ') . '&nbsp;' .imageNumber().gettext(' of ').getNumImages(); ?></span>
 							</div>
 						</td>
-						<td width="40%">
+						<td width="35%">
 							<div id="navbar-next">
 								<?php $albumnav = getNextAlbum();
 								if (!is_null($albumnav)) { ?>

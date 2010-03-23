@@ -6,14 +6,14 @@
 						<td width="100%">
 							<div id="navbar-center">
 								<span>
-									<?php echo gettext('Gallery Stats: ').$_zp_gallery->getNumImages(). '&nbsp;' . gettext(' Images in '). '&nbsp;' . $_zp_gallery->getNumAlbums() . '&nbsp;' . gettext(' Albums'); ?>
+									<?php echo gettext('Gallery Stats: '). '&nbsp;' . sprintf(ngettext('%u Image in ','%u Images in ', $_zp_gallery->getNumImages()), $_zp_gallery->getNumImages()) . '&nbsp;' . sprintf(ngettext('%u Album ','%u Albums ', $_zp_gallery->getNumAlbums()), $_zp_gallery->getNumAlbums()); ?>
 								</span>
 							</div>
 						</td>
 					</tr>
 			</table>
 		</div>
-		
+
 		<div id="album-wrap" class="clearfix">
 			<ul>
 				<?php $x=1; while (next_album()): $lastcol=""; 
@@ -27,7 +27,7 @@
 		</div>
 		
 		<div id="pagination">
-			<?php printPageListWithNav( gettext( '&lsaquo; Previous'),gettext( 'Next &rsaquo;' ),false,'true','clearfix','',true,'5' ); ?>
+			<?php printPageListWithNav( gettext( '&lsaquo; Previous'), gettext( 'Next &rsaquo;' ),false,'true','clearfix','',true,'5' ); ?>
 		</div>
 		
 		<?php if ( (function_exists('printLatestNews')) && ((getNumNews()) > 0) ) {
@@ -35,7 +35,7 @@
 		<div id="home-latestnews" class="clearfix">
 			<?php if (getOption('show_cats')) { ?>
 			<div class="extra-content">
-				<?php printAllNewsCategories( 'All News',true,'news-cat-list','news-cat-active' ); ?>
+				<?php printAllNewsCategories( gettext( 'All News' ),true,'news-cat-list','news-cat-active' ); ?>
 			</div>	
 			<?php } ?>
 			<?php if (is_numeric(getOption('zp_latestnews_trunc'))) { $latesttrunc = getOption('zp_latestnews_trunc'); } else { $latesttrunc = 400; } ?>

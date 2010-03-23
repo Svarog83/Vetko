@@ -1,6 +1,6 @@
 <?php include ("header.php"); ?>
 		<div id="headline" class="clearfix">
-			<h4><span><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a><?php printNewsIndexURL("News"," | "); ?><?php printCurrentNewsCategory(" | Category - "); ?><?php printNewsTitle(" | "); printCurrentNewsArchive(" | "); ?></h4>
+			<h4><span><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Albums Index'); ?>"><?php echo getGalleryTitle();?></a><?php printNewsIndexURL( gettext ( "News" )," | "); ?><?php printCurrentNewsCategory( gettext ( " | Category - " ) ); ?><?php printNewsTitle(" | "); printCurrentNewsArchive(" | "); ?></h4>
 			<?php if(is_NewsArticle()) { ?>
 			<table id="navbar" class="clr">
 				<tr>
@@ -25,7 +25,7 @@
 		<div id="post" class="clearfix">
 			<h2><?php printNewsTitle(); ?></h2>
 			<div class="newsarticlecredit">
-				<span><?php printNewsDate();?> | <?php printNewsCategories(", ",gettext("Categories: "),"hor-list"); ?> <?php if (function_exists('printCommentForm')) { ?>| <?php echo gettext("Comments:"); ?> <?php echo getCommentCount(); ?><?php } ?></span>
+				<span><?php printNewsDate();?> | <?php printNewsCategories(", ", gettext("Categories: "),"hor-list"); ?> <?php if (function_exists('printCommentForm')) { ?>| <?php echo gettext("Comments:"); ?> <?php echo getCommentCount(); ?><?php } ?></span>
 			</div>
 			<div class="extra-content">
 				<?php printNewsExtraContent(); ?>
@@ -60,7 +60,7 @@
 				<div class="news-truncate"> 
 				<h3><?php printNewsTitleLink(); ?></h3>	
 				<div class="newsarticlecredit">
-					<span><?php printNewsDate();?> | <?php printNewsCategories(", ",gettext("Categories: "),"hor-list"); ?><?php if (function_exists('printCommentForm')) { ?> | <?php echo gettext("Comments:"); ?> <?php echo getCommentCount(); ?> <?php } ?></span>
+					<span><?php printNewsDate();?> | <?php printNewsCategories(", ",gettext( "Categories: " ),"hor-list"); ?><?php if (function_exists('printCommentForm')) { ?> | <?php echo gettext("Comments:"); ?> <?php echo getCommentCount(); ?> <?php } ?></span>
 				</div>	
 				<?php printNewsContent(); ?>
 				<?php printCodeblock(1); ?>

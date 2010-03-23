@@ -17,8 +17,10 @@
 						<td width="30%">
 							<div id="navbar-center">
 								<span>
-									<?php if ((getNumAlbums()) > 0) { echo getNumAlbums().gettext(' Subalbums, '); } ?>
-									<?php echo getTotalImagesIn($_zp_current_album).gettext(' Total Images'); ?>
+									<?php if ((getNumAlbums()) > 0) { echo getNumAlbums(). '&nbsp;' . gettext(' Subalbums, '); } ?>
+									<?php echo gettext(' Total Images' ) . ':&nbsp;' . getTotalImagesIn($_zp_current_album); ?>
+                                    &nbsp;
+                                    <?php echo printAlbumZip(); ?>
 								</span>
 							</div>
 						</td>
@@ -73,8 +75,8 @@
 							<div class="caption">	
 								<div class="detail-download">
 									<?php if (isImageVideo()) { $downLoadText=gettext('Video'); } else { $downLoadText=gettext('Image'); } ?>
-									<a href="<?php echo htmlspecialchars(getImageLinkURL());?>" title="<?php echo gettext('Detail Page: '); ?><?php echo getImageTitle(); ?>"><?php echo $downLoadText.gettext(' Details'); ?></a>
-									<?php if (getOption('download_link')) { ?><a target="_blank" href="<?php echo htmlspecialchars(getFullImageURL());?>" title="<?php echo gettext('Download: '); ?> <?php echo getImageTitle(); ?>"><?php echo gettext('Download ').$downLoadText; ?></a><?php } ?>				
+									<a href="<?php echo htmlspecialchars(getImageLinkURL());?>" title="<?php echo gettext('Detail Page: '); ?> <?php echo getImageTitle(); ?>"><?php echo gettext(' Details'); ?></a>
+									<?php if (getOption('download_link')) { ?><a target="_blank" href="<?php echo htmlspecialchars(getFullImageURL());?>" title="<?php echo gettext('Download: '); ?> <?php echo getImageTitle(); ?>"><?php echo gettext('Download '). '&nbsp;' . $downLoadText; ?></a><?php } ?>				
 								</div>	
 								<div class="image-title"><?php printImageTitle(false); ?></div>
 							</div>
@@ -91,7 +93,6 @@
 			<?php } else { ?>
 			<?php include("album_alt.php"); ?>
 			<?php } ?>
-			
 			<?php } ?>
 
 			<?php if (function_exists('printCommentForm')) { ?>

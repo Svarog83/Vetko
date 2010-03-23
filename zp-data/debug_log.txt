@@ -5,3 +5,87 @@ newImage called
    from zp_load_request (functions-controller.php [435])
      from require_once (controller.php [43])
        from index.php [23]
+{Thu, 18 Mar 2010 21:06:10 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 20:47:44 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 20:53:06 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 20:53:07 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 20:56:59 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 20:57:31 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 21:46:05 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 21:47:54 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 21:53:41 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 21:55:18 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 21:55:20 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]
+{Tue, 23 Mar 2010 21:58:44 GMT} 
+Backtrace: Bad filename suffix in newImage(advanced.html)
+newImage called
+ from zp_load_image (functions-controller.php [342])
+   from zp_load_request (functions-controller.php [435])
+     from require_once (controller.php [43])
+       from index.php [23]

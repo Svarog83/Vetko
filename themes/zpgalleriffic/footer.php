@@ -14,7 +14,7 @@
 					<span><?php echo gettext('Subscribe: '); ?></span>
 					<?php 
 					if (in_context(ZP_ALBUM)) { printRSSLink( "Collection","",gettext('This Album'),"  |  ", false,"rsslink" ); }
-					printRSSLink( "Gallery","",(gettext('Gallery Images')),"",false,"rsslink" ); 
+					printRSSLink( "Gallery","",(gettext('Gallery Images')),"",false,"rsslink" );
 					if (function_exists('printZenpageRSSLink')) { printZenpageRSSLink( "News",'','  |  ',gettext('News'),'',false ); }		
 					?>
 				</div>	
