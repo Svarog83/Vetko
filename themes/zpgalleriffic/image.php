@@ -66,7 +66,7 @@
 				
 			<div class="img-title"><?php printImageTitle(true); ?></div>
 			<div><?php printImageDate('','',null,true); ?></div>
-			<div class="headline-text"><?php printImageDesc( true,'',gettext('(Edit Description...)') ); ?></div>
+			<? /*<div class="headline-text"><?php printImageDesc( true,'',gettext('(Edit Description...)') ); ?></div>*/ ?>
 			<div class="headline-tags"><?php printTags( 'links',gettext('TAGS:  '),'hor-list',', ',true,'',true  ); ?></div>
 			
 			<?php if (getOption('show_meta')) { ?>			
