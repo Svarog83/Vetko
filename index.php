@@ -1,5 +1,6 @@
 <?php
-
+echo 'ok';
+exit();
 // force UTF-8 Ø
 
 require_once(dirname(__FILE__).'/zp-core/folder-definitions.php');
