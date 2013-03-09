@@ -1,5 +1,5 @@
 <?php
-/** printAlbumMenu for Zenphoto
+/**
  *
  * @author Malte Müller (acrylian), Stephen Billard (sbillard)
  * @package plugins
@@ -7,10 +7,14 @@
 
 $plugin_description = gettext("Adds a theme function printAlbumMenu() to print an album menu either as a nested list (context sensitive) or as a dropdown menu.");
 $plugin_author = "Malte Müller (acrylian), Stephen Billard (sbillard)";
-$plugin_version = '1.2.9'; 
-$plugin_URL = "http://www.zenphoto.org/documentation/plugins/_".PLUGIN_FOLDER."---print_album_menu.php.html";
+$plugin_version = '1.4.2';
 
-$option_interface = new print_album_menu();
+$option_interface = 'print_album_menu';
+
+if (!defined('MENU_TRUNCATE_STRING')) define('MENU_TRUNCATE_STRING',getOption('menu_truncate_string'));
+if (!defined('MENU_TRUNCATE_INDICATOR')) define('MENU_TRUNCATE_INDICATOR',getOption('menu_truncate_indicator'));
+define('ALBUM_MENU_COUNT',getOption('print_album_menu_count'));
+define('ALBUM_MENU_SHOWSUBS',getOption('print_album_menu_showsubs'));
 
 /**
  * Plugin option handling class
@@ -21,19 +25,48 @@ class print_album_menu {
 	function register_user_options() {
 		setOptionDefault('print_album_menu_showsubs', 0);
 		setOptionDefault('print_album_menu_count', 1);
+		setOptionDefault('menu_truncate_string', 0);
+		setOptionDefault('menu_truncate_indicator', '');
 	}
 
 	function getOptionsSupported() {
-		return array(	gettext('"List" subalbum level') => array('key' => 'print_album_menu_showsubs', 'type' => OPTION_TYPE_TEXTBOX, 
+		if (getOption('zp_plugin_menu_manager')) {
+			$disable = gettext('* The options may be set via the <a href="javascript:gotoName(\'menu_manager\');"><em>menu_manager</em></a> plugin options..');
+		} else {
+			$disable = false;
+		}
+		$options = array(	gettext('"List" subalbum level') => array('key' => 'print_album_menu_showsubs', 'type' => OPTION_TYPE_TEXTBOX,
+										'order' => 0,
 										'desc' => gettext('The depth of subalbum levels shown with the <code>printAlbumMenu</code> and <code>printAlbumMenuList</code> "List" option. Note: themes may override this default.')),
-									gettext('Show counts') => array('key' => 'print_album_menu_count', 'type' => OPTION_TYPE_CHECKBOX, 
-										'desc' => gettext('If checked, image and album counts will be included in the list. Note: Themes may override this option.'))
+									gettext('Show counts') => array('key' => 'print_album_menu_count', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 1,
+										'desc' => gettext('If checked, image and album counts will be included in the list. Note: Themes may override this option.')),
+									sprintf(gettext('Truncate titles%s'),($disable)?'*':'') => array('key' => 'menu_truncate_string', 'type' => OPTION_TYPE_TEXTBOX,
+										'disabled' => $disable,
+										'order' => 6,
+										'desc' => gettext('Limit titles to this many characters. Zero means no limit.')),
+									sprintf(gettext('Truncate indicator%s'),($disable)?'*':'') => array('key' => 'menu_truncate_indicator', 'type' => OPTION_TYPE_TEXTBOX,
+										'disabled' => $disable,
+										'order' => 7,
+										'desc' => gettext('Append this string to truncated titles.'))
 									);
+		if ($disable) {
+			$options['note'] = array('key' => 'menu_manager_truncate_note', 'type' => OPTION_TYPE_NOTE,
+																'order' => 8,
+																'desc' => '<p class="notebox">'.$disable.'</p>');
+		} else {
+			if (getOption('zp_plugin_zenpage')) {
+				$options['note'] =array('key' => 'menu_truncate_note',
+																'type' => OPTION_TYPE_NOTE,
+																'order' => 8,
+																'desc' => gettext('<p class="notebox">*<strong>Note:</strong> The setting of these options are shared with other the <em>register_user</em> plugin.</p>'));
+			}
+		}
+		return $options;
 	}
 	function handleOption($option, $currentValue) {
 	}
 }
-
 
 /**
  * Prints a list of all albums context sensitive.
@@ -44,15 +77,15 @@ class print_album_menu {
  * enable this extension on the zenphoto admin plugins tab.
  * Call the function printAlbumMenu() at the point where you want the menu to appear.
  *
- * @param string $option 
- * * 								"list" for html list, 
- * 									"list-top" for only the top level albums, 
+ * @param string $option
+ * * 								"list" for html list,
+ * 									"list-top" for only the top level albums,
  * 									"omit-top" same as list, but the first level of albums is omitted
  * 									"list-sub" lists the offspring level of subalbums for the current album
  * 									"jump" dropdown menu of all albums(not context sensitive)
- * 
+ *
  * @param bool $showcount true for a image counter or subalbum count in brackets behind the album name, false for no image numbers or leave blank
- * @param string $css_id insert css id for the main album list, leave blank if you don't use (only list mode)
+ * @param string $css_id insert css id for the main album list, leave empty if you don't use (only list mode)
  * @param string $css_class_topactive insert css class for the active link in the main album list (only list mode)
  * @param string $css_class insert css class for the sub album lists (only list mode)
  * @param string $css_class_active insert css class for the active link in the sub album lists (only list mode)
@@ -60,15 +93,16 @@ class print_album_menu {
  * @param int C Set to depth of sublevels that should be shown always. 0 by default. To show all, set to a true! Only valid if option=="list".
  * @param int $showsubs Set to depth of sublevels that should be shown always. 0 by default. To show all, set to a true! Only valid if option=="list".
  * @param bool $firstimagelink If set to TRUE and if the album has images the link will point to page of the first image instead the album thumbnail page
- * @return html list or drop down jump menu of the albums
+ * @param bool $keeptopactive If set to TRUE the toplevel album entry will stay marked as active if within its subalbums ("list" only)
+ * @param int $limit truncation of display text
  * @since 1.2
  */
 
-function printAlbumMenu($option,$showcount=NULL,$css_id='',$css_class_topactive='',$css_class='',$css_class_active='', $indexname="Gallery Index", $showsubs=NULL,$firstimagelink=false) {
+function printAlbumMenu($option,$showcount=NULL,$css_id='',$css_class_topactive='',$css_class='',$css_class_active='', $indexname="Gallery Index", $showsubs=NULL,$firstimagelink=false,$keeptopactive=false) {
 	if ($option == "jump") {
 		printAlbumMenuJump($showcount,$indexname,$firstimagelink);
 	} else {
-		printAlbumMenuList($option,$showcount,$css_id,$css_class_topactive,$css_class,$css_class_active, $indexname, $showsubs,$firstimagelink);
+		printAlbumMenuList($option,$showcount,$css_id,$css_class_topactive,$css_class,$css_class_active, $indexname, $showsubs,$firstimagelink,$keeptopactive);
 	}
 }
 
@@ -79,25 +113,27 @@ function printAlbumMenu($option,$showcount=NULL,$css_id='',$css_class_topactive=
  * enable this extension on the zenphoto admin plugins tab;
  * Call the function printAlbumMenuList() at the point where you want the menu to appear.
  *
- * @param string $option 
- * 									"list" for html list, 
- * 									"list-top" for only the top level albums, 
+ * @param string $option
+ * 									"list" for html list,
+ * 									"list-top" for only the top level albums,
  * 									"omit-top" same as list, but the first level of albums is omitted
  * 									"list-sub" lists the offspring level of subalbums for the current album
- * @param bool $showcount true for a image counter in brackets behind the album name, false for no image numbers or leave blank
- * @param string $css_id insert css id for the main album list, leave blank if you don't use (only list mode)
+ * @param bool $showcount true for a image counter in brackets behind the album name, false for no image numbers or leave empty
+ * @param string $css_id insert css id for the main album list, leave empty if you don't use (only list mode)
  * @param string $css_id_active insert css class for the active link in the main album list (only list mode)
  * @param string $css_class insert css class for the sub album lists (only list mode)
  * @param string $css_class_active insert css class for the active link in the sub album lists (only list mode)
  * @param string $indexname insert the name (default "Gallery Index") how you want to call the link to the gallery index, insert "" if you don't use it, it is not printed then.
  * @param int $showsubs Set to depth of sublevels that should be shown always. 0 by default. To show all, set to a true! Only valid if option=="list".
  * @param bool $firstimagelink If set to TRUE and if the album has images the link will point to page of the first image instead the album thumbnail page
+ * @param bool $keeptopactive If set to TRUE the toplevel album entry will stay marked as active if within its subalbums ("list" only)
+ * @param bool $startlist set to true to output the UL tab (false automatically if you use 'omit-top' or 'list-sub')
+ * @param int $limit truncation of display text
  * @return html list of the albums
  */
 
-function printAlbumMenuList($option,$showcount=NULL,$css_id='',$css_class_topactive='',$css_class='',$css_class_active='', $indexname="Gallery Index", $showsubs=NULL,$firstimagelink=false) {
+function printAlbumMenuList($option,$showcount=NULL,$css_id='',$css_class_topactive='',$css_class='',$css_class_active='', $indexname="Gallery Index", $showsubs=NULL,$firstimagelink=false,$keeptopactive=false,$startlist=true,$limit=NULL) {
 	global $_zp_gallery, $_zp_current_album, $_zp_gallery_page;
-	
 	// if in search mode don't use the foldout contextsensitiveness and show only toplevel albums
 	if(in_context(ZP_SEARCH_LINKED)) {
 		$option = "list-top";
@@ -115,12 +151,12 @@ function printAlbumMenuList($option,$showcount=NULL,$css_id='',$css_class_topact
 	if ($css_class_topactive != "") { $css_class_topactive = " class='".$css_class_topactive."'"; }
 	if ($css_class != "") { $css_class = " class='".$css_class."'"; }
 	if ($css_class_active != "") { $css_class_active = " class='".$css_class_active."'"; }
-	
-	echo "<ul".$css_id.">\n"; // top level list
+	$startlist = $startlist && !($option == 'omit-top'	|| $option == 'list-sub');
+	if ($startlist) echo "<ul".$css_id.">\n"; // top level list
 	/**** Top level start with Index link  ****/
 	if($option === "list" OR $option === "list-top") {
 		if(!empty($indexname)) {
-			echo "<li><a href='".htmlspecialchars(getGalleryIndexURL())."' title='".html_encode($indexname)."'>".$indexname."</a></li>";
+			echo "<li><a href='".html_encode(getGalleryIndexURL())."' title='".html_encode($indexname)."'>".$indexname."</a></li>";
 		}
 	}
 
@@ -130,9 +166,9 @@ function printAlbumMenuList($option,$showcount=NULL,$css_id='',$css_class_topact
 		$albums = $_zp_gallery->getAlbums();
 	}
 
-	printAlbumMenuListAlbum($albums, $albumpath, $currentfolder, $option, $showcount, $showsubs, $css_class, $css_class_topactive, $css_class_active,$firstimagelink);
+	printAlbumMenuListAlbum($albums, $albumpath, $currentfolder, $option, $showcount, $showsubs, $css_class, $css_class_topactive, $css_class_active,$firstimagelink,$keeptopactive,$limit);
 
-	echo "</ul>\n";
+	if ($startlist) echo "</ul>\n";
 
 }
 
@@ -142,7 +178,7 @@ function printAlbumMenuList($option,$showcount=NULL,$css_id='',$css_class_topact
  *
  * @param array $albums albums array
  * @param string $path for createAlbumMenuLink
- * @param string $folder 
+ * @param string $folder
  * @param string $option see printAlbumMenuList
  * @param string $showcount see printAlbumMenuList
  * @param int $showsubs see printAlbumMenuList
@@ -150,13 +186,20 @@ function printAlbumMenuList($option,$showcount=NULL,$css_id='',$css_class_topact
  * @param string $css_class_topactive see printAlbumMenuList
  * @param string $css_class_active see printAlbumMenuList
  * @param bool $firstimagelink If set to TRUE and if the album has images the link will point to page of the first image instead the album thumbnail page
+ * @param bool $keeptopactive If set to TRUE the toplevel album entry will stay marked as active if within its subalbums ("list" only)
+ * @param int $limit truncation of display text
  */
-function printAlbumMenuListAlbum($albums, $path, $folder, $option, $showcount, $showsubs, $css_class, $css_class_topactive, $css_class_active,$firstimagelink) {
-	global $_zp_gallery;
-	if (is_null($showcount)) $showcount = getOption('print_album_menu_count');
-	if (is_null($showsubs)) $showsubs = getOption('print_album_menu_showsubs');
+function printAlbumMenuListAlbum($albums, $path, $folder, $option, $showcount, $showsubs, $css_class, $css_class_topactive, $css_class_active,$firstimagelink,$keeptopactive,$limit=NULL) {
+	global $_zp_gallery,$_zp_current_album;
+	if (is_null($limit)) {
+		$limit = MENU_TRUNCATE_STRING;
+	}
+	if (is_null($showcount)) $showcount = ALBUM_MENU_COUNT;
+	if (is_null($showsubs)) $showsubs = ALBUM_MENU_SHOWSUBS;
 	if ($showsubs && !is_numeric($showsubs)) $showsubs = 9999999999;
+	if(empty($keeptopactive)) $keeptopactive = false;
 	$pagelevel = count(explode('/', $folder));
+	$currenturalbumname = "";
 	foreach ($albums as $album) {
 		$level = count(explode('/', $album));
 		$process =  (($level < $showsubs && $option == "list") // user wants all the pages whose level is <= to the parameter
@@ -167,36 +210,54 @@ function printAlbumMenuListAlbum($albums, $path, $folder, $option, $showcount, $
 
 		$topalbum = new Album($_zp_gallery,$album,true);
 		if ($level>1
-				|| ($option != 'omit-top') 
+				|| ($option != 'omit-top')
 				) { // listing current level album
 			if ($level==1) {
 				$css_class_t = $css_class_topactive;
+
 			} else {
 				$css_class_t = $css_class_active;
 			}
-			$count = "";
-			if($showcount) {
-				if($topalbum->getNumImages() > 0) {
-					$topalbumnumimages = $topalbum->getNumImages();
-					$count = "<small>".sprintf(ngettext(' (%u image)', ' (%u images)',$topalbumnumimages),$topalbumnumimages)."</small>";
-				}
-				$toplevelsubalbums = $topalbum->getAlbums();
-				$toplevelsubalbums = count($toplevelsubalbums);
-				if($toplevelsubalbums > 0) {
-					$count = "<small>".sprintf(ngettext(' (%u album)', ' (%u albums)',$toplevelsubalbums),$toplevelsubalbums)."</small>";
+			if($keeptopactive) {
+				if(isset($_zp_current_album) && is_object($_zp_current_album)) {
+					$currenturalbum = getUrAlbum($_zp_current_album);
+					$currenturalbumname = $currenturalbum->name;
 				}
 			}
-			
-			if(in_context(ZP_ALBUM) && !in_context(ZP_SEARCH_LINKED) && getAlbumID() == $topalbum->getAlbumID()) {
+			$count = "";
+			if($showcount) {
+				$toplevelsubalbums = $topalbum->getAlbums();
+				$toplevelsubalbums = count($toplevelsubalbums);
+				$topalbumnumimages = $topalbum->getNumImages();
+				$count = ' <span style="white-space:nowrap;"><small>(';
+				if($toplevelsubalbums > 0) {
+					$count .= sprintf(ngettext('%u album', '%u albums',$toplevelsubalbums),$toplevelsubalbums);
+				}
+				if($topalbumnumimages > 0) {
+					if ($toplevelsubalbums) {
+						$count .= ' ';
+					}
+					$count .= sprintf(ngettext('%u image', '%u images',$topalbumnumimages),$topalbumnumimages);
+				}
+				$count .= ')</small></span>';
+			}
+
+			if(in_context(ZP_ALBUM) && !in_context(ZP_SEARCH_LINKED) && (getAlbumID() == $topalbum->getAlbumID() || $topalbum->name == $currenturalbumname)) {
 				$current = $css_class_t.' ';
 			} else {
 				$current = "";
 			}
+			$title = $topalbum->getTitle();
+			if ($limit) {
+				$display = shortenContent($title, $limit, MENU_TRUNCATE_INDICATOR);
+			} else {
+				$display = $title;
+			}
 			if($firstimagelink && $topalbum->getNumImages() != 0) {
 				$imgurl = getFirstImageOfAlbum($topalbum);
-				$link = "<li><a ".$current."href='".$imgurl."' title='".html_encode($topalbum->getTitle())."'>".html_encode($topalbum->getTitle())."</a>".$count;
+				$link = "<li><a ".$current."href='".$imgurl."' title='".html_encode($title)."'>".html_encode($display)."</a>".$count;
 			} else {
-				$link = "<li><a ".$current."href='".htmlspecialchars($path.pathurlencode($topalbum->name))."' title='".html_encode($topalbum->getTitle())."'>".html_encode($topalbum->getTitle())."</a>".$count;
+				$link = "<li><a ".$current."href='".html_encode($path.pathurlencode($topalbum->name))."' title='".html_encode($title)."'>".html_encode($display)."</a>".$count;
 			}
 			echo $link;
 		}
@@ -204,7 +265,7 @@ function printAlbumMenuListAlbum($albums, $path, $folder, $option, $showcount, $
 			$subalbums = $topalbum->getAlbums();
 			if (!empty($subalbums)) {
 				echo "\n<ul".$css_class.">\n";
-				printAlbumMenuListAlbum($subalbums, $path, $folder, $option, $showcount, $showsubs, $css_class, $css_class_topactive, $css_class_active,$firstimagelink);
+				printAlbumMenuListAlbum($subalbums, $path, $folder, $option, $showcount, $showsubs, $css_class, $css_class_topactive, $css_class_active,$firstimagelink,false,$limit);
 				echo "\n</ul>\n";
 
 			}
@@ -231,15 +292,17 @@ function printAlbumMenuListAlbum($albums, $path, $folder, $option, $showcount, $
 function printAlbumMenuJump($option="count", $indexname="Gallery Index",$firstimagelink=false) {
 	global $_zp_gallery, $_zp_current_album, $_zp_gallery_page;
 	$albumpath = rewrite_path("/", "/index.php?album=");
-	if(!empty($_zp_current_album) || $_zp_gallery_page != 'album.php') {
+	if(!is_null($_zp_current_album) || $_zp_gallery_page == 'album.php') {
 		$currentfolder = $_zp_current_album->name;
 	}
 	?>
 	<script type="text/javaScript">
+		// <!-- <![CDATA[
 		function gotoLink(form) {
 		 	var OptionIndex=form.ListBoxURL.selectedIndex;
 			parent.location = form.ListBoxURL.options[OptionIndex].value;
 		}
+		// ]]> -->
 	</script>
 	<form name="AutoListBox" action="#">
 		<p>
@@ -248,8 +311,8 @@ function printAlbumMenuJump($option="count", $indexname="Gallery Index",$firstim
 			if(!empty($indexname)) {
 				$selected = checkSelectedAlbum("", "index");
 				 ?>
-			<option <?php echo $selected; ?> value="<?php echo htmlspecialchars(getGalleryIndexURL()); ?>"><?php echo $indexname; ?></option>
-			<?php 
+			<option <?php echo $selected; ?> value="<?php echo html_encode(getGalleryIndexURL()); ?>"><?php echo $indexname; ?></option>
+			<?php
 			}
 			$albums = $_zp_gallery->getAlbums();
 			printAlbumMenuJumpAlbum($albums,$option,$albumpath,$firstimagelink);
@@ -281,13 +344,13 @@ function printAlbumMenuJumpAlbum($albums,$option,$albumpath,$firstimagelink,$lev
 			$count = "";
 		}
 		$arrow = str_replace(':', '&raquo; ', str_pad("", $level-1, ":"));
-						
+
 		$selected = checkSelectedAlbum($subalbum->name, "album");
 		if($firstimagelink && $subalbum->getNumImages() != 0) {
 			$imgurl = getFirstImageOfAlbum($subalbum);
 			$link = "<option $selected value='".$imgurl."'>".$arrow.strip_tags($subalbum->getTitle()).$count."</option>";
 		} else {
-			$link = "<option $selected value='".htmlspecialchars($albumpath.pathurlencode($subalbum->name))."'>".$arrow.strip_tags($subalbum->getTitle()).$count."</option>";
+			$link = "<option $selected value='".html_encode($albumpath.pathurlencode($subalbum->name))."'>".$arrow.strip_tags($subalbum->getTitle()).$count."</option>";
 		}
 		echo $link;
 		$subalbums = $subalbum->getAlbums();
@@ -332,13 +395,13 @@ function checkSelectedAlbum($checkalbum, $option) {
 
 /**
  * Returns the link of the first image in $albumobj
- * 
+ *
  * @param object $albumobj The object of the album to use
  */
 function getFirstImageOfAlbum($albumobj) {
-	$images = $albumobj->getImages();
-	$firstimage = newImage($albumobj,array_shift($images));
+	$image = $albumobj->getImage(0);
+	$firstimage = newImage($albumobj,$image);
 	$link = $firstimage->getImageLink();
-	return $link;
+	return html_encode($link);
 }
 ?>

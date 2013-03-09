@@ -68,12 +68,12 @@
 		numThumbs:                 20,
 		preloadAhead:              40, // Set to -1 to preload all images
 		enableTopPager:            false,
-		enableBottomPager:         true,
+		enableBottomPager:         false,
+		imageContainerSel:         '#slideshow',
+		controlsContainerSel:      '#controls',
+		captionContainerSel:       '#caption',
+		loadingContainerSel:       '#loading',
 		maxPagesToShow:            7,
-		imageContainerSel:         '',
-		captionContainerSel:       '',
-		controlsContainerSel:      '',
-		loadingContainerSel:       '',
 		renderSSControls:          true,
 		renderNavControls:         true,
 		playLinkText:              'Play',
@@ -83,11 +83,12 @@
 		nextPageLinkText:          'Next &rsaquo;',
 		prevPageLinkText:          '&lsaquo; Prev',
 		enableHistory:             false,
-		enableKeyboardNavigation:  true,
+		enableKeyboardNavigation:  false,
 		autoStart:                 false,
 		syncTransitions:           false,
 		defaultTransitionDuration: 1000,
-		onSlideChange:             undefined, // accepts a delegate like such: function(prevIndex, nextIndex) { ... }
+		onSlideChangeOut:          undefined, // accepts a delegate like such: function(prevIndex) { ... }
+		onSlideChangeIn:           undefined, // accepts a delegate like such: function(nextIndex) { ... }
 		onTransitionOut:           undefined, // accepts a delegate like such: function(slide, caption, isSync, callback) { ... }
 		onTransitionIn:            undefined, // accepts a delegate like such: function(slide, caption, isSync) { ... }
 		onPageTransitionOut:       undefined, // accepts a delegate like such: function(callback) { ... }
@@ -504,13 +505,23 @@
 			gotoImage: function(imageData) {
 				var index = imageData.index;
 
-				if (this.onSlideChange)
-					this.onSlideChange(this.currentImage.index, index);
-				
+				var tomod = index % this.numThumbs;
+				var doslidein = (tomod <= this.numThumbs) && (tomod >= 0);
+				doslidein = doslidein && (Math.floor(index / this.numThumbs) == Math.floor(this.currentImage.index / this.numThumbs));
+
+				if (this.onSlideChangeOut)
+					this.onSlideChangeOut(this.currentImage.index);
+
 				this.currentImage = imageData;
 				this.preloadRelocate(index);
 				
 				this.refresh();
+				
+				if (this.onSlideChangeIn)
+					if (doslidein)
+						this.onSlideChangeIn(this.currentImage.index);
+					else
+						this.find('ul.thumbs').children().eq(this.currentImage.index).css({'opacity' : 1});
 				
 				return this;
 			},
@@ -626,15 +637,31 @@
 				var nextIndex = this.getNextIndex(imageData.index);
 
 				// Construct new hidden span for the image
-				var newSlide = this.$imageContainer
-					.append('<span class="image-wrapper current"><a class="advance-link" rel="history" href="#'+this.data[nextIndex].hash+'" title="'+imageData.title+'">&nbsp;</a></span>')
-					.find('span.current').css('opacity', '0');
+				//var newSlide = this.$imageContainer
+				//	.append('<span class="image-wrapper current"><a class="advance-link" rel="history" href="#'+this.data[nextIndex].hash+'" title="'+imageData.title+'">&nbsp;</a></span>')
+				//	.find('span.current').css('opacity', '0');
 				
+				//newSlide.find('a')
+				//	.append(imageData.image)
+				//	.click(function(e) {
+				//		$("a[rel='zoom']:eq(" + imageData.index + ")").click();
+				//	});
+				
+				//this.currentImage.index
+				
+				var newSlide=this.$imageContainer
+					.append('<span class="image-wrapper current"><a class="advance-link" rel="history" href="#'+this.currentImage.index.hash+'" title="'+imageData.title+'">&nbsp;</a></span>')
+					.find('span.current').css('opacity','0');
+					
 				newSlide.find('a')
 					.append(imageData.image)
-					.click(function(e) {
-						gallery.clickHandler(e, this);
+					
+					.click(function(e){
+						$("a[rel='zoom']:eq("+imageData.index+")").click();
+						gallery.pause()
+						
 					});
+
 				
 				var newCaption = 0;
 				if (this.$captionContainer) {
@@ -935,10 +962,10 @@
 			$(document).keydown(function(e) {
 				var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
 				switch(key) {
-					case 32: // space
-						gallery.next();
-						e.preventDefault();
-						break;
+					//case 32: // space
+					//	gallery.next();
+					//	e.preventDefault();
+					//	break;
 					case 33: // Page Up
 						gallery.previousPage();
 						e.preventDefault();

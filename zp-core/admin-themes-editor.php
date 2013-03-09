@@ -8,35 +8,17 @@
 // force UTF-8 �
 
 define('OFFSET_PATH', 1);
-require_once(dirname(__FILE__).'/admin-functions.php');
 require_once(dirname(__FILE__).'/admin-globals.php');
 
-if (getOption('zenphoto_release') != ZENPHOTO_RELEASE) {
-	header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/setup.php");
-	exit();
-}
-
-if (!($_zp_loggedin & (THEMES_RIGHTS | ADMIN_RIGHTS))) { // prevent nefarious access to this page.
-	header('Location: ' . FULLWEBPATH . '/' . ZENFOLDER . '/admin.php?from=' . currentRelativeURL(__FILE__));
-	exit();
-}
+admin_securityChecks(THEMES_RIGHTS, currentRelativeURL(__FILE__));
 
 if (!isset($_GET['theme'])) {
 	header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/admin-themes.php");
 	exit();
 }
 
-$gallery = new Gallery();
-
-printAdminHeader();
-echo "\n</head>";
-echo "\n<body>";
-printLogoAndLinks();
-echo "\n" . '<div id="main">';
-printTabs('themes');
-echo "\n" . '<div id="content">';
-
 // First, set up a few vars:
+$gallery = new Gallery();
 $message = $file_to_edit = $file_content = null;
 $themes = $gallery->getThemes();
 $theme = sanitize($_GET['theme']);
@@ -51,23 +33,15 @@ foreach ($themefiles as $file) {
 		unset($themefiles[$file]); // $themefile will eventually have all editable files and nothing else
 	}
 }
-
 if (isset($_GET['file']))
 	$file_to_edit = str_replace ('\\', '/', realpath (SERVERPATH . '/themes/'.internalToFilesystem($theme) . '/'. $_GET['file'])) ;
 	// realpath() to take care of ../../file.php schemes, str_replace() to sanitize Win32 filenames
 
-// If we're attempting to edit a file from a bundled theme, this is an illegal attempt
-if (!themeIsEditable($theme, $themes))
-	die(gettext('Cannot edit this file!'));
 
-// If we're attempting to edit a file that's not a text file or that does not belong to the theme directory, this is an illegal attempt
-if ( $file_to_edit ) {
-	if ( !in_array( $file_to_edit, $themefiles ) or !isTextFile( $file_to_edit ) or filesize( $file_to_edit ) == 0)
-		die(gettext('Cannot edit this file!'));
-}
 
 // Handle POST that updates a file
 if (isset($_POST['action']) && $_POST['action'] == 'edit_file' && $file_to_edit ) {
+	XSRFdefender('edit_theme');
 	$file_content = sanitize($_POST['newcontent'],0);
 	$theme = urlencode($theme);
 	if (is_writeable($file_to_edit)) {
@@ -76,6 +50,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'edit_file' && $file_to_edit 
 		if ($f !== FALSE) {
 			@fwrite($f, $file_content);
 			fclose($f);
+			clearstatcache();
 			$message = gettext('File updated successfully');
 		} else {
 			$message = gettext('Could not write file. Please check its write permissions');
@@ -88,20 +63,48 @@ if (isset($_POST['action']) && $_POST['action'] == 'edit_file' && $file_to_edit 
 // Get file contents
 if ( $file_to_edit ) {
 	$file_content = @file_get_contents ($file_to_edit);
-	$file_content = htmlspecialchars($file_content);
+	$file_content = html_encode($file_content);
+	$what = html_encode('edit=>'.basename($file_to_edit));
+} else {
+	$what = 'edit';
 }
 
+printAdminHeader('themes',$what);
+echo "\n</head>";
+echo "\n<body>";
+printLogoAndLinks();
+echo "\n" . '<div id="main">';
+printTabs();
+echo "\n" . '<div id="content">';
+
+
+// If we're attempting to edit a file from a bundled theme, this is an illegal attempt
+if (!themeIsEditable($theme, $themes))
+	die(gettext('Cannot edit this file!'));
+
+// If we're attempting to edit a file that's not a text file or that does not belong to the theme directory, this is an illegal attempt
+if ( $file_to_edit ) {
+	if ( !in_array( $file_to_edit, $themefiles ) or !isTextFile( $file_to_edit ) or filesize( $file_to_edit ) == 0)
+		die(gettext('Cannot edit this file!'));
+}
 ?>
 
 
 <h1><?php echo gettext('Theme File Editor'); ?></h1>
 
 <?php if ($message) {
-	echo '<div class="messagebox" id="fade-message">';
+	echo '<div class="messagebox fade-message">';
 	echo  "<h2>$message</h2>";
 	echo '</div>';
 } ?>
 
+<p class="buttons">
+	<a title="<?php echo gettext('Back to the theme list'); ?>" href="<?php echo WEBPATH.'/'.ZENFOLDER; ?>/admin-themes.php">
+		<img	src="images/arrow_left_blue_round.png" alt="" />
+		<strong><?php echo gettext("Back"); ?></strong>
+	</a>
+</p>
+<br clear="all">
 <div id="theme-editor">
 
 	<div id="files">
@@ -113,10 +116,10 @@ if ( $file_to_edit ) {
 				echo gettext('Theme template files (.php)');
 				break;
 			case 'js':
-				echo gettext('Javascript files (.js)');
+				echo gettext('JavaScript files (.js)');
 				break;
 			case 'css':
-				echo gettext('Stylesheets (.css)');
+				echo gettext('Style sheets (.css)');
 				break;
 			default:
 				echo gettext('Other text files');
@@ -130,12 +133,13 @@ if ( $file_to_edit ) {
 		}
 		?>
 	</div>
-	
+
 
 	<?php if ($file_to_edit) { ?>
 		<div id="editor">
-			<h2 class="h2_bordered"><?php echo sprintf(gettext('File <tt>%s</tt> from theme %s'), $_GET['file'], $themes[$theme]['name']); ?></h2>
+			<h2 class="h2_bordered"><?php echo sprintf(gettext('File <tt>%s</tt> from theme %s'), sanitize($_GET['file']), $themes[$theme]['name']); ?></h2>
 			<form method="post" action="">
+			<?php XSRFToken('edit_theme');?>
 			<p><textarea cols="70" rows="25" name="newcontent" id="newcontent"><?php echo $file_content ?></textarea></p>
 			<input type="hidden" name="action" value="edit_file"/>
 			<p class="buttons">

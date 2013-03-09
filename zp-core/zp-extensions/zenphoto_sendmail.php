@@ -1,13 +1,14 @@
 <?php
 /**
  * PHP sendmail mailing handler
+ *
+ * @author Stephen Billard (sbillard)
  * @package plugins
  */
-$plugin_is_filter = 5;
+$plugin_is_filter = 5|CLASS_PLUGIN;
 $plugin_description = gettext("Zenphoto outgoing mail handler based on the PHP <em>mail</em> facility.");
 $plugin_author = "Stephen Billard (sbillard)";
-$plugin_version = '1.2.9'; 
-$plugin_URL = "http://www.zenphoto.org/documentation/plugins/_".PLUGIN_FOLDER."---zenphoto_sendmail.html";
+$plugin_version = '1.4.2';
 
 zp_register_filter('sendmail', 'zenphoto_sendmail');
 
@@ -26,7 +27,7 @@ function zenphoto_sendmail($msg, $email_list, $subject, $message, $from_mail, $f
 		$result = $result && $_zp_UTF8->send_mail($to_mail, $subject, $message, $headers);
 	}
 	if (!$result) {
-		if (!empty($msg)) $msg .= '<br/>';
+		if (!empty($msg)) $msg .= '<br />';
 		$msg .= sprintf(gettext('<code>zenphoto_sendmail</code> failed to send <em>%s</em> to one or more recipients.'), $subject);
 	}
 	return $msg;

@@ -1,33 +1,30 @@
-		<div id="footer">
-			<?php if ((getOption('Allow_search')) || (function_exists('printAlbumMenu'))) { ?>
-			<div id="jump-search" class="clearfix">
-				<?php if (getOption('Allow_search')) { printSearchForm( '','searchform','',gettext('SEARCH'),"$_zp_themeroot/images/search-drop.png" ); } ?>
-				<?php if (function_exists('printAlbumMenu')) { printAlbumMenu('jump'); } ?>			
-			</div>
-			<?php } ?>
-				
+
+	<div class="wrapper" id="footer">
+		<div class="centered">
 			<div id="foot-left">
 				<div id="copyright">
 					<p>&copy; <?php echo getBareGalleryTitle(); ?>, <?php echo gettext('all rights reserved'); ?> <?php if (function_exists('printContactForm')) { ?> | <?php printCustomPageURL(gettext("Contact Us"),"contact"); } ?></p>
 				</div>
-				<div id="rsslinks">
-					<span><?php echo gettext('Subscribe: '); ?></span>
-					<?php 
-					if (in_context(ZP_ALBUM)) { printRSSLink( "Collection","",gettext('This Album'),"  |  ", false,"rsslink" ); }
-					printRSSLink( "Gallery","",(gettext('Gallery Images')),"",false,"rsslink" );
-					if (function_exists('printZenpageRSSLink')) { printZenpageRSSLink( "News",'','  |  ',gettext('News'),'',false ); }		
-					?>
-				</div>	
-				<?php if (getOption('show_credit')) { ?>
+				<?php if ($zpgal_show_credit) { ?>
 				<div id="zpcredit">
 					<?php printZenphotoLink(); ?>
 				</div>
 				<?php } ?>
+				<?php if (function_exists('printLanguageSelector')) { printLanguageSelector("langselector"); } ?>
+			</div>
+			<div id="foot-right">
+				<div id="rsslinks">
+					<span><?php echo gettext('Subscribe: '); ?></span>
+					<?php 
+					if (in_context(ZP_ALBUM)) { printRSSLink( "Collection","",gettext('This Album'),"  |  ", false,"rsslink" ); }
+					printRSSLink( "Gallery","",(gettext('Gallery Images')),"",false,"rsslink" ); 
+					if (function_exists('printZenpageRSSLink')) { printZenpageRSSLink( "News",'','  |  ',gettext('News'),'',false ); }		
+					?>
+				</div>
 			</div>
 		</div>
-			
-	</div><!-- END #CONTAINER -->
-</div><!-- END #PAGE -->
-<?php printAdminToolbox(); ?>		
+	</div>
+	
+<?php printAdminToolbox(); zp_apply_filter('theme_body_close'); ?>		
 </body>
 </html>

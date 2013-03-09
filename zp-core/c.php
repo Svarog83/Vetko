@@ -1,13 +1,12 @@
 <?php
 /**
- * creates the captcha images
+ * creates the CAPTCHA images
  * @package core
  */
 
 // force UTF-8 Ø
-
+define('OFFSET_PATH',1);
 require_once(dirname(__FILE__).'/functions.php');
-require_once(dirname(__FILE__).'/lib-encryption.php');
 header('Last-Modified: ' . gmdate('D, d M Y H:i:s').' GMT');
 header ("Content-type: image/png");
 $cypher = preg_replace('/[^0-9a-f]/', '', $_GET['i']);
@@ -20,6 +19,11 @@ if (isset($_GET['f'])) {
 	$fontname = sanitize($_GET['f'],3);
 } else {
 	$fontname = getOption('zenphoto_captcha_font');
+	if($fontname == '*') {	//	Random selection
+		$fonts = zp_getFonts();
+		shuffle($fonts);
+		$fontname = array_shift($fonts);
+	}
 }
 $font = zp_imageLoadFont($fontname);
 
@@ -29,9 +33,9 @@ $pallet = array(array('R'=>16, 'G'=>110, 'B'=>3),
 								array('R'=>143, 'G'=>32, 'B'=>3),
 								array('R'=>143, 'G'=>38, 'B'=>48),
 								array('R'=>0, 'G'=>155, 'B'=>18));
-$fw = zp_imageFontWidth($font); 
-$w = $fw*$len+2; 
-$h = $fh = zp_imagefontheight($font); 
+$fw = zp_imageFontWidth($font);
+$w = $fw*$len+2;
+$h = $fh = zp_imagefontheight($font);
 $kerning = min(4,floor($fw/2)-1);
 $leading = $fh-4;
 $ink = $lead = $kern = array();

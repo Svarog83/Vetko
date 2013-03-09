@@ -1,0 +1,1544 @@
+{Mon, 19 Mar 2012 12:01:44 GMT} Zenphoto v1.4.2.2[9365]
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9562.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 19 Mar 2012 18:05:34 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-03-19 21:05:32&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-03-19 21:05:32&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>Table 'vetkonet.zp_pages' doesn't exist</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Tue, 20 Mar 2012 11:31:31 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-03-20 14:31:31&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-03-20 14:31:31&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>Lost connection to MySQL server during query</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (index.php [1])
+                     from index.php [128]
+{Tue, 20 Mar 2012 15:24:45 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from i.php [34]
+{Tue, 20 Mar 2012 18:45:54 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT `id`, `album_theme` FROM `[prefix]albums` WHERE `folder` LIKE &#039;Egypt-2009&#039;</em> ) failed. MySQL returned the error <em>Table 'vetkonet.zp_albums' doesn't exist</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from getAlbumInherited (functions-basic.php [1315])
+         from themeSetup (functions-basic.php [1338])
+           from i.php [54]
+{Tue, 20 Mar 2012 19:01:04 GMT}
+  Backtrace: class-album detected an invalid folder name: Kiev-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2674_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Goa-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(goa_198.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: DR-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_7081.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Proriv-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_5774_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Thailand-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_1599.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Italy-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2751.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Kiev-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2400_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Kiev-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2540_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Goa-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(goa_311.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Kiev-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2731_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Krestini-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_5675_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Italy-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2829.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: usa-2007.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(CIMG7224.JPG)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Halloween-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_8603.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Goa-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(goa_238.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: usa-2007.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(CIMG7275.JPG)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Piter-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_3276.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Thailand-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_1581.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: DR-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_7105.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Murom-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_6101_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Germany-2010.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_0683.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Italy-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2649.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: DR-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_7112.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Picnic-afishi-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2795_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Germany-2010.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_0770.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: usa-2007.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(100_0010.JPG)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: dacha-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_1338.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Singapore-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_8716.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: NewYear-2012.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(240.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Krestini-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_5718_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Goa-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(goa_096.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Goa-2008.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(goa_150.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Orchid-Garden-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_8778.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Egypt-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_9126.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Italy-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2790.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Piter-2010.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_9869.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: USA-2009/Pismo Beach.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_6854_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Italy-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_2466.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Football-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_5502_s.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Thailand-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_1427.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: Thailand-2011.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_1513.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+  Backtrace: class-album detected an invalid folder name: DR-2009.
+  Album->__construct called
+   from newImage (class-image.php [26])
+     from filterImageQuery (template-functions.php [3156])
+       from getRandomImages (template-functions.php [3196])
+         from include (index.php [40])
+           from index.php [128]
+  Backtrace: Bad album object parameter to newImage(IMG_7074.jpg)
+  newImage called
+   from filterImageQuery (template-functions.php [3156])
+     from getRandomImages (template-functions.php [3196])
+       from include (index.php [40])
+         from index.php [128]
+{Wed, 21 Mar 2012 00:25:19 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9564.jpg)
+  newImage called
+   from full-image.php [146]
+{Thu, 22 Mar 2012 01:30:17 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-03-22 04:30:17&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-03-22 04:30:17&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>Lost connection to MySQL server during query</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Thu, 22 Mar 2012 12:21:21 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9569.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Mar 2012 00:35:43 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9573.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 26 Mar 2012 00:46:13 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9577.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 26 Mar 2012 05:34:10 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from c.php [9]
+{Wed, 28 Mar 2012 12:55:21 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9578.jpg)
+  newImage called
+   from full-image.php [146]
+{Wed, 28 Mar 2012 20:00:10 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from full-image.php [9]
+{Fri, 30 Mar 2012 13:25:31 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-03-30 17:25:31&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-03-30 17:25:31&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Mon, 02 Apr 2012 19:40:42 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>INSERT INTO `[prefix]images` (`filename`, `albumid`, `show`, `mtime`, `width`, `height`) VALUES (&#039;IMG_4319.jpg&#039;, &#039;24&#039;, &#039;1&#039;, &#039;1332090655&#039;, &#039;1920&#039;, &#039;1280&#039;)</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from PersistentObject->save (classes.php [333])
+       from PersistentObject->load (classes.php [290])
+         from PersistentObject->PersistentObject (classes.php [83])
+           from _Image->_Image (class-image.php [131])
+             from newImage (class-image.php [42])
+               from zp_load_image (functions-controller.php [275])
+                 from zp_load_request (functions-controller.php [451])
+                   from require_once (controller.php [38])
+                     from index.php [55]
+{Thu, 05 Apr 2012 11:22:50 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from i.php [34]
+{Mon, 09 Apr 2012 11:13:15 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-04-09 15:13:15&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-04-09 15:13:15&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Fri, 13 Apr 2012 19:25:53 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from full-image.php [9]
+{Mon, 23 Apr 2012 13:40:29 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Tue, 24 Apr 2012 16:36:41 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Wed, 25 Apr 2012 10:57:22 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-04-25 14:57:22&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-04-25 14:57:22&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Thu, 26 Apr 2012 10:03:37 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Fri, 27 Apr 2012 06:37:57 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-04-27 10:37:57&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-04-27 10:37:57&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (album.php [1])
+                     from index.php [128]
+{Sun, 29 Apr 2012 17:08:46 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Lost connection to MySQL server at 'reading initial communication packet', system error: 104</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Sun, 29 Apr 2012 22:00:15 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-04-30 02:00:15&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-04-30 02:00:15&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>Lost connection to MySQL server during query</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 02 May 2012 07:01:50 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-05-02 11:01:50&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-05-02 11:01:50&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 02 May 2012 10:59:08 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-05-02 14:59:08&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-05-02 14:59:08&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Fri, 11 May 2012 18:11:21 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>INSERT INTO `[prefix]albums` (`folder`, `show`, `mtime`, `date`, `title`) VALUES (&#039;NN-2012&#039;, &#039;1&#039;, &#039;1336652600&#039;, &#039;2012-05-10 16:23:20&#039;, &#039;NN-2012&#039;)</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from PersistentObject->save (classes.php [333])
+       from PersistentObject->load (classes.php [290])
+         from PersistentObject->PersistentObject (classes.php [83])
+           from Album->__construct (class-album.php [76])
+             from zp_load_album (functions-controller.php [254])
+               from zp_load_image (functions-controller.php [270])
+                 from zp_load_request (functions-controller.php [451])
+                   from require_once (controller.php [38])
+                     from index.php [55]
+{Tue, 22 May 2012 12:58:19 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-05-22 16:58:19&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-05-22 16:58:19&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Tue, 22 May 2012 13:00:57 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-05-22 17:00:57&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-05-22 17:00:57&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 30 May 2012 10:54:05 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-05-30 14:54:05&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-05-30 14:54:05&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Thu, 07 Jun 2012 21:11:32 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-06-08 01:11:32&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-06-08 01:11:32&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (404.php [1])
+                     from index.php [145]
+{Wed, 27 Jun 2012 18:26:32 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-06-27 22:26:32&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-06-27 22:26:32&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>Lost connection to MySQL server during query</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Tue, 17 Jul 2012 10:45:55 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>INSERT INTO `[prefix]images` (`filename`, `albumid`, `show`, `mtime`, `width`, `height`) VALUES (&#039;IMG_1541.JPG&#039;, &#039;29&#039;, &#039;1&#039;, &#039;1332090691&#039;, &#039;3888&#039;, &#039;2592&#039;)</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from PersistentObject->save (classes.php [333])
+       from PersistentObject->load (classes.php [290])
+         from PersistentObject->PersistentObject (classes.php [83])
+           from _Image->_Image (class-image.php [131])
+             from newImage (class-image.php [42])
+               from Album->getAlbumThumbImage (class-album.php [584])
+                 from getCustomAlbumThumb (template-functions.php [1414])
+                   from printCustomAlbumThumbImage (template-functions.php [1471])
+                     from include (index.php [69])
+                       from index.php [128]
+{Mon, 23 Jul 2012 08:34:12 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9547.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:13 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9549.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:15 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9553.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:18 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9557.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:20 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9562.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:21 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9564.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:28 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9569.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:34:30 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9573.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:35:40 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9577.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 23 Jul 2012 08:35:42 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9578.jpg)
+  newImage called
+   from full-image.php [146]
+{Thu, 26 Jul 2012 11:51:18 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-07-26 15:51:18&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-07-26 15:51:18&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (search.php [1])
+                     from index.php [128]
+{Sun, 05 Aug 2012 07:25:42 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>INSERT INTO `[prefix]images` (`filename`, `albumid`, `show`, `mtime`, `width`, `height`) VALUES (&#039;IMG_3051.jpg&#039;, &#039;52&#039;, &#039;1&#039;, &#039;1332090829&#039;, &#039;1920&#039;, &#039;1280&#039;)</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from PersistentObject->save (classes.php [333])
+       from PersistentObject->load (classes.php [290])
+         from PersistentObject->PersistentObject (classes.php [83])
+           from _Image->_Image (class-image.php [131])
+             from newImage (class-image.php [42])
+               from next_image (template-functions.php [1733])
+                 from include (album.php [45])
+                   from index.php [128]
+{Fri, 10 Aug 2012 21:44:14 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-08-11 01:44:14&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-08-11 01:44:14&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>Lost connection to MySQL server during query</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Sat, 18 Aug 2012 03:39:48 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT `folder`, `filename`  FROM `[prefix]images`, `[prefix]albums` WHERE `[prefix]albums`.folder!=&quot;&quot; AND `[prefix]images`.albumid = `[prefix]albums`.id  AND `[prefix]images`.show=1 ORDER BY RAND()</em> ) failed. MySQL returned the error <em>Lost connection to MySQL server during query</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from getRandomImages (template-functions.php [3194])
+       from include (index.php [40])
+         from index.php [128]
+{Sun, 26 Aug 2012 23:45:17 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-08-27 03:45:16&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-08-27 03:45:16&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (404.php [1])
+                     from index.php [145]
+{Fri, 21 Sep 2012 17:26:18 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9547.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:21 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9549.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:23 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9553.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:24 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9557.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:27 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9562.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:41 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9564.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:43 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9569.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:26:46 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9573.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:28:43 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9577.jpg)
+  newImage called
+   from full-image.php [146]
+{Fri, 21 Sep 2012 17:28:46 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9578.jpg)
+  newImage called
+   from full-image.php [146]
+{Thu, 27 Sep 2012 06:56:58 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-09-27 10:56:58&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-09-27 10:56:58&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Tue, 02 Oct 2012 01:10:14 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-02 05:10:14&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-02 05:10:14&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Sat, 13 Oct 2012 14:29:09 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-13 18:29:09&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-13 18:29:09&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Tue, 16 Oct 2012 01:01:44 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-16 05:01:44&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-16 05:01:44&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (index.php [1])
+                     from index.php [128]
+{Tue, 16 Oct 2012 01:01:44 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-16 05:01:44&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-16 05:01:44&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Fri, 19 Oct 2012 16:26:08 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-19 20:26:08&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-19 20:26:08&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 24 Oct 2012 17:18:34 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Can't connect to MySQL server on 'mysql1038.servage.net' (110)</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Thu, 25 Oct 2012 13:06:55 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-25 17:06:55&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-25 17:06:55&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Fri, 26 Oct 2012 11:41:07 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-10-26 15:41:07&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-10-26 15:41:07&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Sun, 04 Nov 2012 20:06:41 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-11-05 00:06:41&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-11-05 00:06:41&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 21 Nov 2012 09:12:12 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-11-21 13:12:12&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-11-21 13:12:12&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Sat, 24 Nov 2012 12:32:52 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9547.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:33:02 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9549.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:34:48 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9553.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:34:56 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9557.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:35:10 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9562.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:35:19 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9564.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:35:27 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9569.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:35:35 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9573.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:35:44 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9577.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 24 Nov 2012 12:35:53 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9578.jpg)
+  newImage called
+   from full-image.php [146]
+{Sun, 02 Dec 2012 00:13:23 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-12-02 04:13:23&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-12-02 04:13:23&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (album.php [1])
+                     from index.php [128]
+{Fri, 07 Dec 2012 10:16:21 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-12-07 14:16:21&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-12-07 14:16:21&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 26 Dec 2012 02:32:12 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2012-12-26 06:32:12&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2012-12-26 06:32:12&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Wed, 02 Jan 2013 05:43:51 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2013-01-02 09:43:51&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2013-01-02 09:43:51&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Sat, 19 Jan 2013 16:59:22 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>INSERT INTO `[prefix]albums` (`folder`, `show`, `mtime`, `date`, `title`) VALUES (&#039;Murom-2009&#039;, &#039;1&#039;, &#039;1332247596&#039;, &#039;2012-03-20 16:46:36&#039;, &#039;Murom-2009&#039;)</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from PersistentObject->save (classes.php [333])
+       from PersistentObject->load (classes.php [290])
+         from PersistentObject->PersistentObject (classes.php [83])
+           from Album->__construct (class-album.php [76])
+             from full-image.php [48]
+{Sat, 19 Jan 2013 16:59:48 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2013-01-19 20:59:48&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2013-01-19 20:59:48&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (archive.php [1])
+                     from index.php [128]
+{Tue, 22 Jan 2013 05:57:24 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2013-01-22 09:57:24&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2013-01-22 09:57:24&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Tue, 22 Jan 2013 06:03:25 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2013-01-22 10:03:25&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2013-01-22 10:03:25&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (404.php [1])
+                     from index.php [145]
+{Thu, 31 Jan 2013 11:34:39 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2013-01-31 15:34:39&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2013-01-31 15:34:39&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (index.php [1])
+                     from index.php [128]
+{Mon, 04 Feb 2013 23:32:10 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9547.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:13 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9549.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:14 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9553.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:16 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9557.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:18 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9562.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:20 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9564.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:23 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9569.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:24 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9573.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:26 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9577.jpg)
+  newImage called
+   from full-image.php [146]
+{Mon, 04 Feb 2013 23:32:28 GMT}
+  Backtrace: class-album detected an invalid folder name: Foot-2010.
+  Album->__construct called
+   from full-image.php [48]
+  Backtrace: Bad album object parameter to newImage(IMG_9578.jpg)
+  newImage called
+   from full-image.php [146]
+{Sat, 16 Feb 2013 01:48:37 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Unknown MySQL server host 'mysql1038.servage.net' (0)</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Sat, 16 Feb 2013 01:58:30 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Unknown MySQL server host 'mysql1038.servage.net' (0)</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Sat, 16 Feb 2013 02:28:20 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Unknown MySQL server host 'mysql1038.servage.net' (0)</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Sat, 16 Feb 2013 02:28:55 GMT}
+  Backtrace: fatal zp_error:MySQL Error: Zenphoto received the error <em>Unknown MySQL server host 'mysql1038.servage.net' (0)</em> when connecting to the database server.
+  zp_error called
+   from db_connect (functions-db-MySQL.php [37])
+     from require_once (functions-basic.php [72])
+       from require_once (functions.php [18])
+         from require_once (template-functions.php [10])
+           from index.php [6]
+{Sun, 24 Feb 2013 22:03:37 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>SELECT * FROM `[prefix]pages` WHERE `date`&lt;=&quot;2013-02-25 01:03:37&quot; AND `show`=&quot;1&quot; AND `expiredate`&lt;=&quot;2013-02-25 01:03:37&quot; AND `expiredate`!=&quot;0000-00-00 00:00:00&quot; AND `expiredate` IS NOT NULL</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from query_full_array (functions-db-MySQL.php [109])
+       from Zenpage->processExpired (zenpage-class.php [77])
+         from Zenpage->getPages (zenpage-class.php [102])
+           from printNestedMenu (zenpage-template-functions.php [2026])
+             from printPageMenu (zenpage-template-functions.php [2706])
+               from include (inc-menu.php [46])
+                 from include (inc-header.php [189])
+                   from include (image.php [1])
+                     from index.php [128]
+{Thu, 07 Mar 2013 14:36:34 GMT}
+  Backtrace: fatal zp_error:MySQL Query ( <em>INSERT INTO `[prefix]albums` (`folder`, `show`, `mtime`, `date`, `title`) VALUES (&#039;Kaliningrad-2009&#039;, &#039;1&#039;, &#039;1332247427&#039;, &#039;2012-03-20 15:43:47&#039;, &#039;Kaliningrad-2009&#039;)</em> ) failed. MySQL returned the error <em>MySQL server has gone away</em>
+  zp_error called
+   from query (functions-db-MySQL.php [76])
+     from PersistentObject->save (classes.php [333])
+       from PersistentObject->load (classes.php [290])
+         from PersistentObject->PersistentObject (classes.php [83])
+           from Album->__construct (class-album.php [76])
+             from zp_load_album (functions-controller.php [254])
+               from zp_load_image (functions-controller.php [270])
+                 from zp_load_request (functions-controller.php [451])
+                   from require_once (controller.php [38])
+                     from index.php [55]

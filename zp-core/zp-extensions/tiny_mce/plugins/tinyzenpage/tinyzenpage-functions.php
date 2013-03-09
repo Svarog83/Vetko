@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * tinyZenpage - A TinyMCE plugin for Zenphoto with Zenpage
  * @author Malte Müller (acrylian)
@@ -6,52 +6,58 @@
  */
 // sorry about all the inline css but something by TinyMCE's main css seems to override most setting on the css file no matter what I do...Too "lazy" for further investigation...:-)
 
-$galleryobj = new Gallery(); 
-$host = "http://".htmlentities($_SERVER["HTTP_HOST"], ENT_QUOTES, 'UTF-8');
+$host = "http://".html_encode($_SERVER["HTTP_HOST"]);
 /**
  * Prints all albums of the Zenphoto gallery as a partial drop down menu (<option></option> parts).
- * 
+ *
  * @return string
  */
 function printFullAlbumsList() {
-	global $galleryobj;
-	$albumlist = $galleryobj->getAlbums();
+	global $_zp_gallery;
+	if(is_null($_zp_gallery)) {
+		$_zp_gallery = new Gallery();
+	}
+	$albumlist = $_zp_gallery->getAlbums();
 	foreach($albumlist as $album) {
-		if (isMyAlbum($album, ALL_RIGHTS)) {
-			$albumobj = new Album($galleryobj,$album);
-			echo "<option value='".urlencode($albumobj->name)."'>".$albumobj->getTitle().unpublishedZenphotoItemCheck($albumobj)." (".$albumobj->getNumImages().")</option>";
-			printSubLevelAlbums($albumobj);
+		$albumobj = new Album($_zp_gallery, $album);
+		if ($albumobj->isMyItem(LIST_RIGHTS)) {
+			echo "<option value='".pathurlencode($albumobj->name)."'>".html_encode($albumobj->getTitle()).unpublishedZenphotoItemCheck($albumobj)." (".$albumobj->getNumImages().")</option>";
+			if (!$albumobj->isDynamic()) {
+				printSubLevelAlbums($albumobj);
+			}
 		}
 	}
 }
-	
+
 /**
  * Recursive helper function for printFullAlbumsList() to get all sub albums of each top level album
- * 
+ *
  * @return string
  */
 function printSubLevelAlbums(&$albumobj) {
-	global $galleryobj;
+	global $_zp_gallery;
 	$albumlist = $albumobj->getAlbums();
 	foreach($albumlist as $album) {
-		$subalbumobj = new Album($galleryobj,$album);
+		$subalbumobj = new Album($_zp_gallery,$album);
 		$subalbumname = $subalbumobj->name;
 		$level = substr_count($subalbumname,"/");
 		$arrow = "";
 		for($count = 1; $count <= $level; $count++) {
 			$arrow .= "&raquo; ";
 		}
-		echo "<option value='".urlencode($subalbumobj->name)."'>";
+		echo "<option value='".pathurlencode($subalbumobj->name)."'>";
 		echo $arrow.$subalbumobj->getTitle().unpublishedZenphotoItemCheck($subalbumobj)." (".$subalbumobj->getNumImages().")</option>";
-		printSubLevelAlbums($subalbumobj);
+		if (!$subalbumobj->isDynamic()) {
+			printSubLevelAlbums($subalbumobj);
+		}
 	}
 }
 
  /**
- 	* checks if a album or image is unpublished and returns a '*'
+	* checks if a album or image is un-published and returns a '*'
 	*
-  * @return string
- 	*/
+	* @return string
+	*/
 function unpublishedZenphotoItemCheck($obj,$dropdown=true) {
 	$span1 = "";
 	$span2 = "";
@@ -70,7 +76,7 @@ function unpublishedZenphotoItemCheck($obj,$dropdown=true) {
 
 /**
  * shortens a string, truncate_string() was not exact enough.
- * 
+ *
  * @param $title int Title of the image
  * @param $length int The desired length
  * @return string
@@ -84,21 +90,55 @@ function shortentitle($title,$length) {
 }
 
 /**
- * Prints the images as thumbnails of the selected album
+ * Prints the images and/or albums as thumbnails of the selected album
  *
  * @param $number int The number of images per page
  *
  * @return string
  */
 function printImageslist($number) {
-	global $galleryobj, $host;
+	global $_zp_gallery, $host;
+
 	if(isset($_GET['album']) AND !empty($_GET['album'])) {
+
 		$album = urldecode(sanitize($_GET['album']));
-		$albumobj = new Album($galleryobj,$album);
+		$albumobj = new Album($_zp_gallery,$album);
+		echo "<h3 style='margin-bottom:10px'>".gettext("Album:")." <em>".html_encode($albumobj->getTitle()).unpublishedZenphotoItemCheck($albumobj,false)."</em> / ".gettext("Album folder:")." <em>".html_encode($albumobj->name)."</em><br /><small>".gettext("(Click on image to include)")."</small></h3>";
+
+			// album thumb display;
+		$albumthumb = $albumobj->getAlbumThumbImage();
+		$albumthumbalbum = $albumthumb->getAlbum();
+		$albumdesc = $albumobj->getDesc();
+		$imagedesc = $albumthumb->getDesc();
+		$imgurl = $host.WEBPATH.'/'.ZENFOLDER."/i.php?a=". urlencode(pathurlencode($albumthumbalbum->name))."&amp;i=".urlencode(urlencode($albumthumb->filename));
+		$fullimage = pathurlencode(addslashes($albumthumb->getFullImage()));
+		$videocheck = checkIfImageVideo($albumthumb);
+		if(get_class($albumthumb) == '_Image') {
+			$video = '';
+			$backgroundcss = 'border: 1px solid gray; padding: 1px;';
+			$imgurl = $host.WEBPATH.'/'.ZENFOLDER."/i.php?a=". urlencode(pathurlencode($albumthumbalbum->name))."&amp;i=".urlencode(urlencode($albumthumb->filename));
+		} else {
+			$backgroundcss = 'border: 1px solid orange; padding: 1px;background-color: orange';
+			$video = $videocheck;
+			$imgurl = $albumthumb->getThumb();
+		}
+		$imgsizeurl = $albumthumb->getCustomImage(85, NULL, NULL, 85, 85, NULL, NULL, TRUE);
+		echo "<div class='albumthumb' style='width: 85px; height: 100px; float: left; margin: 10px 10px 10px 13px'>";
+		echo "<a href=\"javascript: ZenpageDialog.insert('".$imgurl."','".urlencode($albumthumb->filename)."','".
+																											js_encode($albumthumb->getTitle())."','".
+																											js_encode($albumobj->getTitle())."','".
+																											$fullimage."','zenphoto','".
+																											js_encode(getWatermarkParam($albumthumb, WATERMARK_THUMB))."','".
+																											js_encode(getWatermarkParam($albumthumb, WATERMARK_IMAGE))."','".
+																											$video."','".html_encode(addslashes($imagedesc))."','".html_encode(addslashes($albumdesc))."');\"".
+																											" title='".html_encode($albumthumb->getTitle())." (".html_encode($albumthumb->filename).")'>
+																											<img src='".$imgsizeurl."' style='".$backgroundcss."' /></a>\n";
+		echo "<a href='zoom.php?image=".urlencode($albumthumb->filename)."&amp;album=".pathurlencode($albumthumbalbum->name).
+																											"' title='Zoom' rel='colorbox' style='outline: none;'><img src='img/magnify.png' alt='' style='border: 0' /></a> ".
+																											gettext('<em>Albumthumb</em>').unpublishedZenphotoItemCheck($albumthumb,false);
+		echo "</div>";
 		$images = $albumobj->getImages();
 
-		// This should be done with sprintf here but somehow the variables are always empty then...
-		echo "<h3 style='margin-bottom:10px'>".gettext("Album:")." <em>".$albumobj->getTitle().unpublishedZenphotoItemCheck($albumobj,false)."</em> / ".gettext("Album folder:")." <em>".$albumobj->name."</em><br /><small>".gettext("(Click on image to include)")."</small></h3>";
 		if($albumobj->getNumImages() != 0) {
 			$images_per_page = $number;
 			if(isset($_GET['page'])) {
@@ -113,51 +153,180 @@ function printImageslist($number) {
 				$endimage[$nr] = $nr * $images_per_page - 1; // get end image number
 			}
 			$number = $startimage[$currentpage];
-			printTinyPageNav($pagestotal,$currentpage);
+			printTinyPageNav($pagestotal,$currentpage,'images');
 			for ($nr = $number;$nr <= $images_per_page*$currentpage; $nr++)	{
 				if ($nr === $imagecount){
 					break;
 				}
 				if($albumobj->isDynamic()) {
-					$linkalbumobj = new Album($galleryobj,$images[$nr]['folder']);
-					$imageobj = newImage($linkalbumobj,$images[$nr]['filename']);	
+					$linkalbumobj = new Album($_zp_gallery,$images[$nr]['folder']);
+					$imageobj = newImage($linkalbumobj,$images[$nr]['filename']);
 				} else {
 					$linkalbumobj = $albumobj;
 					$imageobj = newImage($albumobj,$images[$nr]);
 				}
-				$imgurl = $host.WEBPATH.'/'.ZENFOLDER."/i.php?a=".urlencode(urlencode($linkalbumobj->name))."&amp;i=".urlencode(urlencode($imageobj->filename));
+				$imagedesc = $imageobj->getDesc();
+				$albumdesc = $linkalbumobj->getDesc();
+				$fullimage = pathurlencode(addslashes($imageobj->getFullImage()));
+				$videocheck = checkIfImageVideo($imageobj);
+				if(get_class($imageobj) == '_Image') {
+					$video = '';
+					$backgroundcss = 'border: 1px solid gray; padding: 1px;';
+					$imgurl = $host.WEBPATH.'/'.ZENFOLDER."/i.php?a=".urlencode(pathurlencode($linkalbumobj->name))."&amp;i=".urlencode(urlencode($imageobj->filename));
+				} else if(get_class($imageobj) == 'TextObject' || get_parent_class($imageobj) == 'TextObject') {
+					$video = 'textobject';
+					$imgurl = $imageobj->getThumb();
+					$fullimage = html_encode($imageobj->getBody());
+				} else {
+					$backgroundcss = 'border: 1px solid orange; padding: 1px;background-color: orange';
+					$video = $videocheck;
+					$imgurl = $imageobj->getThumb();
+				}
 				$imgsizeurl = $imageobj->getCustomImage(85, NULL, NULL, 85, 85, NULL, NULL, TRUE);
 				echo "<div style='width: 85px; height: 100px; float: left; margin: 10px 10px 10px 13px'>\n";
-				echo "<a href=\"javascript:ZenpageDialog.insert('".$imgurl."','".urlencode(urlencode($imageobj->filename))."','".urlencode(urlencode($imageobj->getTitle()))."','".urlencode(urlencode($linkalbumobj->getTitle()))."','zenphoto');\" title='".$imageobj->getTitle()." (".$imageobj->filename.")'><img src='".$imgsizeurl."' style='border: 1px solid gray; padding: 1px' /></a>\n";
-				echo "<a href='zoom.php?keepThis=true&amp;image=".urlencode($imageobj->filename)."&amp;album=".urlencode($linkalbumobj->name)."&amp;&TB_iframe=true&amp;height=450&amp;width=450' title='Zoom' class='thickbox' style='outline: none;'><img src='img/magnify.png' alt='' style='border: 0' /></a> ".shortentitle($imageobj->getTitle(),8).unpublishedZenphotoItemCheck($imageobj,false);
+				echo "<a href=\"javascript:ZenpageDialog.insert('".$imgurl."','".urlencode($imageobj->filename)."','".
+																												js_encode($imageobj->getTitle())."','".
+																												js_encode($linkalbumobj->getTitle())."','".
+																												$fullimage."','zenphoto','".
+																												js_encode(getWatermarkParam($imageobj, WATERMARK_THUMB))."','".
+																												js_encode(getWatermarkParam($imageobj, WATERMARK_IMAGE))."','".
+																												$video."','".html_encode(addslashes($imagedesc))."','".html_encode(addslashes($albumdesc))."');\"".
+																												" title='".html_encode($imageobj->getTitle())." (".html_encode($imageobj->filename).")'>
+																												<img src='".$imgsizeurl."' style='".$backgroundcss."' /></a>\n";
+				echo "<a href='zoom.php?image=".urlencode($imageobj->filename)."&amp;album=".pathurlencode($linkalbumobj->name).
+																												"' title='Zoom' rel='colorbox' style='outline: none;'><img src='img/magnify.png' alt='' style='border: 0' /></a> ".
+																												html_encode(shortentitle($imageobj->getTitle(),8)).unpublishedZenphotoItemCheck($imageobj,false);
 				echo "</div>\n";
 				if ($nr === $endimage[$currentpage]){
 					break;
 				}
 			} // for end
 		} else {
-			$albumthumb = $albumobj->getAlbumThumbImage();
-			$albumthumbalbum = $albumthumb->getAlbum();
-			$imgurl = urlencode(urlencode($host.WEBPATH.'/'.ZENFOLDER."/i.php?a=".$albumthumbalbum->name."&amp;i=".$albumthumb->filename));
-			$imgsizeurl = $albumthumb->getCustomImage(85, NULL, NULL, 85, 85, NULL, NULL, TRUE);
 			echo "<p style='margin-left: 8px'>".gettext("<strong>Note:</strong> This album does not contain any images.")."</p>";
-			echo "<div style='width: 85px; height: 100px; float: left; margin: 10px 10px 10px 13px'>";
-			echo "<a href=\"javascript:ZenpageDialog.insert('".$imgurl."','','','".urlencode(urlencode($albumobj->getTitle()))."','zenphoto');\" title='".$albumobj->getTitle()." (".$albumobj->name.")'><img src='".$imgsizeurl."' style='border: 1px solid gray; padding: 1px' /></a>";
-			echo "</div>";
 		}	// if/else  no image end
 	} // if GET album end
 }
 
 /**
+ * Checks if the Zenphoto items is a video object (mp3,mp4,flv)
+ *
+ * @return string
+ */
+
+function checkIfImageVideo($imageobj) {
+	$video = '';
+	if(isImageVideo($imageobj) && getOption('zp_plugin_flowplayer3')) {
+		$imagesuffix = getSuffix($imageobj->filename);
+		switch($imagesuffix) {
+			case 'flv':
+			case 'mp4':
+			case 'm4v':
+				$video = 'video';
+				break;
+			case 'mp3':
+			case 'fla':
+			case 'm4a':
+				$video = 'audio';
+				break;
+		}
+	} else {
+		$video = '';
+		$backgroundcss = 'border: 1px solid gray; padding: 1px;';
+	}
+	return $video;
+}
+
+
+/**
+ * Prints all available articles in Zenpage
+ *
+ * @return string
+ */
+function printNewsArticlesList($number) {
+	global $_zp_zenpage, $_zp_current_zenpage_news,$host;
+	if(isset($_GET['zenpage']) && $_GET['zenpage'] == "articles") {
+		echo "<h3 style='margin-bottom:10px'>Zenpage: <em>".gettext('Articles')."</em> <small>".gettext("(Click on article title to include a link)")."</small></h3>";
+		echo "<ul style='list-style-type: none; width: 85%;'>";
+		if(isset($_GET['category'])) {
+			$cat = sanitize($_GET['category']);
+			$catobj = new ZenpageCategory($cat);
+			$items = $catobj->getArticles("","all");
+			$newscount = count($catobj->getArticles(0,'all'));
+		} else {
+			$items = $_zp_zenpage->getArticles("","all");
+			$newscount = count($_zp_zenpage->getArticles(0,'all'));
+		}
+		$news_per_page = $number;
+		if(isset($_GET['page'])) {
+			$currentpage = sanitize_numeric($_GET['page']);
+		} else {
+			$currentpage = 1;
+		}
+		$pagestotal = ceil($newscount / $news_per_page);
+		for ($nr = 1;$nr <= $pagestotal; $nr++) {
+			$startnews[$nr] = $nr * $news_per_page - $news_per_page; // get start image number
+			$endnews[$nr] = $nr * $news_per_page - 1; // get end image number
+		}
+		$count = '';
+		$number = $startnews[$currentpage];
+		//category selector here later
+		printTinyZenpageCategorySelector($currentpage);
+		if($newscount != 0) {
+			printTinyPageNav($pagestotal,$currentpage,'news');
+			echo '<br />';
+			for ($nr = $number;$nr <= $news_per_page*$currentpage; $nr++)	{
+				if ($nr == $newscount){
+					break;
+				}
+				$newsobj = new ZenpageNews($items[$nr]['titlelink']);
+				$count++;
+				if($count === 1) {
+					$firstitemcss = "border-top: 1px dotted gray; border-bottom: 1px dotted gray; padding: 5px 0px 5px 0px;";
+				} else {
+					$firstitemcss = "border-bottom: 1px dotted gray; padding: 5px 0px 5px 0px;";
+				}
+				echo "<li style='".$firstitemcss."'>";
+				if($_GET['zenpage'] == "articles") {
+					echo "<a href=\"javascript:ZenpageDialog.insert('news/".$newsobj->getTitlelink()."','".$newsobj->getTitlelink()."','".html_encode($newsobj->getTitle())."','','','articles','','','','');\" title='".html_encode(truncate_string(strip_tags($newsobj->getContent()),300))."'>".html_encode($newsobj->getTitle()).unpublishedZenpageItemCheck($newsobj)."</a> <small><em>".$newsobj->getDatetime()."</em></small>";
+					echo " <a href='zoom.php?news=".urlencode($newsobj->getTitlelink())."' title='Zoom' class='colorbox' style='outline: none;'><img src='img/magnify.png' alt='' style='border: 0' /></a><br />";
+					echo '<small><em>'.gettext('Categories:');
+					$cats = $newsobj->getCategories();
+					$count = '';
+					foreach($cats as $cat) {
+						$count++;
+						$catobj = new ZenpageCategory($cat['titlelink']);
+						if($count == 1) {
+							echo ' ';
+						} else {
+							echo ', ';
+						}
+						echo $catobj->getTitle();
+					}
+					echo '</em></small>';
+				}
+				echo "</li>";
+				if ($nr === $endnews[$currentpage]){
+					break;
+				}
+			} // for end
+			echo "</ul>";
+		}
+	}
+}
+
+/**
  * Checks if an album has images for display on the form
- * 
+ *
  * @return bool
  */
 function checkAlbumForImages() {
-	global $galleryobj;
+	global $_zp_gallery;
 	if(isset($_GET['album']) AND !empty($_GET['album'])) {
 		$album = urldecode(sanitize($_GET['album']));
-		$albumobj = new Album($galleryobj,$album);
+		if($album == 'gallery') {
+			return FALSE;
+		}
+		$albumobj = new Album($_zp_gallery,$album);
 		if($albumobj->getNumImages() != 0) {
 			return TRUE;
 		} else {
@@ -170,7 +339,7 @@ function checkAlbumForImages() {
 
 /**
  * Checks if the full Zenphoto include form options should be shown
- * 
+ *
  * @return bool
  */
 function showZenphotoOptions() {
@@ -183,194 +352,225 @@ function showZenphotoOptions() {
 
 
 /**
- * Prints the page navigation for albums
+ * Prints the page navigation for albums or Zenpage news articles
  *
  * @param $pagestotal int The number page in total
  * @param $currentpage int Number of the current page
- * 
+	* @param $mode string 'images' or 'articles'
  * @return string
  */
-function printTinyPageNav($pagestotal="",$currentpage="") {
+function printTinyPageNav($pagestotal="",$currentpage="",$mode='images') {
+	$cat = '';
+	switch($mode) {
+		case 'images':
+			$url = "album=".pathurlencode(sanitize($_GET['album']));
+			break;
+		case 'news':
+			$url = "zenpage=articles";
+			if(isset($_GET['category'])) {
+				$cat = '&amp;'.sanitize($_GET['category']);
+			}
+			break;
+	}
 	if($pagestotal > 1) {
-		echo "<ul style='display: inline; margin-left: -33px;'>";
+		echo "<br /><br /><ul style='display: inline; margin-left: -45px;'>";
 		if($currentpage != 1) {
-			echo "<li class=\"prev\" style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?album=".urlencode(sanitize($_GET['album']))."&amp;page=".($currentpage-1)."'>&laquo; prev</a></li>";
+			echo "<li class=\"first\" style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?".$url.$cat."&amp;page=1'>&laquo; first</a></li>";
+		} else {
+			echo "<li class=\"first\" style='display: inline; margin-left: 5px; color: gray'>&laquo; first</li>";
+		}
+		if($currentpage != 1) {
+			echo "<li class=\"prev\" style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?".$url.$cat."&amp;page=".($currentpage-1)."'>&laquo; prev</a></li>";
 		} else {
 			echo "<li class=\"prev\" style='display: inline; margin-left: 5px; color: gray'>&laquo; prev</li>";
 		}
 		$j=max(1, min($currentpage-3, $pagestotal-6));
 		if ($j != 1) {
 			echo "\n <li style='display: inline; margin-left: 5px;'>";
-			echo "<a href=\"tinyzenpage.php?album=".sanitize($_GET['album'])."&amp;page=".max($j-4,1)."\">...</a>";
+			echo "<a href=\"tinyzenpage.php?".$url.$cat."&amp;page=".max($j-4,1)."\">...</a>";
 			echo '</li>';
 		}
 		for ($i=$j; $i <= min($pagestotal, $j+6); $i++) {
 			if($i == $currentpage) {
 				echo "<li style='display: inline; margin-left: 5px;'>".$i."</li>\n";
 			} else {
-				echo "<li style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?album=".urlencode(sanitize($_GET['album']))."&amp;page=".$i."' title='".gettext("Page")." ".$i."'>".$i."</a></li>\n";
+				echo "<li style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?".$url.$cat."&amp;page=".$i."' title='".gettext("Page")." ".$i."'>".$i."</a></li>\n";
 			}
 		}
 		if ($i <= $pagestotal) {
 			echo "\n <li style='display: inline; margin-left: 5px;'>";
-			echo "<a href=\"tinyzenpage.php?album=".urlencode(sanitize($_GET['album']))."&amp;page=".min($j+10,$pagestotal)."\">...</a>";
+			echo "<a href=\"tinyzenpage.php?".$url.$cat."&amp;page=".min($j+10,$pagestotal)."\">...</a>";
 			echo '</li>';
 		}
 		if($currentpage != $pagestotal) {
-			echo "<li class=\"next\" style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?album=".urlencode(sanitize($_GET['album']))."&amp;page=".($currentpage+1)."'>next &raquo;</a></li>";
+			echo "<li class=\"next\" style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?".$url."&amp;page=".($currentpage+1)."'>next &raquo;</a></li>";
 		} else {
 			echo "<li class=\"next\" style='display: inline; margin-left: 5px; color: gray'>next &raquo;</li>";
+		}
+		if($currentpage != $pagestotal) {
+			echo "<li class=\"last\" style='display: inline; margin-left: 5px;'><a href='tinyzenpage.php?".$url."&amp;page=".$pagestotal."'>last &raquo;</a></li>";
+		} else {
+			echo "<li class=\"last\" style='display: inline; margin-left: 5px; color: gray'>last &raquo;</li>";
 		}
 		echo "</ul><br />";
 	}
 }
 
  /**
- 	* Prints the Zenpage items as a partial dropdown (pages, news articles, categories)
- 	* 
-  * @return string
- 	*/
+	* Prints the Zenpage items as a partial dropdown (pages, news articles, categories)
+	*
+	* @return string
+	*/
 function printZenpageItems() {
-	$pages = getPages(false);
+	global $_zp_zenpage;
+	$pages = $_zp_zenpage->getPages(false);
 	$pagenumber = count($pages);
-	$categories = getAllCategories();
+	$categories = $_zp_zenpage->getAllCategories(false);
 	$catcount = count($categories);
 	echo "<option value='pages'>".gettext("pages")." (".$pagenumber.")</option>";
-	echo "<option value='articles'>".gettext("articles")." (".countArticles("","all").")</option>";
+	echo "<option value='articles'>".gettext("articles")." (".count($_zp_zenpage ->getArticles(0,'all')).")</option>";
 	echo "<option value='categories'>".gettext("categories")." (".$catcount.")</option>";
 }
 
  /**
- 	* Prints all available pages in Zenpage
- 	* 
-  * @return string
- 	*/
-function printAllPagesList() {
-	global $host;
-	if(isset($_GET['zenpage']) AND $_GET['zenpage'] == "pages") {
-		echo "<h3 style='margin-bottom:10px;'>Zenpage: <em>".sanitize($_GET['zenpage'])."</em> <small>(Click on page title to include a link)</small></h3>";
-		echo "<ul style='list-style-type: none; width: 85%;'>";
-		$pages = getPages(false);
-
+	* Prints all available pages or categories in Zenpage
+	*
+	* @return string
+	*/
+function printAllNestedList() {
+	global $_zp_zenpage, $host;
+	if(isset($_GET['zenpage']) && ($_GET['zenpage'] == "pages" || $_GET['zenpage'] == "categories")) {
+		$mode = sanitize($_GET['zenpage']);
+		switch($mode) {
+			case 'pages':
+				$items = $_zp_zenpage->getPages(false);
+				$listtitle = gettext('Pages');
+				break;
+			case 'categories':
+				$items = $_zp_zenpage->getAllCategories(false);
+				$listtitle = gettext('Categories');
+				break;
+		}
+		echo "<h3 style='margin-bottom:10px;'>Zenpage: <em>".html_encode($listtitle)."</em> <small> ".gettext("(Click on article title to include a link)")."</small></h3>";
+		echo "<ul style='list-style: none; margin: 5px 0px 0px -10px;'>";
 		$indent = 1;
 		$open = array(1=>0);
-		$topped = false;
-		foreach ($pages as $key=>$page) {
+		$rslt = false;
+		foreach ($items as $key=>$item) {
 			$itemcss = "padding: 5px 0px 5px 0px;";
-			$pageobj = new ZenpagePage($page['titlelink']);
-			$level = max(1,count(explode('-', $pageobj->getSortOrder())));
+			switch($mode) {
+				case 'pages':
+					$obj = new ZenpagePage($item['titlelink']);
+					$itemcontent = truncate_string(strip_tags($obj->getContent()),300);
+					$zenpagepage = 'pages/'.$item['titlelink'];
+					$unpublished = unpublishedZenpageItemCheck($obj);
+					$counter = '';
+					break;
+				case 'categories':
+					$obj = new ZenpageCategory($item['titlelink']);
+					$itemcontent = $obj->getTitle();
+					$zenpagepage = "news/category/".$item['titlelink'];
+					$unpublished = unpublishedZenpageItemCheck($obj);
+					$counter = ' ('.count($obj->getArticles()).') ';
+					break;
+			}
+			$itemsortorder = $obj->getSortOrder();
+			$itemtitlelink = $obj->getTitlelink();
+			$itemtitle = $obj->getTitle();
+			$itemid = $obj->getID();
+			$order = explode('-', $itemsortorder);
+			$level = max(1,count($order));
+			if ($toodeep = $level>1 && $order[$level-1] === '') {
+				$rslt = true;
+			}
 			if ($level > $indent) {
-				$itemcss .= " border-top: 1px dotted gray;";
-				$topped = true;
-				echo "\n"."<ul style='list-style-type: none; margin: 5px 0px 0px -20px;'>\n";
+				echo "\n".str_pad("\t",$indent,"\t")."<ul style='margin:6px 0px 0px -10px;'>\n";
 				$indent++;
 				$open[$indent] = 0;
 			} else if ($level < $indent) {
 				while ($indent > $level) {
 					$open[$indent]--;
 					$indent--;
-					echo "</li>\n"."</ul>\n";
+					echo "</li>\n".str_pad("\t",$indent,"\t")."</ul>\n";
 				}
-			} else {
+			} else { // indent == level
 				if ($open[$indent]) {
-					echo "</li>\n";
+					echo str_pad("\t",$indent,"\t")."</li>\n";
 					$open[$indent]--;
 				} else {
 					echo "\n";
 				}
 			}
 			if ($open[$indent]) {
-				echo "</li>\n";
+				echo str_pad("\t",$indent,"\t")."</li>\n";
+				$open[$indent]--;
 			}
-			if (!$topped) {
-				$itemcss .= ' border-top: 1px dotted gray; ';
+			echo "<li id='".$itemid."' style='list-style: none; padding: 4px 0px 4px 0px;border-top: 1px dotted gray'>";
+			echo "<a href=\"javascript:ZenpageDialog.insert('".$zenpagepage."','".$itemtitlelink."','".html_encode($itemtitle)."','','','".$mode."','','','','');\" title='".html_encode($itemcontent)."'>".html_encode($itemtitle).$unpublished.$counter."</a> <small><em>".$obj->getDatetime()."</em></small>";
+			if($mode == 'pages') {
+				echo " <a href='zoom.php?pages=".urlencode($itemtitlelink)."' title='Zoom' class='colorbox' style='outline: none;'><img src='img/magnify.png' alt='' style='border: 0' /></a>";
 			}
-			if ($topped = !array_key_exists($key+1, $pages) || count(explode('-', $pages[$key+1]['sort_order'])) == $level) { // another at this level or at the absolute end
-				$itemcss .= " border-bottom: 1px dotted gray;";
-			}
-			echo "<li id='".$pageobj->getID()."' style='".$itemcss."'>";
-			echo "<a href=\"javascript:ZenpageDialog.insert('".ZENPAGE_PAGES."/".$pageobj->getTitlelink()."','".$pageobj->getTitlelink()."','".urlencode($pageobj->getTitle())."','','pages');\" title='".truncate_string(strip_tags($pageobj->getContent()),300)."'>".$pageobj->getTitle().unpublishedZenpageItemCheck($pageobj)."</a>";
 			$open[$indent]++;
 		}
 		while ($indent > 1) {
 			echo "</li>\n";
 			$open[$indent]--;
 			$indent--;
-			echo "</ul>";
+			echo str_pad("\t",$indent,"\t")."</ul>";
 		}
 		if ($open[$indent]) {
 			echo "</li>\n";
 		} else {
 			echo "\n";
 		}
-	
-	echo "</ul>";
-	} // if end
+		echo "</ul>\n";
+	}
 }
 
-
  /**
- 	* checks if a news article or page is unpublished and returns a '*'
+	* checks if a news article or page is un-published and/or protected and returns a '*'
 	*
-  * @return string
- 	*/
+	* @return string
+	*/
 function unpublishedZenpageItemCheck($page) {
-	if($page->getShow() === "0") { 
-		$unpublishednote = "<span style='color: red; font-weight: bold'>*</span>"; 
-	} else {
-		$unpublishednote = "";
+	$class = get_class($page);
+	$unpublishednote = '';
+	$protected = '';
+	switch($class) {
+		case 'ZenpageNews':
+		case 'ZenpagePage':
+			if($page->getShow() === "0") {
+				$unpublishednote = "<span style='color: red; font-weight: bold'>*</span>";
+			}
+			switch($class) {
+				case 'ZenpageNews':
+					if($page->inProtectedCategory()) {
+						$protected = "<span style='color: red; font-weight: bold'>+</span>";
+					}
+					break;
+				case 'ZenpagePage':
+					if($page->isProtected()) {
+						$protected = "<span style='color: red; font-weight: bold'>+</span>";
+					}
+					break;
+			}
+			break;
+		case 'ZenpageCategory':
+			if($page->isProtected()) {
+				$protected = "<span style='color: red; font-weight: bold'>+</span>";
+			}
+			break;
 	}
-	return $unpublishednote;
-}
-
-
-/**
- 	* Prints all available articles or categories in Zenpage
-  *
- 	* @return string
- 	*/
-function printNewsItemsList() {
-	global $_zp_current_zenpage_news,$host;
-	if(isset($_GET['zenpage']) AND ($_GET['zenpage'] == "articles" OR $_GET['zenpage'] == "categories")) {
-		echo "<h3 style='margin-bottom:10px'>Zenpage: <em>".sanitize($_GET['zenpage'])."</em> <small>".gettext("(Click on article title to include a link)")."</small></h3>";
-		echo "<ul style='list-style-type: none; width: 85%;'>";
-		if($_GET['zenpage'] == "articles") {
-			$items = getNewsArticles("","","all");
-		}		
-		if($_GET['zenpage'] == "categories") {
-			$items = getAllCategories();
-	  }
-		$count = 0;
-		foreach($items as $item) { 
-			if($_GET['zenpage'] == "articles") {
-				$newsobj = new ZenpageNews($item['titlelink']);
-			}
-			$count++;
-			if($count === 1) {
-				$firstitemcss = "border-top: 1px dotted gray; border-bottom: 1px dotted gray; padding: 5px 0px 5px 0px;";
-			} else {
-				$firstitemcss = "border-bottom: 1px dotted gray; padding: 5px 0px 5px 0px;";
-			}
-			echo "<li style='".$firstitemcss."'>";
-			if($_GET['zenpage'] == "articles") { 
-				echo "<a href=\"javascript:ZenpageDialog.insert('".ZENPAGE_NEWS."/".$newsobj->getTitlelink()."','".$newsobj->getTitlelink()."','".$newsobj->getTitle()."','','articles');\" title='".truncate_string(strip_tags($newsobj->getContent()),300)."'>".$newsobj->getTitle().unpublishedZenpageItemCheck($newsobj)."</a>";
-			}
-			if($_GET['zenpage'] == "categories") { 
-				echo "<a href=\"javascript:ZenpageDialog.insert('".ZENPAGE_NEWS."/category/".$item['cat_link']."','".$item['cat_link']."','".get_language_string($item['cat_name'])."','','categories');\" title='".$item['cat_link']."'>".get_language_string($item['cat_name'])."</a>";
-			}
-			echo "</li>";
-		}
-		echo "</ul>";
-	}
+	return $unpublishednote.$protected;
 }
 
  /**
- 	* Set the locale for gettext translation of this plugin. Somehow zenphoto's setPluginDomain() does not work here...
- 	* 
- 	*/
+	* Set the locale for gettext translation of this plugin. Somehow ZenPhoto's setPluginDomain() does not work here...
+	*
+	*/
 function setTinyZenpageLocale() {
-	$encoding = getOption('charset');
-	$locale = getOption("locale");
+	$encoding = LOCAL_CHARSET;
+	$locale = ZENPHOTO_LOCALE;
 	@putenv("LANG=$locale");
 	$result = setlocale(LC_ALL, $locale);
 	$domain = 'tinyzenpage';
@@ -381,6 +581,63 @@ function setTinyZenpageLocale() {
 		bind_textdomain_codeset($domain, $encoding);
 	}
 	textdomain($domain);
+}
+
+/**
+ * Prints the dropdown menu for the category selector for the news articles list
+ *
+ */
+function printTinyZenpageCategorySelector($currentpage='') {
+	global $_zp_zenpage, $_zp_zenpage_currentadminnewspage;
+	$result = $_zp_zenpage->getAllCategories(false);
+	if(isset($_GET['category'])) {
+		$selected = '';
+		$category = sanitize($_GET['category']);
+	} else {
+		$selected = "selected='selected'";
+		$category = "";
+	}
+	?>
+	<form name ="AutoListBox2" id="categorydropdown" style="float:left" action="#" >
+	<select name="ListBoxURL" size="1" onchange="gotoLink(this.form)">
+		<?php
+		echo "<option $selected value='tinyzenpage.php?zenpage=articles&amp;page=".$currentpage."'>".gettext("All categories")."</option>\n";
+
+		foreach ($result as $cat) {
+			$catobj = new ZenpageCategory($cat['titlelink']);
+			// check if there are articles in this category. If not don't list the category.
+			$count = count($catobj->getArticles(0,'all'));
+			$count = " (".$count.")";
+			if($category == $cat['titlelink']) {
+				$selected = "selected='selected'";
+			} else {
+				$selected ="";
+			}
+			//This is much easier than hacking the nested list function to work with this
+			$getparents = $catobj->getParents();
+			$levelmark ='';
+			foreach($getparents as $parent) {
+				$levelmark .= '&raquo; ';
+			}
+			$title = $catobj->getTitle();
+			if (empty($title)) {
+				$title = '*'.$catobj->getTitlelink().'*';
+			}
+			if ($count != " (0)") {
+				echo "<option $selected value='tinyzenpage.php?zenpage=articles&amp;page=".$currentpage."&amp;category=".$catobj->getTitlelink()."'>".$levelmark.$title.$count."</option>\n";
+			}
+		}
+		?>
+	</select>
+	<script type="text/javascript" >
+		// <!-- <![CDATA[
+		function gotoLink(form) {
+		var OptionIndex=form.ListBoxURL.selectedIndex;
+		this.location = form.ListBoxURL.options[OptionIndex].value;}
+		// ]]> -->
+</script>
+</form>
+<?php
 }
 
 	?>

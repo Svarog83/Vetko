@@ -7,7 +7,7 @@
 
 $_rating_current_IPlist = array();
 /**
- * Returns the last vote rating from an IP or false if 
+ * Returns the last vote rating from an IP or false if
  * no vote on record
  *
  * @param string $ip
@@ -21,11 +21,11 @@ function getRatingByIP($ip, $usedips, $ratingAverage) {
 	if (empty($_rating_current_IPlist)) {
 		if (!empty($usedips)) {
 			$_rating_current_IPlist = unserialize($usedips);
-			if (array_key_exists(0, $_rating_current_IPlist) || 
+			if (array_key_exists(0, $_rating_current_IPlist) ||
 					array_key_exists(count($_rating_current_IPlist)-1, $_rating_current_IPlist)) { // convert old list
 				$rating_list = array();
 				foreach ($_rating_current_IPlist as $key) {
-					$rating_list[$key] = $ratingAverage;	
+					$rating_list[$key] = $ratingAverage;
 				}
 				$_rating_current_IPlist = $rating_list;
 			}
@@ -50,12 +50,26 @@ function getCurrentPageObject() {
 			return $_zp_current_album;
 		case 'image.php':
 			return $_zp_current_image;
-		case ZENPAGE_NEWS.'.php':
+		case 'news.php':
 			return $_zp_current_zenpage_news;
-		case ZENPAGE_PAGES.'.php':
+		case 'pages.php':
 			return $_zp_current_zenpage_page;
 		default:
-			die(sprintf(gettext('%s is not a valid getRating() context'), $_zp_gallery_page));
+			return NULL;
 	}
+}
+
+/**
+ *
+ * Gets the unique id of the poster. {in this case based on the IP address}
+ * @return string
+ */
+function getRatingID() {
+	if (getOption('rating_hash_ip')) {
+		return sha1(getUserIP());
+	} else {
+		return getUserIP();
+	}
+
 }
 ?>

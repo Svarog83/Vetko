@@ -1,7 +1,7 @@
 /*
 
 	Sterile 1.0
-	
+
 */
 
 /* Main Layout
@@ -9,7 +9,7 @@
 body {
 	background: #EEE;
 	margin: 0 !important;
-	margin: 0 0 10px 0; 
+	margin: 0 0 10px 0;
 	padding: 0;
 	text-align: center;
 	font: 76% 'Lucida Grande', 'Lucida Sans Unicode', Verdana, sans-serif;
@@ -22,6 +22,9 @@ body {
 	padding-bottom: 15px;
 	background: #FFF;
 	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+ 	-khtml-border-radius: 10px;
+ 	border-radius: 10px;
 	border: 1px solid #CCC;
 }
 * html #main{width: 720px;}
@@ -43,11 +46,13 @@ body {
 }
 #gallerytitle {
 	padding: 20px 10px 10px 20px;
-	-moz-border-radius-topleft: 10px;
-	-moz-border-radius-topright: 10px;
+	-moz-border-radius: 10px 10px 0px 0px;
+	-webkit-border-radius: 10px 10px 0px 0px;
+ 	-khtml-border-topright: 10px 10px 0px 0px;
+ 	border-radius: 10px 10px 0px 0px;
 	background: #F8F8F8;
 	height:30px;
-	border-bottom: 1px solid #CCC;	
+	border-bottom: 1px solid #CCC;
 }
 #padbox {
 	padding: 20px !important;
@@ -91,6 +96,7 @@ h2 {
 	font-size: 1.5em;
 	letter-spacing: 0.4pt;
 	color: #666;
+	text-decoration: none;
 	text-transform: uppercase;
 	padding:0;
 	margin:0;
@@ -102,7 +108,7 @@ h2 a:hover, h2 a:focus { text-decoration: none; color: #7A2;}
 h3 {
 	color: #666;
 	margin: 5px 0 5px 0 !important;
-	margin: 0;	
+	margin: 0;
 	padding: 0;
 }
 h4 {
@@ -138,8 +144,8 @@ blockquote {
 	color: #363630;
 }
 acronym {
-  	cursor: help;
-  	border-bottom: 1px solid;
+		cursor: help;
+		border-bottom: 1px solid;
 }
 
 /* Page Navigation
@@ -218,6 +224,12 @@ ul.pagelist li.next {
 
 /* Image Thumbnails
 ------------------------------ */
+#images {
+	float: left;
+	width: 590px;
+	border: 0px solid gray;
+}
+
 .imagethumb a, .thumb a {
 	display: block;
 	padding: 7px;
@@ -235,7 +247,8 @@ ul.pagelist li.next {
 /* Album Thumbnails
 ------------------------------ */
 #albums {
-        float: left;
+				float: left;
+				padding: 7px;
 }
 .album {
 	margin: 0 15px 15px 0;
@@ -281,7 +294,7 @@ ul.pagelist li.next {
 	width: 140px;
 	text-align: center;
 	margin-top: 13px;
-	
+
 }
 .imgnav {
 	float: right;
@@ -321,7 +334,7 @@ ul.pagelist li.next {
 	float: right;
 }
 #imgoriginal {
-	font-size: 8pt; 
+	font-size: 8pt;
 	text-align: right;
 	height:30px;
 }
@@ -338,10 +351,6 @@ ul.pagelist li.next {
 #comments {
 	clear: both;
 }
-.error { 
-  color: #C33; 
-  font-weight: bold; 
-}
 .comment {
 	padding: 5px;
 	border: 1px solid #DDD;
@@ -355,6 +364,27 @@ ul.pagelist li.next {
 	font-size: 9px;
 }
 
+/* jQuery pagination comments */
+
+.Pagination {
+	margin-bottom: 10px;
+}
+
+.Pagination span.current,
+.Pagination span.next,
+.Pagination a,
+.Pagination a.next {
+	padding:0px 4px 0px 4px;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.Pagination span.prev,
+.Pagination a.prev {
+	padding:0px 4px 0px 0px;
+	margin-left: 0;
+	margin-right: 0px;
+}
 
 /* Forms
 ------------------------------ */
@@ -437,15 +467,15 @@ label {
 	margin:0px;
 }
 #search input.pushbutton {
-  padding: 1px;
-  font-size: 80%;
+	padding: 1px;
+	font-size: 80%;
 }
 #search a {
 text-decoration: none;
 }
 #search ul {
-border: 1px solid #ccc; position:absolute; text-align:left; list-style: none; 
-height: 8em; width: 20em; overflow: auto; 
+border: 1px solid #ccc; position:absolute; text-align:left; list-style: none;
+height: 8em; width: 20em; overflow: auto;
 background-color: white;
 }
 
@@ -454,8 +484,8 @@ position: relative;
 top: 4px;
 }
 .clear {
-  clear:both;
-  height:10px;
+	clear:both;
+	height:10px;
 }
 
 /* Archive View
@@ -525,6 +555,10 @@ ul.archive .month {
 	font-weight: bold;
 	margin: 0px;
 }
+.errorlist {
+	list-style-type: none;
+}
+
 /* Zenphoto link
 ------------------------------ */
 
@@ -541,7 +575,9 @@ ul.archive .month {
 }
 
 /* centering flowplayer 3 on image.php */
-#image .flowplayer {
+#image .flowplayer,
+.jp-audio,
+.jp-video {
 	margin: 0 auto;
 }
 
@@ -572,4 +608,117 @@ table.password td.submit{
 
 table.password td.hint{
 	text-align:left;
+}
+.textobject {
+	font-size: 12px;
+	line-height: 16px;
+	text-align: left !important;
+	text-decoration: none !important;
+	overflow:scroll !important;
+}
+/* box for important notes
+------------------------------ */
+.notebox {
+	padding: 5px 10px 5px 10px;
+	background-color: #FFEFB7;
+	border-width: 1px 1px 2px 1px;
+	border-color: #FFDEB5;
+	border-style: solid;
+	margin-bottom: 10px;
+	font-size: 100%;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.notebox li {
+	list-style-type: none;
+}
+
+.notebox h2,.notebox strong {
+	color: #663300;
+	font-size: 100%;
+	font-weight: bold;
+	margin-bottom: 1em;
+}
+/* Messages
+------------------------------ */
+.messagebox {
+	background-color: #C0FFA8;
+	padding: 10px 15px 10px 15px;
+	border-width: 1px 1px 2px 1px;
+	border-color: #8BD37C;
+	border-style: solid;
+	margin-bottom: 10px;
+}
+
+.messagebox h2 {
+	color: #006633;
+	font-size: 100%;
+	font-weight: bold;
+	margin-bottom: 1em;
+}
+/* Login
+------------------------------ */
+#loginform {
+	padding: 10px;
+	width: 370px;
+	margin: 25px auto;
+	margin-top: 15%;
+	margin-left: 0 auto;
+	font-size: 100%;
+	background: #F7F8F9;
+	border-top: 1px solid #BAC9CF;
+	border-left: 1px solid #BAC9CF;
+	border-right: 1px solid #BAC9CF;
+	border-bottom: 5px solid #BAC9CF;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+#loginform fieldset {
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	border: 1px solid lightgray;
+	text-align:center;
+}
+
+#loginform input.textfield {
+	margin: 0px;
+	width:270px;
+	font-size: 100%;
+	padding: 4px;
+}
+
+.logon_form_text {
+	padding: 4px;
+	text-align:left;
+	margin-left: 10px;
+	margin-left: 5px;
+}
+
+.logon_link {
+	text-align:center;
+}
+
+.button {
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+label {
+	cursor: pointer;
+}
+
+label:hover {
+	color: #000;
+}
+
+#registration_form {
+	width:370px;
 }

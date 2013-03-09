@@ -7,7 +7,7 @@
 
 /*
  RSS Extractor and Displayer
- (c) 2007-2009  Scriptol.com - Licence Mozilla 1.1.
+ (c) 2007-2009  Scriptol.com - License Mozilla 1.1.
  rsslib.php
  
  Modified for zenphoto by s. billard
@@ -93,7 +93,7 @@ function RSS_Retrieve($url) {
 		?>
 		<ul>
 			<li>
-			<?php //TODO: printf(gettext('Failed to retrieve link <em>%s</em>'),$url); ?>
+			<?php printf(gettext('Failed to retrieve link <em>%s</em>'),$url); ?>
 			</li>
 		</ul>
 		<?php
@@ -124,7 +124,7 @@ function RSS_Display($url, $size = 15, $site = 0) {
 			}
 		}
 		$title = $article["title"];
-		$format = getOption('date_format');
+		$format = DATE_FORMAT;
 		$date = zpFormattedDate($format, strtotime($article["pubDate"]));
 		$link = $article["link"];
 		$description = $article["description"];

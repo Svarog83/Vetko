@@ -1,8 +1,8 @@
 <?php
 /**
  * Zenphoto default captcha handler
- * 
- * @package plugins 
+ *
+ * @package plugins
  */
 
 // force UTF-8 Ø
@@ -15,8 +15,8 @@ class captcha {
 	 */
 	function captcha() {
 		setOptionDefault('zenphoto_captcha_length', 5);
-		setOptionDefault('zenphoto_captcha_key', md5($_SERVER['HTTP_HOST'].'a9606420399a77387af2a4b541414ee5'.getUserIP()));
-		setOptionDefault('zenphoto_captcha_string', 'abcdefghijkmnpqrstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWXYZ'); 
+		setOptionDefault('zenphoto_captcha_key', sha1($_SERVER['HTTP_HOST'].'a9606420399a77387af2a4b541414ee5'.getUserIP()));
+		setOptionDefault('zenphoto_captcha_string', 'abcdefghijkmnpqrstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWXYZ');
 	}
 
 	/**
@@ -26,69 +26,67 @@ class captcha {
 	 */
 	function getOptionsSupported() {
 		return array(
-								gettext('Hash key') => array('key' => 'zenphoto_captcha_key', 'type' => OPTION_TYPE_TEXTBOX, 
+								gettext('Hash key') => array('key' => 'zenphoto_captcha_key', 'type' => OPTION_TYPE_TEXTBOX,
 												'order'=> 2,
-												'desc' => gettext('The key used in hashing the Captcha string. Note: this key will change with each successful Captcha verification.')),
-								gettext('Allowed characters') => array('key' => 'zenphoto_captcha_string', 'type' => OPTION_TYPE_TEXTBOX, 
+												'desc' => gettext('The key used in hashing the CAPTCHA string. Note: this key will change with each successful CAPTCHA verification.')),
+								gettext('Allowed characters') => array('key' => 'zenphoto_captcha_string', 'type' => OPTION_TYPE_TEXTBOX,
 												'order'=> 1,
-												'desc' => gettext('The characters which may appear in the Captcha string.')),
-								gettext('Captcha length') => array('key' => 'zenphoto_captcha_length', 'type' => OPTION_TYPE_RADIO, 
+												'desc' => gettext('The characters which may appear in the CAPTCHA string.')),
+								gettext('CAPTCHA length') => array('key' => 'zenphoto_captcha_length', 'type' => OPTION_TYPE_RADIO,
 												'order'=> 0,
 												'buttons' => array(gettext('3')=>3, gettext('4')=>4, gettext('5')=>5, gettext('6')=>6),
-												'desc' => gettext('The number of characters in the Captcha.')),
-								gettext('Captcha font') => array('key' => 'zenphoto_captcha_font', 'type' => OPTION_TYPE_SELECTOR,
+												'desc' => gettext('The number of characters in the CAPTCHA.')),
+								gettext('CAPTCHA font') => array('key' => 'zenphoto_captcha_font', 'type' => OPTION_TYPE_SELECTOR,
 												'order'=> 3,
-												'selections' => zp_getFonts(),
-												'desc' => gettext('The font to use for captcha characters.')),
+												'selections' => array_merge(array('*'.gettext('random').'*'=>'*'),zp_getFonts()),
+												'desc' => gettext('The font to use for CAPTCHA characters.')),
 								'' 			=> array('key' => 'zenphoto_captcha_image', 'type' => OPTION_TYPE_CUSTOM,
 												'order' => 4,
-												'desc' => gettext('Sample Cpatcha image'))
+												'desc' => gettext('Sample CAPTCHA image'))
 								);
 	}
 	function handleOption($key, $cv) {
-		$captchaCode = $this->generateCaptcha($img);
+		$captcha = $this->getCaptcha();
 		?>
+		<span id="zenphoto_captcha_image_loc"><?php echo $captcha['html']; ?></span>
 		<script type="text/javascript">
-		// <![CDATA[
-		$(document).ready(function() { 	
+			// <!-- <![CDATA[
+			$(document).ready(function() {
 				$('#zenphoto_captcha_font').change(function(){
-					var imgsrc = '<img src="<?php echo $img; ?>&amp;f='+$('#zenphoto_captcha_font').val()+'" alt="" />';
-					$('#zenphoto_captcha_image_loc').html(imgsrc);
-				});	
-		});
-		// ]]>
+					$('#zenphoto_captcha_image_loc').html($('#zenphoto_captcha_image_loc').html().replace(/">/, '&amp;f='+$('#zenphoto_captcha_font').val()+'"'));
+				});
+			});
+			// ]]> -->
 		</script>
-		<span id="zenphoto_captcha_image_loc"><img src="<?php echo $img; ?>" alt="" /></span>
 		<?php
 	}
 
-	
+
 	/**
-	 * gets (or creates) the captcha encryption key
+	 * gets (or creates) the CAPTCHA encryption key
 	 *
 	 * @return string
 	 */
 	function getCaptchaKey() {
+		global $_zp_authority;
 		$key = getOption('zenphoto_captcha_key');
 		if (empty($key)) {
-			$admins = getAdministrators();
-			if (count($admins) > 0) {
-				$admin = array_shift($admins);
-				$key = $admin['pass'];
+			$admin = $_zp_authority->getAnAdmin(array('`user`=' => $_zp_authority->master_user, '`valid`=' => 1));
+			if (is_object($admin)) {
+				$key = $admin->getPass();
 			} else {
 				$key = 'No admin set';
 			}
-			$key = md5('zenphoto'.$key.'captcha key');
+			$key = sha1('zenphoto'.$key.'captcha key');
 			setOption('zenphoto_captcha_key', $key);
 		}
 		return $key;
 	}
 
 	/**
-	 * Checks if a Captcha string matches the Captcha attached to the comment post
+	 * Checks if a CAPTCHA string matches the CAPTCHA attached to the comment post
 	 * Returns true if there is a match.
 	 *
-	 * @param string $key
 	 * @param string $code
 	 * @param string $code_ok
 	 * @return bool
@@ -96,15 +94,14 @@ class captcha {
 	function checkCaptcha($code, $code_ok) {
 		$captcha_len = getOption('zenphoto_captcha_length');
 		$key = $this->getCaptchaKey();
-		$code_cypher = md5(bin2hex(rc4($key, trim($code))));
+		$code_cypher = sha1(bin2hex(rc4($key, trim($code))));
 		$code_ok = trim($code_ok);
 		if ($code_cypher != $code_ok || strlen($code) != $captcha_len) { return false; }
 		query('DELETE FROM '.prefix('captcha').' WHERE `ptime`<'.(time()-3600)); // expired tickets
 		$result = query('DELETE FROM '.prefix('captcha').' WHERE `hash`="'.$code_cypher.'"');
-		$count = mysql_affected_rows();
-		if ($count == 1) {
+		if ($result && db_affected_rows() == 1) {
 			$len = rand(0, strlen($key)-1);
-			$key = md5(substr($key, 0, $len).$code.substr($key, $len));
+			$key = sha1(substr($key, 0, $len).$code.substr($key, $len));
 			setOption('zenphoto_captcha_key', $key);
 			return true;
 		}
@@ -112,16 +109,11 @@ class captcha {
 	}
 
 	/**
-	 * generates a simple captcha for comments
+	 * generates a simple captcha
 	 *
-	 * Thanks to gregb34 who posted the original code
-	 *
-	 * Returns the captcha code string and image URL (via the $image parameter).
-	 *
-	 * @return string;
+	 * @return array;
 	 */
-	function generateCaptcha(&$image) {
-
+	function getCaptcha() {
 		$captcha_len = getOption('zenphoto_captcha_length');
 		$key = $this->getCaptchaKey();
 		$lettre = getOption('zenphoto_captcha_string');
@@ -132,11 +124,13 @@ class captcha {
 			$string .= $lettre[rand(0,$numlettre)];
 		}
 		$cypher = bin2hex(rc4($key, $string));
-		$code=md5($cypher);
-		query('DELETE FROM '.prefix('captcha').' WHERE `ptime`<'.(time()-3600), true);  // expired tickets
-		query("INSERT INTO " . prefix('captcha') . " (ptime, hash) VALUES ('" . zp_escape_string(time()) . "','" . zp_escape_string($code) . "')", true);
-		$image = WEBPATH . '/' . ZENFOLDER . "/c.php?i=$cypher";
-		return $code;
+		$code=sha1($cypher);
+		query('DELETE FROM '.prefix('captcha').' WHERE `ptime`<'.(time()-3600), false);  // expired tickets
+		query("INSERT INTO " . prefix('captcha') . " (ptime, hash) VALUES (" . db_quote(time()) . "," . db_quote($code) . ")", false);
+		$html = '<img src="'.WEBPATH .'/'.ZENFOLDER.'/c.php?i='.$cypher.'" alt="Code" align="middle" />';
+		$input = '<input type="text" id="code" name="code" class="captchainputbox" />';
+		$hidden = '<input type="hidden" name="code_h" value="'.$code.'" />';
+		return array('input'=>$input, 'html'=>$html, 'hidden'=>$hidden);
 	}
 }
 

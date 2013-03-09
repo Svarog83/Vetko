@@ -1,49 +1,37 @@
 <?php include ("header.php"); ?>
-		<div id="headline" class="clearfix">
-			<h4><span><?php printHomeLink('', ' | '); ?>
-                <a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Albums Index'); ?>">
-                <?php echo getGalleryTitle();?></a>
-                <?php if(!isset($ishomepage)) { printParentPagesBreadcrumb(" | ",""); } ?>
-                <strong><?php if(!isset($ishomepage)) { printPageTitle(" | "); } ?></strong>
-            </h4>
-			<table id="navbar" class="clr">
-					<tr>
-						<td width="100%">
-							<div id="navbar-center">
-								<span>
-									<?php printPageMenu('omit-top','nav-pages','page-active','nav-subpages','subpage-active'); ?>
-								</span>
-							</div>
-						</td>
-					</tr>
-			</table>
+	
+	<?php if(!isset($ishomepage)) { ?>
+	<div class="wrapper" id="breadcrumbs">
+		<div class="centered">
+			<div class="breadcrumbs">
+				<div>
+					<span><?php printHomeLink('', ' &raquo; '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php gettext('Albums Index'); ?>"><?php echo gettext('Home'); ?></a><?php if(!isset($ishomepage)) { printZenpageItemsBreadcrumb(" &raquo; ",""); } ?><?php if(!isset($ishomepage)) { printPageTitle(" &raquo; "); } ?></span>
+				</div>
+			</div>
 		</div>
-
-		<div id="post" class="clearfix">
-			<h2><?php printPageTitle(); ?></h2>
-			<?php if (getPageExtraContent()) { ?>
+	</div>
+	<?php } ?>
+	<div class="wrapper">
+		<div class="centered">
 			<div class="extra-content">
+				<?php printPageMenu('omit-top','news-cat-list','news-cat-active','news-cat-list','news-cat-active'); ?>
 				<?php printPageExtraContent(); ?>
 			</div>
-			<?php } ?>
-			<?php
-			printPageContent();
-			printCodeblock(1);
-			?>
+
+			<div id="post">		
+				<h2><?php printPageTitle(); ?></h2>
+				<?php
+				printPageContent(); 
+				printCodeblock(1); 
+				?>
+			</div>
 		</div>
-
-		<?php if ((function_exists('printCommentForm')) && (zenpageOpenedForComments()) ) { ?>
-		<a class="fadetoggler"><?php echo gettext('Comments'); ?> (<?php echo getCommentCount(); ?>)</a>
-		<?php } ?>
-		<?php if ((function_exists('printCommentForm')) && (zenpageOpenedForComments()) ) { ?>
-		<div id="comment-wrap" class="fader clearfix">
-			<?php printCommentForm(); ?>
+	</div>
+	<div class="wrapper">
+		<div class="centered">
+			<?php if (function_exists('printCommentForm')) { ?><div id="comment-wrap"><?php printCommentForm(); ?></div><?php } ?>
 		</div>
-		<?php } ?>
-
-		<?php if ( ((getOption('image_statistic')!='none')) && (((function_exists('printImageStatistic')) || (getOption('image_statistic')=='random'))) ) { ?>
-		<?php include("image_statistic.php"); ?>
-		<?php } ?>
-
+	</div>
+			
 <?php include("footer.php"); ?>
 

@@ -1,32 +1,108 @@
 <?php
 /**
  * Provides a unified comment handling facility
- * 
+ *
  * Place a call on the function printCommentForm() in your script where you
  * wish the comment items to appear.
- * 
+ *
  * Normally the plugin uses the form plugins/comment_form/comment_form.php.
  * However, you may override this form by placing a script of the same name in your theme folder.
  * This will allow you to customize the appearance of the comments on your site.
- * 
- * There are several options to tune what the plugin will do. 
- * 
+ *
+ * There are several options to tune what the plugin will do.
+ *
+ * @author Stephen Billard (sbillard)
  * @package plugins
  */
-$plugin_is_filter = 5;
+$plugin_is_filter = 5|ADMIN_PLUGIN|THEME_PLUGIN;
 $plugin_description = gettext("Provides a unified comment handling facility.");
 $plugin_author = "Stephen Billard (sbillard)";
-$plugin_version = '1.2.9'; 
-$plugin_URL = "http://www.zenphoto.org/documentation/plugins/_".PLUGIN_FOLDER."---comment_form.php.html";
-$option_interface = new comment_form();
+$plugin_version = '1.4.2';
+$option_interface = 'comment_form';
 
-zp_register_filter('comment_post', 'comment_form_comment_post');
-zp_register_filter('save_comment_custom_data', 'comment_form_save_comment');
-zp_register_filter('edit_comment_custom_data', 'comment_form_edit_comment');
+if (getOption('zp_plugin_comment_form')) {	// 	We might get loaded by some plugin needing the address fields
+	zp_register_filter('comment_post', 'comment_form_comment_post');
+	zp_register_filter('options_comments', 'comment_form_options');
+	zp_register_filter('save_comment_custom_data', 'comment_form_save_comment');
+	zp_register_filter('edit_comment_custom_data', 'comment_form_edit_comment');
+	zp_register_filter('admin_overview', 'comment_form_print10Most',0);
+
+	// I choose to keep unneeded js loading low to add an option to specifially disable pagination
+	if(getOption('comment_form_pagination')) {
+		zp_register_filter('theme_head','comment_form_PaginationJS');
+	}
+}
 zp_register_filter('save_admin_custom_data', 'comment_form_save_admin');
-zp_register_filter('edit_admin_custom_data', 'comment_form_edit_admin', 1);
+zp_register_filter('edit_admin_custom_data', 'comment_form_edit_admin');
+if (getOption('register_user_address_info')) {
+	zp_register_filter('register_user_form', 'comment_form_register_user');
+	zp_register_filter('register_user_registered', 'comment_form_register_save');
+}
+
+function comment_form_PaginationJS() {
+	?>
+	<script type="text/javascript" src="<?php echo WEBPATH . '/' . ZENFOLDER ; ?>/js/jquery.pagination.js"></script>
+	<script type="text/javascript">
+
+            // This is a very simple demo that shows how a range of elements can
+            // be paginated.
+            // The elements that will be displayed are in a hidden DIV and are
+            // cloned for display. The elements are static, there are no Ajax
+            // calls involved.
+
+            /**
+             * Callback function that displays the content.
+             *
+             * Gets called every time the user clicks on a pagination link.
+             *
+             * @param {int} page_index New Page index
+             * @param {jQuery} jq the container with the pagination links as a jQuery object
+             */
+            function pageselectCallback(page_index, jq){
+            		var items_per_page = <?php echo getOption('comment_form_comments_per_page'); ?>;
+                var max_elem = Math.min((page_index+1) * items_per_page, $('#comments div.comment').length);
+                var newcontent = '';
+               // alert(members);
+                // Iterate through a selection of the content and build an HTML string
+                for(var i=page_index*items_per_page;i<max_elem;i++) {
+                	//i+2 needed as somehow nth-children needs to start that way...
+                 	newcontent += '<div class="comment">'+$('#comments div.comment:nth-child('+(i+2)+')').html()+'</div>';
+                }
+
+                // Replace old content with new content
+                $('#Commentresult').html(newcontent);
+
+                // Prevent click eventpropagation
+                return false;
+            }
+
+            /**
+             * Initialisation function for pagination
+             */
+            function initPagination() {
+                // count entries inside the hidden content
+                var num_entries = $('#comments div.comment').length;
+                // Create content inside pagination element
+                $(".Pagination").pagination(num_entries, {
+                		prev_text: "<?php echo gettext('prev'); ?>",
+                		next_text: "<?php echo gettext('next'); ?>",
+                    callback: pageselectCallback,
+                    load_first_page:true,
+                    items_per_page:<?php echo getOption('comment_form_comments_per_page'); ?> // Show only one item per page
+                });
+             }
+
+            // When document is ready, initialize pagination
+            $(document).ready(function(){
+                initPagination();
+            });
+
+        </script>
+	<?php
+}
 
 class comment_form {
+
 	/**
 	 * class instantiation function
 	 *
@@ -43,6 +119,9 @@ class comment_form {
 		setOptionDefault('comment_form_rss', 1);
 		setOptionDefault('comment_form_private', 1);
 		setOptionDefault('comment_form_anon', 1);
+		setOptionDefault('comment_form_showURL', 1);
+		setOptionDefault('comment_form_comments_per_page', 10);
+		setOptionDefault('comment_form_pagination', true);
 	}
 
 
@@ -52,25 +131,43 @@ class comment_form {
 	 * @return array
 	 */
 	function getOptionsSupported() {
-		$checkboxes = array(gettext('Albums') => 'comment_form_albums', gettext('Images') => 'comment_form_images');	
-		if (getOption('zp_plugin_zenpage')) {					
+		$checkboxes = array(gettext('Albums') => 'comment_form_albums', gettext('Images') => 'comment_form_images');
+		if (getOption('zp_plugin_zenpage')) {
 			$checkboxes = array_merge($checkboxes, array(gettext('Pages') => 'comment_form_pages', gettext('News') => 'comment_form_articles'));
 		}
-		
+
 		return array(	gettext('Address fields') => array('key' => 'comment_form_addresses', 'type' => OPTION_TYPE_RADIO,
+										'order' => 0,
 										'buttons' => array(gettext('Omit')=>0, gettext('Show')=>1, gettext('Require')=>'required'),
 										'desc' => gettext('If <em>Address fields</em> are shown or required, the form will include positions for address information. If required, the poster must supply data in each address field.')),
 									gettext('Allow comments on') => array('key' => 'comment_form_allowed', 'type' => OPTION_TYPE_CHECKBOX_ARRAY,
+										'order' => 5,
 										'checkboxes' => $checkboxes,
-									'desc' => gettext('Comment forms will be presented on the checked pages.')),
+										'desc' => gettext('Comment forms will be presented on the checked pages.')),
+									gettext('Toggled comment block') => array('key' => 'comment_form_toggle', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 6,
+										'desc' => gettext('If checked, existing comments will be initially hidden. Clicking on the provided button will show them.')),
+									gettext('Show author URL') => array('key' => 'comment_form_showURL', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 1,
+										'desc' => gettext('To discourage SPAM, uncheck this box and the author URL will not be revealed.')),
 									gettext('Only members can comment') => array('key' => 'comment_form_members_only', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 2,
 										'desc' => gettext('If checked, only logged in users will be allowed to post comments.')),
 									gettext('Allow private postings') => array('key' => 'comment_form_private', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 3,
 										'desc' => gettext('If checked, posters may mark their comments as private (not for publishing).')),
-									gettext('Allow anonomous posting') => array('key' => 'comment_form_anon', 'type' => OPTION_TYPE_CHECKBOX,
+									gettext('Allow anonymous posting') => array('key' => 'comment_form_anon', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 4,
 										'desc' => gettext('If checked, posters may exclude their personal information from the published post.')),
 									gettext('Include RSS link') => array('key' => 'comment_form_rss', 'type' => OPTION_TYPE_CHECKBOX,
-										'desc' => gettext('If checked, an RSS link will be included at the bottom of the comment section.'))
+										'order' => 8,
+										'desc' => gettext('If checked, an RSS link will be included at the bottom of the comment section.')),
+									gettext('Comments per page') => array('key' => 'comment_form_comments_per_page', 'type' => OPTION_TYPE_TEXTBOX,
+										'order' => 8,
+										'desc' => gettext('The comments that should show per page using the jQuery pagination')),
+									gettext('Pagination') => array('key' => 'comment_form_pagination', 'type' => OPTION_TYPE_CHECKBOX,
+										'order' => 8,
+										'desc' => gettext('Uncheck to disable the jQuery pagination of comments. Enabled by default.')),
 									);
 	}
 
@@ -91,6 +188,97 @@ function comment_form_save_comment($discard) {
 }
 
 /**
+ * Admin overview summary
+ */
+function comment_form_print10Most($side) {
+	if ($side=='right') {
+			?>
+		<div class="box" id="overview-comments">
+		<h2 class="h2_bordered"><?php echo gettext("10 Most Recent Comments"); ?></h2>
+		<ul>
+		<?php
+		$comments = fetchComments(10);
+		foreach ($comments as $comment) {
+			$id = $comment['id'];
+			$author = $comment['name'];
+			$email = $comment['email'];
+			$link = gettext('<strong>database error</strong> '); // incase of such
+
+			// ZENPAGE: switch added for zenpage comment support
+			switch ($comment['type']) {
+				case "albums":
+					$image = '';
+					$title = '';
+					$albmdata = query_full_array("SELECT `title`, `folder` FROM ". prefix('albums') .
+		 										" WHERE `id`=" . $comment['ownerid']);
+					if ($albmdata) {
+						$albumdata = $albmdata[0];
+						$album = $albumdata['folder'];
+						$albumtitle = get_language_string($albumdata['title']);
+						$link = "<a href=\"".rewrite_path("/$album","/index.php?album=".pathurlencode($album))."\">".$albumtitle.$title."</a>";
+						if (empty($albumtitle)) $albumtitle = $album;
+					}
+					break;
+				case "news": // ZENPAGE: if plugin is installed
+					if(getOption("zp_plugin_zenpage")) {
+						$titlelink = '';
+						$title = '';
+						$newsdata = query_full_array("SELECT `title`, `titlelink` FROM ". prefix('news') .
+		 										" WHERE `id`=" . $comment['ownerid']);
+						if ($newsdata) {
+							$newsdata = $newsdata[0];
+							$titlelink = $newsdata['titlelink'];
+							$title = get_language_string($newsdata['title']);
+							$link = "<a href=\"".rewrite_path("/news/".$titlelink,"/index.php?p=news&amp;title=".urlencode($titlelink))."\">".$title."</a> ".gettext("[news]");
+						}
+					}
+					break;
+				case "pages": // ZENPAGE: if plugin is installed
+					if(getOption("zp_plugin_zenpage")) {
+						$image = '';
+						$title = '';
+						$pagesdata = query_full_array("SELECT `title`, `titlelink` FROM ". prefix('pages') .
+		 										" WHERE `id`=" . $comment['ownerid']);
+						if ($pagesdata) {
+							$pagesdata = $pagesdata[0];
+							$titlelink = $pagesdata['titlelink'];
+							$title = get_language_string($pagesdata['title']);
+							$link = "<a href=\"".rewrite_path("/pages/".$titlelink,"/index.php?p=pages&amp;title=".urlencode($titlelink))."\">".$title."</a> ".gettext("[page]");
+						}
+					}
+					break;
+				default: // all of the image types
+					$imagedata = query_full_array("SELECT `title`, `filename`, `albumid` FROM ". prefix('images') .
+		 										" WHERE `id`=" . $comment['ownerid']);
+					if ($imagedata) {
+						$imgdata = $imagedata[0];
+						$image = $imgdata['filename'];
+						if ($imgdata['title'] == "") $title = $image; else $title = get_language_string($imgdata['title']);
+						$title = '/ ' . $title;
+						$albmdata = query_full_array("SELECT `folder`, `title` FROM ". prefix('albums') .
+		 											" WHERE `id`=" . $imgdata['albumid']);
+						if ($albmdata) {
+							$albumdata = $albmdata[0];
+							$album = $albumdata['folder'];
+							$albumtitle = get_language_string($albumdata['title']);
+							$link = "<a href=\"".rewrite_path("/$album/$image","/index.php?album=".pathurlencode($album).	"&amp;image=".urlencode($image))."\">".$albumtitle.$title."</a>";
+							if (empty($albumtitle)) $albumtitle = $album;
+						}
+					}
+					break;
+			}
+			$comment = truncate_string($comment['comment'], 123);
+			echo "<li><div class=\"commentmeta\">".sprintf(gettext('<em>%1$s</em> commented on %2$s:'),$author,$link)."</div><div class=\"commentbody\">$comment</div></li>";
+		}
+		?>
+		</ul>
+		</div>
+		<?php
+	}
+	return $side;
+}
+
+/**
  * Returns table row(s) for edit of a comment's custom data
  *
  * @param string $discard always empty
@@ -102,34 +290,40 @@ function comment_form_edit_comment($discard, $raw) {
 	} else {
 		$address = unserialize($raw);
 	}
-	return
-			 '<tr> 
+	$required = getOption('register_user_address_info');
+	if ($required == 'required') {
+		$required = '*';
+	} else {
+		$required = false;
+	}
+	$html =
+			 '<tr>
 					<td>'.
-						gettext('street:').
+						sprintf(gettext('Street%s:'),$required).
 				 '</td>
-			 		<td>
+					<td>
 						<input type="text" name="0-comment_form_street" id="comment_form_street" class="inputbox" size="40" value="'.$address['street'].'">
 					</td>
 				</tr>
 				<tr>
 					<td>'.
-						gettext('city:').
-			 		'</td>
+						sprintf(gettext('City%s:'),$required).
+					'</td>
 					<td>
 						<input type="text" name="0-comment_form_city" id="comment_form_city" class="inputbox" size="40" value="'.$address['city'].'">
 					</td>
-			 	</tr>
-			 	<tr>
+				</tr>
+				<tr>
 					<td>'.
-						gettext('state:').
+						sprintf(gettext('State%s:'),$required).
 				 '</td>
-			 		<td>
+					<td>
 						<input type="text" name="0-comment_form_state" id="comment_form_state" class="inputbox" size="40" value="'.$address['state'].'">
 					</td>
 				</tr>
 				<tr>
 					<td>'.
-						gettext('country:').
+						sprintf(gettext('Country%s:'),$required).
 				 '</td>
 					<td>
 						<input type="text" name="0-comment_form_country" id="comment_form_country" class="inputbox" size="40" value="'.$address['country'].'">
@@ -137,25 +331,77 @@ function comment_form_edit_comment($discard, $raw) {
 				</tr>
 				<tr>
 					<td>'.
-						gettext('postal code:').
+						sprintf(gettext('Postal code%s:'),$required).
 					'</td>
 					<td>
 						<input type="text" name="0-comment_form_postal" id="comment_form_postal" class="inputbox" size="40" value="'.$address['postal'].'">
 					</td>
 				</tr>'."\n";
+	if ($required) {
+		$html .=
+				'<tr>
+					<td>
+					</td>
+					<td>'.
+						gettext('*Required').
+					'</td>
+				</tr>'."\n";
+	}
+	return $html;
+}
+
+function comment_form_register_user($html) {
+	global $_comment_form_save_post;
+	return comment_form_edit_comment(false, $_comment_form_save_post);
+}
+
+function comment_form_register_save($user) {
+	global $_comment_form_save_post;
+	$addresses = getOption('register_user_address_info');
+	$userinfo = getUserInfo(0);
+	$_comment_form_save_post = serialize($userinfo);
+	if ($addresses == 'required') {
+		if (!isset($userinfo['street']) || empty($userinfo['street'])) {
+			$user->transient = true;
+			$user->msg .= ' '.gettext('You must supply the street field.');
+		}
+		if (!isset($userinfo['city']) || empty($userinfo['city'])) {
+			$user->transient = true;
+			$user->msg .= ' '.gettext('You must supply the city field.');
+		}
+		if (!isset($userinfo['state']) || empty($userinfo['state'])) {
+			$user->transient = true;
+			$user->msg .= ' '.gettext('You must supply the state field.');
+		}
+		if (!isset($userinfo['country']) || empty($userinfo['country'])) {
+			$user->transient = true;
+			$user->msg .= ' '.gettext('You must supply the country field.');
+		}
+		if (!isset($userinfo['postal']) || empty($userinfo['postal'])) {
+			$user->transient = true;
+			$user->msg .= ' '.gettext('You must supply the postal code field.');
+		}
+	}
+	$user->setCustomData($_comment_form_save_post);
 }
 
 /**
  * Saves admin custom data
  * Called when an admin is saved
  *
- * @param string $discard always empty
+ * @param string $updated true if data has changed
  * @param object $userobj admin user object
  * @param string $i prefix for the admin
- * @return string
+ * @param bool $alter will be true if critical admin data may be altered
+ * @return bool
  */
-function comment_form_save_admin($discard, $userobj, $i) {
+function comment_form_save_admin($updated, $userobj, $i, $alter) {
+	$olddata = $userobj->getCustomData();
 	$userobj->setCustomData(serialize(getUserInfo($i)));
+	if ($olddata != $userobj->getCustomData()) {
+		return true;
+	}
+	return $updated;
 }
 
 /**
@@ -176,7 +422,7 @@ function getUserInfo($i) {
 }
 
 /**
- * Processes the address parts of a comment posst
+ * Processes the address parts of a comment post
  *
  * @param object $commentobj the comment object
  * @param object $receiver the object receiving the comment
@@ -189,23 +435,36 @@ function comment_form_comment_post($commentobj, $receiver) {
 			// Note: this error will be incremented by functions-controller
 			if (!isset($userinfo['street']) || empty($userinfo['street'])) {
 				$commentobj->setInModeration(-11);
+				$commentobj->comment_error_text .= ' '.gettext('You must supply the street field.');
 			}
 			if (!isset($userinfo['city']) || empty($userinfo['city'])) {
 				$commentobj->setInModeration(-12);
+				$commentobj->comment_error_text .= ' '.gettext('You must supply the city field.');
 			}
 			if (!isset($userinfo['state']) || empty($userinfo['state'])) {
 				$commentobj->setInModeration(-13);
+				$commentobj->comment_error_text .= ' '.gettext('You must supply the state field.');
 			}
 			if (!isset($userinfo['country']) || empty($userinfo['country'])) {
 				$commentobj->setInModeration(-14);
+				$commentobj->comment_error_text .= ' '.gettext('You must supply the country field.');
 			}
 			if (!isset($userinfo['postal']) || empty($userinfo['postal'])) {
+				$commentobj->comment_error_text .= ' '.gettext('You must supply the postal code field.');
 				$commentobj->setInModeration(-15);
 			}
 		}
 		$commentobj->setCustomData(serialize($userinfo));
 	}
 	return $commentobj;
+}
+
+/**
+ * Supplies comment form options on the options/comments tab
+ */
+function comment_form_options() {
+	$optionHandler = new comment_form();
+	customOptions($optionHandler, "");
 }
 
 /**
@@ -224,14 +483,14 @@ function comment_form_edit_admin($html, $userobj, $i, $background, $current) {
 	if (!preg_match('/^a:[0-9]+:{/', $raw)) {
 		$address = $needs;
 	} else {
-		$address = unserialize($userobj->getCustomData());
+		$address = unserialize($raw);
 		foreach ($needs as $needed=>$value) {
 			if (!isset($address[$needed])) {
 				$address[$needed] = '';
 			}
 		}
 	}
-		
+
 	return $html.
 	 '<tr'.((!$current)? ' style="display:none;"':'').' class="userextrainfo">
 			<td width="20%"'.((!empty($background)) ? ' style="'.$background.'"':'').' valign="top">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.gettext("Website:").'</td>
@@ -262,56 +521,62 @@ function comment_form_edit_admin($html, $userobj, $i, $background, $current) {
 }
 
 /**
- * returns an error message if a comment possting was not accepted
+ * Returns an error message if a comment posting was not accepted
  *
+ * @return string
  */
 function getCommentErrors() {
 	global $_zp_comment_error;
-	if (isset($_zp_comment_error)) {
-		switch ($_zp_comment_error) {
-			case   0: return false;
-			case -10: return gettext('You must supply the street field'); 
-			case -11: return gettext('You must supply the city field'); 
-			case -12: return gettext('You must supply the state field'); 
-			case -13: return gettext('You must supply the country field');
-			case -14: return gettext('You must supply the postal code field'); 
-			case  -1: return gettext("You must supply an e-mail address.");
-			case  -2: return gettext("You must enter your name.");
-			case  -3: return gettext("You must supply an WEB page URL.");
-			case  -4: return gettext("Captcha verification failed.");
-			case  -5: return gettext("You must enter something in the comment text.");
-			case   2: return sprintf(gettext('Your comment has been marked for moderation by the <em>%s</em> SPAM filter.'),getOption('spam_filter'));
-			case	 3: return sprintf(gettext('Your comment was rejected by the <em>%s</em> SPAM filter.'),getOption('spam_filter'));
-			default: return sprintf(gettext('Comment error "%d" not defined.'), $_zp_comment_error);
-		}
-	}
-	return false; 
+	return $_zp_comment_error;
 }
 
 /**
- * Tool to put an out error message if a comment possting was not accepted
- *
- * @param string $class optional division class for the message
+ * Tool to output an error message if a comment posting was not accepted
  */
-function printCommentErrors($class = 'error') {
-	$s = getCommentErrors();
-	if ($s) {	
+function printCommentErrors() {
+	global $_zp_comment_error, $_zp_comment_on_hold;
+	if ($_zp_comment_on_hold) {
+		$s = trim(str_replace($_zp_comment_on_hold, '', trim($_zp_comment_error)));
 		?>
-		<div class="<?php echo $class ?>">
-		<?php echo $s; ?>
+		<p class="notebox"><?php echo $_zp_comment_on_hold; ?></p>
+		<?php
+	} else {
+		$s = trim($_zp_comment_error);
+	}
+	if ($s) {
+		$lines = explode('.', $s);
+		foreach ($lines as $key=>$line) {
+			if (empty($line) || $line == gettext('Mail send failed')) {
+				unset($lines[$key]);
+			}
+		}
+		?>
+		<div class="errorbox">
+			<h2><?php echo ngettext('Error posting comment:','Errors posting comment:',count($lines)); ?></h2>
+			<ul class="errorlist">
+			<?php
+			foreach ($lines as $line) {
+				echo '<li>'.trim($line).'</li>';
+			}
+			?>
+			</ul>
 		</div>
 		<?php
 	}
 }
 
 /**
- * prints a form for posting comments
- * @param bool $showcomments defaults to true for showing list of comments
+ * Prints a form for posting comments
  *
+ * @param bool $showcomments defaults to true for showing list of comments
+ * @param string $addcommenttext alternate text for "Add a comment:"
+ * @param bool $addheader set true to display comment count header
+ * @param string $comment_commententry_mod use to add styles, classes to the comment form div
+ * @param bool $desc_order default false, set to true to change the comment order to descending ( = newest to oldest)
  */
-function printCommentForm($showcomments=true, $addcommenttext=NULL) {
-	global $_zp_gallery_page, $_zp_themeroot,	$_zp_current_admin, $_zp_current_comment;
-	if (is_null($addcommenttext)) $addcommenttext = gettext('Add a comment:');
+function printCommentForm($showcomments=true, $addcommenttext=NULL, $addheader=true, $comment_commententry_mod='',$desc_order=false) {
+	global $_zp_gallery_page, $_zp_current_admin_obj, $_zp_current_comment, $_zp_captcha;
+	if (is_null($addcommenttext)) $addcommenttext = '<h3>'.gettext('Add a comment:').'</h3>';
 	switch ($_zp_gallery_page) {
 		case 'album.php':
 			if (!getOption('comment_form_albums')) return;
@@ -323,12 +588,12 @@ function printCommentForm($showcomments=true, $addcommenttext=NULL) {
 			$comments_open = OpenedForComments(IMAGE);
 			$formname = '/comment_form.php';
 			break;
-		case ZENPAGE_PAGES.'.php':
+		case 'pages.php':
 			if (!getOption('comment_form_pages')) return;
 			$comments_open = zenpageOpenedForComments();
 			$formname = '/comment_form.php';
 			break;
-		case ZENPAGE_NEWS.'.php':
+		case 'news.php':
 			if (!getOption('comment_form_articles')) return;
 			$comments_open = zenpageOpenedForComments();
 			$formname = '/comment_form.php';
@@ -340,39 +605,77 @@ function printCommentForm($showcomments=true, $addcommenttext=NULL) {
 	$arraytest = '/^a:[0-9]+:{/'; // this screws up Eclipse's brace count!!!
 	?>
 <!-- printCommentForm -->
-	<!-- Wrap Comments -->
 	<div id="commentcontent">
 		<?php
+		$num = getCommentCount();
 		if ($showcomments) {
-			$num = getCommentCount(); 
-			switch ($num) {
-				case 0:
-					echo '<h3>'.gettext('No Comments').'</h3><br />';
-					break;
-				default:
-					echo '<h3>'.sprintf(ngettext('%u Comment','%u Comments',$num), $num).'</h3>';
-			}
-			?>
-			<div id="comments">
-				<?php
-				while (next_comment()) {
+			if ($num==0) {
+				if ($addheader) echo '<h3 class="empty">'.gettext('No Comments').'</h3>';
+				$display = '';
+			} else {
+				if ($addheader) echo '<h3>'.sprintf(ngettext('%u Comment','%u Comments',$num), $num).'</h3>';
+				if (getOption('comment_form_toggle')) {
 					?>
-					<div class="comment"><a name="<?php echo $_zp_current_comment['id']; ?>"></a>
-						<div class="commentinfo">
-							<h4><?php printCommentAuthorLink(); ?>: on <?php echo getCommentDateTime(); printEditCommentLink('Edit', ', ', ''); ?></h4>
-						</div>
-						<div class="commenttext">
-							<?php echo getCommentBody();?>
-						</div>
-					</div>
+					<script type="text/javascript">
+						// <!-- <![CDATA[
+						function toggleComments(hide) {
+							if (hide) {
+								$('div.comment').hide();
+								$('#comment_toggle').html('<button type="button" onclick="javascript:toggleComments(false);"><?php echo gettext('show comments');?></button>');
+							} else {
+								$('div.comment').show();
+								$('#comment_toggle').html('<button type="button" onclick="javascript:toggleComments(true);"><?php echo gettext('hide comments');?></button>');
+							}
+						}
+						$(document).ready(function() {
+							toggleComments(true);
+						});
+						// ]]> -->
+					</script>
 					<?php
+					$display = ' style="display:none"';
+				} else {
+					$display = '';
+				}
+			}
+			$hideoriginalcomments = '';
+			if(getOption('comment_form_pagination') && getOption('comment_form_comments_per_page') < $num) {
+				$hideoriginalcomments = ' style="display:none"'; // hide original comment display to be replaced by jQuery pagination
+			}
+		 if(getOption('comment_form_pagination') && getOption('comment_form_comments_per_page') < $num) { ?>
+					<div class="Pagination"></div><!-- this is the jquery pagination nav placeholder -->
+					<div id="Commentresult">
+            This content will be replaced when pagination inits.
+        	</div>
+      <?php
+      }
+		 ?>
+		<div id="comments"<?php echo $hideoriginalcomments; ?>>
+			<div id="comment_toggle"><!-- place holder for toggle button --></div>
+			<?php
+			while (next_comment($desc_order)) {
+				if (!getOption('comment_form_showURL')) {
+					$_zp_current_comment['website'] = '';
 				}
 				?>
-			</div>
-			<?php
+				<div class="comment" <?php echo $display; ?>>
+					<a name="c_<?php echo $_zp_current_comment['id']; ?>"></a>
+					<div class="commentinfo">
+						<h4><?php	printCommentAuthorLink(); ?>: on <?php echo getCommentDateTime(); printEditCommentLink('Edit', ', ', ''); ?></h4>
+					</div><!-- class "commentinfo" -->
+					<div class="commenttext"><?php echo getCommentBody();?></div><!-- class "commenttext" -->
+				</div><!-- class "comment" -->
+				<?php
+			}
+			?>
+		</div><!-- id "comments" -->
+		<?php
 		}
+		if(getOption('comment_form_pagination') && getOption('comment_form_comments_per_page') < $num) { ?>
+			<div class="Pagination"></div><!-- this is the jquery pagination nav placeholder -->
+      <?php
+    }
 		?>
-
 		<!-- Comment Box -->
 		<?php
 		if ($comments_open) {
@@ -384,13 +687,14 @@ function printCommentForm($showcomments=true, $addcommenttext=NULL) {
 					if (!empty($value)) $stored[$key] = $value;
 				}
 			}
-			$disabled = array();
+			$disabled = array('name'=>'',	'website'=>'', 'anon'=>'', 'private'=>'', 'comment'=>'',
+ 												'street'=>'', 'city'=>'', 'state'=>'', 'country'=>'', 'postal'=>'');
 			foreach ($stored as $key=>$value) {
 				$disabled[$key] = false;
 			}
 
 			if (zp_loggedin()) {
-				$raw = $_zp_current_admin['custom_data'];
+				$raw = $_zp_current_admin_obj->getCustomData();
 				if (preg_match($arraytest, $raw)) {
 					$address = unserialize($raw);
 					foreach ($address as $key=>$value) {
@@ -400,15 +704,20 @@ function printCommentForm($showcomments=true, $addcommenttext=NULL) {
 						}
 					}
 				}
-			}
-
-			if (zp_loggedin()) {
-				if (!empty($_zp_current_admin['name'])) {
-					$stored['name'] = $_zp_current_admin['name'];
+				$name = $_zp_current_admin_obj->getName();
+				if (!empty($name)) {
+					$stored['name'] = $name;
 					$disabled['name'] = ' disabled="disabled"';
+				} else {
+					$user = $_zp_current_admin_obj->getUser();
+					if (!empty($user)) {
+						$stored['name'] = $user;
+						$disabled['name'] = ' disabled="disabled"';
+					}
 				}
-				if (!empty($_zp_current_admin['email'])) {
-					$stored['email'] = $_zp_current_admin['email'];
+				$email = $_zp_current_admin_obj->getEmail();
+				if (!empty($email)) {
+					$stored['email'] = $email;
 					$disabled['email'] = ' disabled="disabled"';
 				}
 				if (!empty($address['website'])) {
@@ -416,41 +725,40 @@ function printCommentForm($showcomments=true, $addcommenttext=NULL) {
 					$disabled['website'] = ' disabled="disabled"';
 				}
 			}
-			
-			$theme = getCurrentTheme();
-			$form = SERVERPATH.'/'.THEMEFOLDER.'/'.internalToFilesystem($theme).$formname;
-			if (file_exists($form)) {
-				$form = SERVERPATH.'/'.THEMEFOLDER.'/'.$theme.$formname;
-			} else {
-				$form = SERVERPATH.'/'.ZENFOLDER.'/'.PLUGIN_FOLDER.'/comment_form'.$formname;
-			}
-			if (getOption('comment_form_members_only') && !zp_loggedin(ADMIN_RIGHTS | POST_COMMENT_RIGHTS)) {
+			$data = zp_apply_filter('comment_form_data',array('data'=>$stored, 'disabled'=>$disabled));
+			$disabled = $data['disabled'];
+			$stored = $data['data'];
+
+			if (MEMBERS_ONLY_COMMENTS && !zp_loggedin(POST_COMMENT_RIGHTS)) {
 				echo gettext('Only registered users may post comments.');
 			} else {
 				if (!empty($addcommenttext)) {
-					?>
-					<h3><?php echo $addcommenttext; ?></h3>
-					<?php
+					echo $addcommenttext;
 				}
 				?>
-				<div id="commententry">
-					<?php
-					require_once($form);
-					?>
-				</div>
+				<div id="commententry" <?php echo $comment_commententry_mod; ?>>
+				<?php
+				$theme = getCurrentTheme();
+				$form = getPlugin('comment_form'.$formname, $theme);
+				require($form);
+				?>
+				</div><!-- id="commententry" -->
 				<?php
 			}
 		} else {
 			?>
 			<div id="commententry">
 				<h3><?php echo gettext('Closed for comments.');?></h3>
-			</div>
+			</div><!-- id="commententry" -->
 			<?php
 		}
-	?>
-</div>
-<?php 
+		?>
+		</div><!-- id="commentcontent" -->
+	<?php
 if (getOption('comment_form_rss')) {
+	?>
+	<br clear="all" />
+	<?php
 	switch($_zp_gallery_page) {
 		case "image.php":
 			printRSSLink("Comments-image","",gettext("Subscribe to comments"),"");
@@ -458,10 +766,10 @@ if (getOption('comment_form_rss')) {
 		case "album.php":
 			printRSSLink("Comments-album","",gettext("Subscribe to comments"),"");
 			break;
-		case ZENPAGE_NEWS.".php":
+		case "news.php":
 			printZenpageRSSLink("Comments-news", "", "", gettext("Subscribe to comments"), "");
 			break;
-		case ZENPAGE_PAGES.".php":
+		case "pages.php":
 			printZenpageRSSLink("Comments-page", "", "", gettext("Subscribe to comments"), "");
 			break;
 	}

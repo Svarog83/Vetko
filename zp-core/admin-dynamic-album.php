@@ -7,16 +7,13 @@
 // force UTF-8 Ø
 
 define('OFFSET_PATH', 1);
-require_once(dirname(__FILE__).'/admin-functions.php');
 require_once(dirname(__FILE__).'/admin-globals.php');
 require_once(dirname(__FILE__).'/template-functions.php');
 
-if (getOption('zenphoto_release') != ZENPHOTO_RELEASE) {
-	header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/setup.php");
-	exit();
-}
+admin_securityChecks(ALBUM_RIGHTS, $return = currentRelativeURL(__FILE__));
 
 $imagelist = array();
+$gallery = new Gallery();
 
 function getSubalbumImages($folder) {
 	global $imagelist, $gallery;
@@ -32,17 +29,17 @@ function getSubalbumImages($folder) {
 	}
 }
 
-if (!zp_loggedin()) {
-	header('Location: ' . FULLWEBPATH . '/' . ZENFOLDER . '/admin.php?from=' . currentRelativeURL(__FILE__));
-	exit();
-}
 $search = new SearchEngine(true);
 if (isset($_POST['savealbum'])) {
+	XSRFdefender('savealbum');
 	$albumname = sanitize($_POST['album']);
-	if (!isMyAlbum($albumname, ALBUM_RIGHTS)) {
-		die(gettext("You do not have edit rights on this album."));
-	}
 	$album = sanitize($_POST['albumselect']);
+	$albumobj = new Album($gallery, $album);
+	if (!$albumobj->isMyItem(ALBUM_RIGHTS)) {
+		if (!zp_apply_filter('admin_managed_albums_access',false, $return)) {
+			die(gettext("You do not have edit rights on this album."));
+		}
+	}
 	$words = sanitize($_POST['words']);
 	if (isset($_POST['thumb'])) {
 		$thumb = sanitize($_POST['thumb']);
@@ -51,31 +48,34 @@ if (isset($_POST['savealbum'])) {
 	}
 	$searchfields = array();
 	foreach ($_POST as $key=>$value) {
-		if (strpos($key, '_SEARCH_') !== false) {
-			$searchfields[] = $value;
+		if (strpos($key, 'SEARCH_') !== false) {
+			$searchfields[] = sanitize(str_replace('SEARCH_', '', postIndexDecode($key)));
 		}
 	}
+	$constraints = "\nCONSTRAINTS=".'inalbums='.((int) (isset($_POST['return_albums']))).'&inimages='.((int) (isset($_POST['return_images'])));
 	$redirect = $album.'/'.$albumname.".alb";
 
 	if (!empty($albumname)) {
-		$f = fopen(internalToFilesystem(getAlbumFolder().$redirect), 'w');
+		$f = fopen(internalToFilesystem(ALBUM_FOLDER_SERVERPATH.$redirect), 'w');
 		if ($f !== false) {
-			fwrite($f,"WORDS=$words\nTHUMB=$thumb\nFIELDS=".implode(',',$searchfields)."\n");
+			fwrite($f,"WORDS=$words\nTHUMB=$thumb\nFIELDS=".implode(',',$searchfields).$constraints."\n");
 			fclose($f);
+			clearstatcache();
 			// redirct to edit of this album
-			header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/admin-edit.php?page=edit&album=" . urlencode($redirect));
+			header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/admin-edit.php?page=edit&album=" . pathurlencode($redirect));
 			exit();
 		}
 	}
 }
 $_GET['page'] = 'edit'; // pretend to be the edit page.
-printAdminHeader();
+printAdminHeader('edit',gettext('dynamic'));
 echo "\n</head>";
 echo "\n<body>";
 printLogoAndLinks();
 echo "\n" . '<div id="main">';
-printTabs('edit');
+printTabs();
 echo "\n" . '<div id="content">';
+zp_apply_filter('admin_note','albums', 'dynamic');
 echo "<h1>".gettext("zenphoto Create Dynamic Album")."</h1>\n";
 
 if (isset($_POST['savealbum'])) { // we fell through, some kind of error
@@ -84,10 +84,9 @@ if (isset($_POST['savealbum'])) { // we fell through, some kind of error
 	echo "</div>\n";
 }
 
-$gallery = new Gallery();
 $albumlist = array();
 genAlbumUploadList($albumlist);
-$params = trim(zp_getCookie('zenphoto_image_search_params'));
+$params = trim(zp_getCookie('zenphoto_search_params'));
 $search->setSearchParams($params);
 $fields = $search->fieldList;
 $albumname = $words = $search->codifySearchString();
@@ -110,18 +109,19 @@ while ($old != $albumname) {
 }
 ?>
 <form action="?savealbum" method="post">
+	<?php XSRFToken('savealbum');?>
 <input type="hidden" name="savealbum" value="yes" />
 <table>
 	<tr>
 		<td><?php echo gettext("Album name:"); ?></td>
 		<td><input type="text" size="40" name="album"
-			value="<?php echo $albumname ?>" /></td>
+			value="<?php echo html_encode($albumname) ?>" /></td>
 	</tr>
 	<tr>
 		<td><?php echo gettext("Create in:"); ?></td>
 		<td><select id="albumselectmenu" name="albumselect">
 		<?php
-		if (isMyAlbum('/', UPLOAD_RIGHTS)) {
+		if (accessAllAlbums(UPLOAD_RIGHTS)) {
 			?>
 			<option value="" selected="selected" style="font-weight: bold;">/</option>
 			<?php
@@ -147,16 +147,12 @@ foreach ($albumlist as $fullfolder => $albumtitle) {
 		<td><?php echo gettext("Thumbnail:"); ?></td>
 		<td><select id="thumb" name="thumb">
 		<?php
-		$showThumb = getOption('thumb_select_images');
-		echo "\n<option";
-		if ($showThumb) echo " class=\"thumboption\" value=\"\" style=\"background-color:#B1F7B6\"";
-		echo ' value="1">'.getOption('AlbumThumbSelecorText');
-		echo '</option>';
-		echo "\n<option";
-		if ($showThumb) echo " class=\"thumboption\" value=\"\" style=\"background-color:#B1F7B6\"";
-		echo " selected=\"selected\"";
-		echo ' value="">'.gettext('randomly selected');
-		echo '</option>';
+		$selections = array();
+		foreach ($_zp_albumthumb_selector as $key=>$selection) {
+			$selections[$selection['desc']] = $key;
+		}
+		generateListFromArray(array(getOption('AlbumThumbSelect')),$selections,false,true);
+		$showThumb = $gallery->getThumbSelectImages();
 		foreach ($imagelist as $imagepath) {
 			$pieces = explode('/', $imagepath);
 			$filename = array_pop($pieces);;
@@ -166,7 +162,7 @@ foreach ($albumlist as $fullfolder => $albumtitle) {
 			if (isImagePhoto($image) || !is_null($image->objectsThumb)) {
 				echo "\n<option class=\"thumboption\"";
 				if ($showThumb) {
-					echo " style=\"background-image: url(" . $image->getThumb() .
+					echo " style=\"background-image: url(" . html_encode($image->getSizedImage(80)) .
 									"); background-repeat: no-repeat;\"";
 				}
 				echo " value=\"".$imagepath."\"";
@@ -180,17 +176,20 @@ foreach ($albumlist as $fullfolder => $albumtitle) {
 	</tr>
 	<tr>
 		<td><?php echo gettext("Search criteria:"); ?></td>
-		<td><input type="text" size="60" name="words"
-			value="<?php echo $words ?>" /></td>
+		<td>
+			<input type="text" size="60" name="words" value="<?php echo html_encode($words); ?>" />
+			<label><input type="checkbox" name="return_albums" value="1"<?php if (!getOption('search_no_albums')) echo ' checked="checked"'?> /><?php echo gettext('Return albums found')?></label>
+			<label><input type="checkbox" name="return_images" value="1"<?php if (!getOption('search_no_images')) echo ' checked="checked"'?> /><?php echo gettext('Return images found')?></label>
+		</td>
 	</tr>
 	<tr>
 		<td><?php echo gettext("Search fields:"); ?></td>
 		<td>
-		<?php 
+		<?php
 		echo '<ul class="searchchecklist">'."\n";
 		$selected_fields = array();
 		$engine = new SearchEngine(true);
-		$available_fields = array_flip($engine->allowedSearchFields());
+		$available_fields = $engine->allowedSearchFields();
 		if (count($fields)==0) {
 			$selected_fields = $available_fields;
 		} else {
@@ -200,17 +199,16 @@ foreach ($albumlist as $fullfolder => $albumtitle) {
 				}
 			}
 		}
-		
-		generateUnorderedListFromArray($selected_fields, $available_fields, '_SEARCH_', false, true, true);
+		generateUnorderedListFromArray($selected_fields, $available_fields, 'SEARCH_', false, true, true);
 		echo '</ul>';
-		?>		
+		?>
 		</td>
 	</tr>
 
 </table>
 
-<input type="submit" value="<?php echo gettext('Create the album');?>"
-	class="button" /></form>
+<input type="submit" value="<?php echo gettext('Create the album');?>" class="button" />
+</form>
 
 <?php
 

@@ -8,14 +8,19 @@
 
 $_zp_extra_filetypes = array(); // contains file extensions and the handler class
 
+define('WATERMARK_IMAGE', 1);
+define('WATERMARK_THUMB', 2);
+define('WATERMARK_FULL', 4);
+
 /**
  * Returns a new "image" object based on the file extension
  *
  * @param object $album the owner album
  * @param string $filename the filename
+ * @param bool $quiet set true to supress error messages (used by loadimage)
  * @return object
  */
-function newImage(&$album, $filename) {
+function newImage($album, $filename, $quiet=false) {
 	global $_zp_extra_filetypes;
 	if (is_array($filename)) {
 		$xalbum = new Album(new Gallery(),$filename['folder']);
@@ -24,18 +29,35 @@ function newImage(&$album, $filename) {
 		$xalbum = $album;
 	}
 	if (!is_object($xalbum) || strtoLower(get_class($xalbum)) != 'album' || !$xalbum->exists) {
-		debugLogBacktrace("Bad album object parameter to newImage($filename)");			
+		$msg = sprintf(gettext('Bad album object parameter to newImage(%s)'),$filename);
+		debugLogBacktrace($msg);
+		trigger_error(html_encode($msg), E_USER_NOTICE);
 		return NULL;
 	}
 	if ($ext = is_valid_other_type($filename)) {
 		$object = $_zp_extra_filetypes[$ext];
-		return New $object($xalbum, $filename);
+		$image = New $object($xalbum, $filename);
 	} else {
 		if (is_valid_image($filename)) {
-			return New _Image($xalbum, $filename);
+			$image = New _Image($xalbum, $filename);
+		} else {
+			$image = NULL;
 		}
 	}
-	debugLogBacktrace("Bad filename suffix in newImage($filename)");			
+	if ($image) {
+		zp_apply_filter('image_instantiate', $image);
+		if ($image->exists) {
+			return $image;
+		} else {
+			return NULL;
+		}
+	}
+
+	if (!$quiet) {
+		$msg = sprintf(gettext('Bad filename suffix in newImage(%s)'),$filename);
+		debugLogBacktrace($msg);
+		trigger_error(html_encode($msg), E_USER_NOTICE);
+	}
 	return NULL;
 }
 
@@ -52,16 +74,13 @@ function isImageClass($image=NULL) {
 		global $_zp_current_image;
 		$image = $_zp_current_image;
 	}
-	$reporting = error_reporting(0); // supress deprecated message PHP 5.0.0 to 5.3.0
-	$rslt = is_a($image, _Image);
-	error_reporting($reporting);
-	return $rslt;
+	return is_object($image) && ($image->table == 'images');
 }
 
 /**
  * handles 'picture' images
  */
-class _Image extends PersistentObject {
+class _Image extends MediaObject {
 
 	var $filename;      			// true filename of the image.
 	var $exists = true; 			// Does the image exist?
@@ -69,23 +88,24 @@ class _Image extends PersistentObject {
 	var $localpath;     			// Latin1 full SERVER path to the original image.
 	var $displayname;   			// $filename with the extension stripped off.
 	var $album;         			// An album object for the album containing this image.
-	var $comments;      			// Image comment array.
-	var $commentcount;  			// The number of comments on this image.
-	var $index;         			// The index of the current image in the album array.
-	var $sortorder;     			// The position that this image should be shown in the album
-	var $filemtime;     			// Last modified time of this image
+	protected $index;         			// The index of the current image in the album array.
+	protected $sortorder;     			// The position that this image should be shown in the album
+	protected $filemtime;     			// Last modified time of this image
 	var $sidecars = array();	// keeps the list of suffixes associated with this image
-	
-	
+	var $manage_rights = MANAGE_ALL_ALBUM_RIGHTS;
+	var $manage_some_rights = ALBUM_RIGHTS;
+	var $view_rights = VIEW_ALBUMS_RIGHTS;
+
+
 	// Plugin handler support
 	var $objectsThumb = NULL; // Thumbnail image for the object
-	
+
 
 	/**
 	 * Constructor for class-image
-	 * 
+	 *
 	 * Do not call this constructor directly unless you really know what you are doing!
-	 * Use instead the function newImage() which will instantiate an object of the 
+	 * Use instead the function newImage() which will instantiate an object of the
 	 * correct class for the file type.
 	 *
 	 * @param object &$album the owning album
@@ -93,6 +113,7 @@ class _Image extends PersistentObject {
 	 * @return Image
 	 */
 	function _Image(&$album, $filename) {
+		global $_zp_current_admin_obj;
 		// $album is an Album object; it should already be created.
 		if (!is_object($album)) return NULL;
 		if (!$this->classSetup($album, $filename)) { // spoof attempt
@@ -108,16 +129,30 @@ class _Image extends PersistentObject {
 		// This is where the magic happens...
 		$album_name = $album->name;
 		$new = parent::PersistentObject('images', array('filename'=>$filename, 'albumid'=>$this->album->id), 'filename', false, empty($album_name));
-		$mtime = filemtime($this->localpath);
-		if ($new || ($mtime != $this->get('mtime'))) {
-			$this->set('mtime', $mtime);
+		if ($this->filemtime != $this->get('mtime')) {
+			$this->set('mtime', $this->filemtime);
 			$this->updateMetaData();			// extract info from image
 			$this->updateDimensions();		// deal with rotation issues
 			$this->save();
-			if ($new) zp_apply_filter('new_image', $this);
+		}
+		if ($new) {
+			$this->updateMetaData();			// extract info from image
+			$this->save();
+			zp_apply_filter('new_image', $this);
 		}
 	}
-	
+
+	/**
+	 * (non-PHPdoc)
+	 * @see PersistentObject::setDefaults()
+	 */
+	protected function setDefaults() {
+		$_zp_gallery = new Gallery();
+		$this->setShow($_zp_gallery->getImagePublish());
+		$this->set('mtime', $this->filemtime);
+		$this->updateDimensions();		// deal with rotation issues
+	}
+
 	/**
 	 * generic "image" class setup code
 	 * Returns true if valid image.
@@ -125,34 +160,35 @@ class _Image extends PersistentObject {
 	 * @param object $album the images' album
 	 * @param string $filename of the image
 	 * @return bool
-	 * 
+	 *
 	 */
-	function classSetup(&$album, $filename) {
+	protected function classSetup(&$album, $filename) {
+		global $_zp_current_admin_obj;
 		$fileFS = internalToFilesystem($filename);
 		if ($filename != filesystemToInternal($fileFS)) { // image name spoof attempt
 			return false;
 		}
 		$this->album = &$album;
 		if ($album->name == '') {
-			$this->webpath = getAlbumFolder(WEBPATH) . $filename;
-			$this->encwebpath = getAlbumFolder(WEBPATH) . rawurlencode($filename);
-			$this->localpath = getAlbumFolder() . internalToFilesystem($filename);
+			$this->webpath = ALBUM_FOLDER_WEBPATH . $filename;
+			$this->encwebpath = ALBUM_FOLDER_WEBPATH . rawurlencode($filename);
+			$this->localpath = ALBUM_FOLDER_SERVERPATH . internalToFilesystem($filename);
 		} else {
-			$this->webpath = getAlbumFolder(WEBPATH) . $album->name . "/" . $filename;
-			$this->encwebpath = getAlbumFolder(WEBPATH) . pathurlencode($album->name) . "/" . rawurlencode($filename);
+			$this->webpath = ALBUM_FOLDER_WEBPATH . $album->name . "/" . $filename;
+			$this->encwebpath = ALBUM_FOLDER_WEBPATH . pathurlencode($album->name) . "/" . rawurlencode($filename);
 			$this->localpath = $album->localpath . $fileFS;
 		}
-		$this->filename = $filename;		
+		$this->filename = $filename;
 		$this->displayname = substr($this->filename, 0, strrpos($this->filename, '.'));
 		if (empty($this->displayname)) $this->displayname = $this->filename;
 		$this->comments = null;
 		$this->filemtime = @filemtime($this->localpath);
 		$this->imagetype = strtolower(get_class($this)).'s';
-		$this->set('date', strftime('%Y-%m-%d %T', $this->filemtime));
-		zp_apply_filter('image_instantiate', $this);
+		$date = $this->get('date');
+		if (empty($date)) $this->set('date', strftime('%Y-%m-%d %H:%M:%S', $this->filemtime));
 		return true;
 	}
-	
+
 	function getDefaultTitle() {
 		return $this->displayname;
 	}
@@ -171,7 +207,7 @@ class _Image extends PersistentObject {
 	 *
 	 * @return bool
 	 */
-	function fileChanged() {
+	private function fileChanged() {
 		$storedmtime = $this->get('mtime');
 		return (empty($storedmtime) || $this->filemtime > $storedmtime);
 	}
@@ -194,60 +230,60 @@ class _Image extends PersistentObject {
 
 	/**
 	 * Parses Exif/IPTC data
-	 * 
+	 *
 	 */
 	function updateMetaData() {
 		require_once(dirname(__FILE__).'/exif/exif.php');
 		global $_zp_exifvars;
 		$IPTCtags = array(
-											'SKIP'								=>	'2#000',	//	Record Version										Size:64		
-											'ObjectType'					=>	'2#003',	//	Object Type	Ref										Size:67	
-											'ObjectAttr'					=>	'2#004',	//	Object Attribute Ref							Size:67	
-											'ObjectName'					=>	'2#005',	//	Object name												Size:64		
-											'EditStatus'					=>	'2#007',	//	Edit Status												Size:64		
-											'EditorialUpdate'			=>	'2#008',	//	Editorial Update									Size:2		
-											'Urgency'							=>	'2#010',	//	Urgency														Size:1			
-											'SubRef'							=>	'2#012',	//	Subject	Reference									Size:236		
-											'Category'						=>	'2#015',	//	Category 													Size:3			
-											'SuppCategory'				=>	'2#020',	//	Supplemental category							Size:32		
-											'FixtureID'						=>	'2#022',	//	Fixture	ID 												Size:32		
-											'Keywords'						=>	'2#025',	//	Keywords 													Size:64			
+											'SKIP'								=>	'2#000',	//	Record Version										Size:64
+											'ObjectType'					=>	'2#003',	//	Object Type	Ref										Size:67
+											'ObjectAttr'					=>	'2#004',	//	Object Attribute Ref							Size:67
+											'ObjectName'					=>	'2#005',	//	Object name												Size:64
+											'EditStatus'					=>	'2#007',	//	Edit Status												Size:64
+											'EditorialUpdate'			=>	'2#008',	//	Editorial Update									Size:2
+											'Urgency'							=>	'2#010',	//	Urgency														Size:1
+											'SubRef'							=>	'2#012',	//	Subject	Reference									Size:236
+											'Category'						=>	'2#015',	//	Category 													Size:3
+											'SuppCategory'				=>	'2#020',	//	Supplemental category							Size:32
+											'FixtureID'						=>	'2#022',	//	Fixture	ID 												Size:32
+											'Keywords'						=>	'2#025',	//	Keywords 													Size:64
 											'ContentLocCode'			=>	'2#026',	//	Content	Location Code							Size:3
 											'ContentLocName'			=>	'2#027',	//	Content	Location Name							Size:64
-											'ReleaseDate'					=>	'2#030',	//	Release	Date 											Size:8		
-											'ReleaseTime'					=>	'2#035',	//	Release	Time											Size:11		
-											'ExpireDate'					=>	'2#037',	//	Expiration Date										Size:8	
-											'ExpireTime'					=>	'2#038',	//	Expiration Time										Size:11	
-											'SpecialInstru'				=>	'2#040',	//	Special Instructions							Size:256	
-											'ActionAdvised'				=>	'2#042',	//	Action Advised										Size:2	
-											'RefService'					=>	'2#045',	//	Reference Service									Size:10	
-											'RefDate'							=>	'2#047',	//	Reference Date										Size:8	
-											'RefNumber'						=>	'2#050',	//	Reference Number									Size:8	
-											'DateCreated'					=>	'2#055',	//	Date created											Size:8	
-											'TimeCreated'					=>	'2#060',	//	Time created											Size:11	
+											'ReleaseDate'					=>	'2#030',	//	Release	Date 											Size:8
+											'ReleaseTime'					=>	'2#035',	//	Release	Time											Size:11
+											'ExpireDate'					=>	'2#037',	//	Expiration Date										Size:8
+											'ExpireTime'					=>	'2#038',	//	Expiration Time										Size:11
+											'SpecialInstru'				=>	'2#040',	//	Special Instructions							Size:256
+											'ActionAdvised'				=>	'2#042',	//	Action Advised										Size:2
+											'RefService'					=>	'2#045',	//	Reference Service									Size:10
+											'RefDate'							=>	'2#047',	//	Reference Date										Size:8
+											'RefNumber'						=>	'2#050',	//	Reference Number									Size:8
+											'DateCreated'					=>	'2#055',	//	Date created											Size:8
+											'TimeCreated'					=>	'2#060',	//	Time created											Size:11
 											'DigitizeDate'				=>	'2#062',	//	Digital Creation Date							Size:8
 											'DigitizeTime'				=>	'2#063',	//	Digital Creation Time							Size:11
 											'OriginatingProgram'	=>	'2#065',	//	Originating Program								Size:32
 											'ProgramVersion'			=>	'2#070',	//	Program version										Size:10
-											'ObjectCycle'					=>	'2#075',	//	Object Cycle											Size:1	
-											'ByLine'							=>	'2#080',	//	ByLine 														Size:32		
-											'ByLineTitle'					=>	'2#085',	//	ByLine Title											Size:32	
-											'City'								=>	'2#090',	//	City															Size:32			
-											'SubLocation'					=>	'2#092',	//	Sublocation												Size:32			
-											'State'								=>	'2#095',	//	Province/State										Size:32			
+											'ObjectCycle'					=>	'2#075',	//	Object Cycle											Size:1
+											'ByLine'							=>	'2#080',	//	ByLine 														Size:32
+											'ByLineTitle'					=>	'2#085',	//	ByLine Title											Size:32
+											'City'								=>	'2#090',	//	City															Size:32
+											'SubLocation'					=>	'2#092',	//	Sublocation												Size:32
+											'State'								=>	'2#095',	//	Province/State										Size:32
 											'LocationCode'				=>	'2#100',	//	Country/Primary	Location Code			Size:3
 											'LocationName'				=>	'2#101',	//	Country/Primary	Location Name			Size:64
 											'TransmissionRef'			=>	'2#103',	//	Original Transmission Reference		Size:32
-											'ImageHeadline'				=>	'2#105',	//	Image headline										Size:256		
-											'ImageCredit'					=>	'2#110',	//	Image credit											Size:32		
-											'Source'							=>	'2#115',	//	Source														Size:32			
-											'Copyright'						=>	'2#116',	//	Copyright Notice									Size:128		
-											'Contact'							=>	'2#118',	//	Contact														Size:128			
-											'ImageCaption'				=>	'2#120',	//	Image caption											Size:2000		
-											'ImageCaptionWriter'	=>	'2#122',	//	Image caption writer							Size:32	
-											'ImageType'						=>	'2#130',	//	Image type												Size:2		
-											'Orientation'					=>	'2#131',	//	Image	 rientation									Size:1		
-											'LangID'							=>	'2#135',	//	Language ID												Size:3		
+											'ImageHeadline'				=>	'2#105',	//	Image headline										Size:256
+											'ImageCredit'					=>	'2#110',	//	Image credit											Size:32
+											'Source'							=>	'2#115',	//	Source														Size:32
+											'Copyright'						=>	'2#116',	//	Copyright Notice									Size:128
+											'Contact'							=>	'2#118',	//	Contact														Size:128
+											'ImageCaption'				=>	'2#120',	//	Image caption											Size:2000
+											'ImageCaptionWriter'	=>	'2#122',	//	Image caption writer							Size:32
+											'ImageType'						=>	'2#130',	//	Image type												Size:2
+											'Orientation'					=>	'2#131',	//	Image	 rientation									Size:1
+											'LangID'							=>	'2#135',	//	Language ID												Size:3
 											'Subfile'							=>	'8#010'		//	Subfile														Size:2
 		);
 		$this->set('hasMetadata',0);
@@ -257,17 +293,21 @@ class _Image extends PersistentObject {
 		} else {
 			$localpath = $this->getThumbImageFile();
 		}
+		$xdate = false;
+
 		if (!empty($localpath)) { // there is some kind of image to get metadata from
 			$exifraw = read_exif_data_protected($localpath);
 			if (isset($exifraw['ValidEXIFData'])) {
 				$this->set('hasMetadata',1);
 				foreach($_zp_exifvars as $field => $exifvar) {
-					if (isset($exifraw[$exifvar[0]][$exifvar[1]])) {
-						$exif = trim(sanitize($exifraw[$exifvar[0]][$exifvar[1]],1));
-						$this->set($field, $exif);
-					} else if (isset($exifraw[$exifvar[0]]['MakerNote'][$exifvar[1]])) {
-						$exif = trim(sanitize($exifraw[$exifvar[0]]['MakerNote'][$exifvar[1]],1));
-						$this->set($field, $exif);
+					if ($exifvar[5]) {	// enabled field
+						if (isset($exifraw[$exifvar[0]][$exifvar[1]])) {
+							$exif = trim(sanitize($exifraw[$exifvar[0]][$exifvar[1]],1));
+							$this->set($field, $exif);
+						} else if (isset($exifraw[$exifvar[0]]['MakerNote'][$exifvar[1]])) {
+							$exif = trim(sanitize($exifraw[$exifvar[0]]['MakerNote'][$exifvar[1]],1));
+							$this->set($field, $exif);
+						}
 					}
 				}
 			}
@@ -292,110 +332,129 @@ class _Image extends PersistentObject {
 					}
 					// Extract IPTC fields of interest
 					foreach ($_zp_exifvars as $field=>$exifvar) {
-						if ($exifvar[0]=='IPTC') {
-							$datum = $this->getIPTCTag($IPTCtags[$exifvar[1]], $iptc);
-							$this->set($field, $this->prepIPTCString($datum, $characterset));
+						if ($exifvar[5]) {
+							if ($exifvar[0]=='IPTC') {	// enabled field
+								$datum = $this->getIPTCTag($IPTCtags[$exifvar[1]], $iptc);
+								$this->set($field, $this->prepIPTCString($datum, $characterset));
+							}
 						}
 					}
-						
 					/* iptc keywords (tags) */
 					$datum = $this->getIPTCTagArray('2#025', $iptc);
 					if (is_array($datum)) {
 						$tags = array();
 						$result['tags'] = array();
 						foreach ($datum as $item) {
-							$tags[] = $this->prepIPTCString($item, $characterset);;
+							$tags[] = $this->prepIPTCString(sanitize($item,3), $characterset);;
 						}
 						$this->setTags($tags);
 					}
 				}
 			}
-			/* "import" metadata into Zenphoto fields as makes sense */
-
-			/* iptc date */
-			$date = $this->get('IPTCDateCreated');
-			if (!empty($date)) {
-				$date = substr($date, 0, 4).'-'.substr($date, 4, 2).'-'.substr($date, 6, 2);
-			}
-			/* EXIF date */
-			if (empty($date)) {
-				$date = $this->get('EXIFDateTime');
-			}
-			if (empty($date)) {
-				$date = $this->get('EXIFDateTimeOriginal');
-			}
-			if (empty($date)) {
-				$date = $this->get('EXIFDateTimeDigitized');
-			}
-			if (!empty($date)) {
-				$this->setDateTime($date);
-			}
-
-			/* iptc title */
-			$title = $this->get('IPTCObjectName');
-			if (empty($title)) {
-				$title = $this->get('IPTCImageHeadline');
-			}
-			//EXIF title [sic]
-			if (empty($title)) {
-				$title = $this->get('EXIFDescription');
-			}
-			if (!empty($title)) {
-				$this->setTitle($title);
-			}
-
-			/* iptc description */
-			$desc = $this->get('IPTCImageCaption');
-			if (!empty($desc)) {
-				$this->setDesc($desc);
-			}
-
-			/* iptc location, state, country */
-			$loc = $this->get('IPTCSubLocation');
-			if (!empty($loc)) {
-				$this->setLocation($loc);
-			}
-			$city = $this->get('IPTCCity');
-			if (!empty($city)) {
-				$this->setCity($city);
-			}
-			$state = $this->get('IPTCState');
-			if (!empty($state)) {
-				$this->setState($state);
-			}
-			$country = $this->get('IPTCLocationName');
-			if (!empty($country)) {
-				$this->setCountry($country);
-			}
-
-			/* iptc credit */
-			$credit = $this->get('IPTCByLine');
-			if (empty($credit)) {
-				$credit = $this->get('IPTCImageCredit');
-			}
-			if (empty($credit)) {
-				$credit = $this->get('IPTCSource');
-			}
-			if (!empty($credit)) {
-				$this->setCredit($credit);
-			}
-
-			/* iptc copyright */
-			$this->setCopyright($this->get('IPTCCopyright'));
-
 		}
+		/* "import" metadata into Zenphoto fields as makes sense */
+		zp_apply_filter('image_metadata', $this);
+
+		/* iptc date */
+		$date = $this->get('IPTCDateCreated');
+		if (!empty($date)) {
+			if (strlen($date) > 8) {
+				$time = substr($date, 8);
+			} else {
+				/* got date from IPTC, now must get time */
+				$time = $this->get('IPTCTimeCreated');
+			}
+			$date = substr($date, 0, 4).'-'.substr($date, 4, 2).'-'.substr($date, 6, 2);
+			if (!empty($time)) {
+				$date = $date.' '.substr($time, 0, 2).':'.substr($time, 2, 2).':'.substr($time, 4, 2);
+			}
+		}
+		/* EXIF date */
+		if (empty($date)) {
+			$date = $this->get('EXIFDateTime');
+		}
+		if (empty($date)) {
+			$date = $this->get('EXIFDateTimeOriginal');
+		}
+		if (empty($date)) {
+			$date = $this->get('EXIFDateTimeDigitized');
+		}
+		if (!empty($date)) {
+			$xdate = $date;
+			$this->setDateTime($date);
+		}
+
+		/* iptc title */
+		$title = $this->get('IPTCObjectName');
+		if (empty($title)) {
+			$title = $this->get('IPTCImageHeadline');
+		}
+		//EXIF title [sic]
+		if (empty($title)) {
+			$title = $this->get('EXIFDescription');
+		}
+		if (!empty($title)) {
+			$this->setTitle($title);
+		}
+
+		/* iptc description */
+		$desc = $this->get('IPTCImageCaption');
+		if (!empty($desc)) {
+			$this->setDesc($desc);
+		}
+
+		/* iptc location, state, country */
+		$loc = $this->get('IPTCSubLocation');
+		if (!empty($loc)) {
+			$this->setLocation($loc);
+		}
+		$city = $this->get('IPTCCity');
+		if (!empty($city)) {
+			$this->setCity($city);
+		}
+		$state = $this->get('IPTCState');
+		if (!empty($state)) {
+			$this->setState($state);
+		}
+		$country = $this->get('IPTCLocationName');
+		if (!empty($country)) {
+			$this->setCountry($country);
+		}
+
+		/* iptc credit */
+		$credit = $this->get('IPTCByLine');
+		if (empty($credit)) {
+			$credit = $this->get('IPTCImageCredit');
+		}
+		if (empty($credit)) {
+			$credit = $this->get('IPTCSource');
+		}
+		if (!empty($credit)) {
+			$this->setCredit($credit);
+		}
+
+		/* iptc copyright */
+		$this->setCopyright($this->get('IPTCCopyright'));
+
 		$x = $this->getTitle();
 		if (empty($x)) {
 			$this->set('title',$this->getDefaultTitle());
 		}
-		$x = $this->getDateTime();
-		if (empty($x)) {
-			$this->set('date', strftime('%Y-%m-%d %T', $this->get('mtime')));
+		if (empty($xdate)) {
+			$this->set('date', strftime('%Y-%m-%d %H:%M:%S', $this->get('mtime')));
 		}
 		$alb = $this->album;
 		if (!is_null($alb)) {
-			if (is_null($albdate = $alb->getDateTime()) || (getOption('album_use_new_image_date') && strtotime($albdate)<strtotime($this->getDateTime()))) {
+			$save = false;
+			if (strtotime($alb->getUpdatedDate()) < strtotime($this->getDateTime())) {
+				$alb->setUpdatedDate($this->getDateTime());
+				$save = true;
+			}
+			if (is_null($albdate = $alb->getDateTime()) || ($this->album->gallery->getAlbumUseImagedate() && strtotime($albdate) < strtotime($this->getDateTime()))) {
 				$this->album->setDateTime($this->getDateTime());   //  not necessarily the right one, but will do. Can be changed in Admin
+				$save = true;
+			}
+			if ($save) {
 				$this->album->save();
 			}
 		}
@@ -421,7 +480,7 @@ class _Image extends PersistentObject {
 		}
 		return '';
 	}
-	
+
 	/**
 	 * For internal use--fetches the IPTC array for a single tag.
 	 *
@@ -434,7 +493,7 @@ class _Image extends PersistentObject {
 		}
 		return NULL;
 	}
-	
+
 	/**
 	 * Returns the IPTC data converted into UTF8
 	 *
@@ -442,13 +501,13 @@ class _Image extends PersistentObject {
 	 * @param string $characterset the internal encoding of the data
 	 * @return string
 	 */
-	function prepIPTCString($iptcstring, $characterset) {
+	private function prepIPTCString($iptcstring, $characterset) {
 		global $_zp_UTF8;
 		// Remove null byte at the end of the string if it exists.
 		if (substr($iptcstring, -1) === 0x0) {
 			$iptcstring = substr($iptcstring, 0, -1);
 		}
-		$outputset = getOption('charset');
+		$outputset = LOCAL_CHARSET;
 		if ($characterset == $outputset) return $iptcstring;
 		$iptcstring = $_zp_UTF8->convert($iptcstring, $characterset, $outputset);
 		return trim(sanitize($iptcstring,1));
@@ -463,7 +522,7 @@ class _Image extends PersistentObject {
 		$width = $size['width'];
 		$height = $size['height'];
 		if (zp_imageCanRotate() && getOption('auto_rotate'))  {
-			// Swap the width and height values if the image should be rotated			
+			// Swap the width and height values if the image should be rotated
 			$splits = preg_split('/!([(0-9)])/', $this->get('EXIFOrientation'));
 			$rotation = $splits[0];
 			switch ($rotation) {
@@ -523,39 +582,6 @@ class _Image extends PersistentObject {
 	 * @return string
 	 */
 	function getAlbumName() { return $this->album->name; }
-
-	/**
-	 * Returns the title of this image
-	 *
-	 * @return string
-	 */
-	function getTitle() {
-		return get_language_string($this->get('title'));
-	}
-
-	/**
-	 * Stores the title of this image
-	 *
-	 * @param string $title text for the title
-	 */
-	function setTitle($title) { $this->set('title', $title); }
-
-
-	/**
-	 * Returns the description of the image
-	 *
-	 * @return string
-	 */
-	function getDesc() {
-		return get_language_string($this->get('desc'));
-	}
-
-	/**
-	 * Stores the description of the image
-	 *
-	 * @param string $desc text for the description
-	 */
-	function setDesc($desc) { $this->set('desc', $desc); }
 
 	/**
 	 * Returns the location field of the image
@@ -654,93 +680,26 @@ class _Image extends PersistentObject {
 	function setCopyright($copyright) { $this->set('copyright', $copyright); }
 
 	/**
-	 * Returns the tags of the image
-	 *
-	 * @return string
-	 */
-	function getTags() {
-		return readTags($this->id, 'images');
-	}
-
-	/**
-	 * Sets the tags of the image
-	 *
-	 * @param string $tags the tag list
-	 */
-	function setTags($tags) {
-		if (!is_array($tags)) {
-			$tags = explode(',', $tags);
-		}
-		storeTags($tags, $this->id, 'images');
-	}
-
-	/**
-	 * Returns the unformatted date of the image
-	 *
-	 * @return string
-	 */
-	function getDateTime() { return $this->get('date'); }
-
-	/**
-	 * Stores the date of the image
-	 *
-	 * @param string $datetime the date
-	 */
-	function setDateTime($datetime) {
-		if ($datetime) {
-			$newtime = dateTimeConvert($datetime);
-			if ($newtime === false) return;
-			$this->set('date', $newtime);
-		} else {
-			$this->set('date', NULL);
-		}
-	}
-
-	/**
-	 * Returns the sort order value of the image
-	 *
-	 * @return int
-	 */
-	function getSortOrder() { return $this->get('sort_order'); }
-
-	/**
-	 * Sets the sort order value of the image
-	 *
-	 * @param int $sortorder the order the images should appear in
-	 */
-	function setSortOrder($sortorder) { $this->set('sort_order', $sortorder); }
-
-	/**
-	 * Returns true if the image is set visible
-	 *
-	 * @return bool
-	 */
-	function getShow() { return $this->get('show'); }
-
-	/**
-	 * Sets the visibility of the image
-	 *
-	 * @param bool $show
-	 */
-	function setShow($show) { $this->set('show', $show ? 1 : 0); }
-
-	/**
 	 * Permanently delete this image (permanent: be careful!)
 	 * Returns the result of the unlink operation (whether the delete was successful)
 	 * @param bool $clean whether to remove the database entry.
 	 * @return bool
 	 */
-	function deleteImage($clean=true) {
-		$result = true;
-		$filestodelete = safe_glob(substr($this->localpath,0,strrpos($this->localpath,'.')).'.*');
-		foreach ($filestodelete as $file) {
-			$result = $result && @unlink($file);
+
+	function remove() {
+		$result = false;
+		if (parent::remove()) {
+			$result = true;
+			$filestodelete = safe_glob(substr($this->localpath,0,strrpos($this->localpath,'.')).'.*');
+			foreach ($filestodelete as $file) {
+				$result = $result && @unlink($file);
+			}
+			if ($result) {
+				query("DELETE FROM " . prefix('obj_to_tag') . "WHERE `type`='images' AND `objectid`=" . $this->id);
+				query("DELETE FROM ".prefix('comments') . "WHERE `type` ='images' AND `ownerid`=" . $this->id);
+			}
 		}
-		if ($clean && $result) {
-			query("DELETE FROM " . prefix('obj_to_tag') . "WHERE `type`='images' AND `objectid`=" . $this->id);
-			query("DELETE FROM ".prefix('comments') . "WHERE `type` IN (".zp_image_types('"').") AND `ownerid`=" . $this->id);
-			query("DELETE FROM ".prefix('images') . "WHERE `id` = " . $this->id);
-		}
+		clearstatcache();
 		return $result;
 	}
 
@@ -777,7 +736,7 @@ class _Image extends PersistentObject {
 				if(in_array(strtolower(getSuffix($file)), $this->sidecars)) {
 					$result = $result && @rename($file, $newalbum->localpath . basename($file));
 				}
-			}			
+			}
 		}
 		if ($result) {
 			if ($this->move(array('filename'=>$newfilename, 'albumid'=>$newalbum->id))) {
@@ -795,7 +754,7 @@ class _Image extends PersistentObject {
 	 * @param string $newfilename the new file name of the image file.
 	 * @return bool
 	 */
-	function renameImage($newfilename) {
+	function rename($newfilename) {
 		return $this->moveImage($this->album, $newfilename);
 	}
 
@@ -804,8 +763,10 @@ class _Image extends PersistentObject {
 	 *
 	 * @param string $newalbum the destination album
 	 */
-	function copyImage($newalbum) {
-		if (is_string($newalbum)) $newalbum = new Album($this->album->gallery, $newalbum, false);
+	function copy($newalbum) {
+		if (is_string($newalbum)) {
+			$newalbum = new Album($this->album->gallery, $newalbum, false);
+		}
 		if ($newalbum->id == $this->album->id) {
 			// Nothing to do - moving the file to the same place.
 			return 2;
@@ -823,97 +784,17 @@ class _Image extends PersistentObject {
 				if(in_array(strtolower(getSuffix($file)), $this->sidecars)) {
 					$result = $result && @copy($file, $newalbum->localpath . basename($file));
 				}
-			}			
+			}
 		}
-		
 		if ($result) {
-			if ($this->copy(array('filename'=>$filename, 'albumid'=>$newalbum->id))) {
+			if ($newID = parent::copy(array('filename'=>$filename, 'albumid'=>$newalbum->id))) {
+				storeTags(readTags($this->getID(), 'images'), $newID, 'images');
 				query('UPDATE '.prefix('images').' SET `mtime`='.filemtime($newpath).' WHERE `filename`="'.$filename.'" AND `albumid`='.$newalbum->id);
 				return 0;
 			}
 		}
 		return 1;
 	}
-
-	/**
-	 * Retuns true if comments are allowed on the image
-	 *
-	 * @return bool
-	 */
-	function getCommentsAllowed() { return $this->get('commentson'); }
-
-	/**
-	 * Sets the comments allowed flag on the image
-	 *
-	 * @param bool $commentson true if they are allowed
-	 */
-	function setCommentsAllowed($commentson) { $this->set('commentson', $commentson ? 1 : 0); }
-
-	/**
-	 * Returns an array of comments
-	 *
-	 * @param bool $moderated if false, comments in moderation are ignored
-	 * @param bool $private if false ignores private comments
-	 * @param bool $desc set to true for descending order
-	 * @return array
-	 */
-	function getComments($moderated=false, $private=false, $desc=false) {
-		$sql = "SELECT *, (date + 0) AS date FROM " . prefix("comments") .
- 			" WHERE `type` IN (".zp_image_types("'").") AND `ownerid`='" . $this->id . "'";
-		if (!$moderated) {
-			$sql .= " AND `inmoderation`=0";
-		}
-		if (!$private) {
-			$sql .= " AND `private`=0";
-		}
-		$sql .= " ORDER BY id";
-		if ($desc) {
-			$sql .= ' DESC';
-		}
-		$comments = query_full_array($sql);
-		$this->comments = $comments;
-		return $this->comments;
-	}
-
-	/**
-	 * Adds a comment to the image
-	 * assumes data is coming straight from GET or POST
-	 *
-	 * Returns a comment object
-	 *
-	 * @param string $name Comment author name
-	 * @param string $email Comment author email
-	 * @param string $website Comment author website
-	 * @param string $comment body of the comment
-	 * @param string $code Captcha code entered
-	 * @param string $code_ok Captcha md5 expected
-	 * @param string $ip the IP address of the comment poster
-	 * @param bool $private set to true if the comment is for the admin only
-	 * @param bool $anon set to true if the poster wishes to remain anonymous
-	 * @return object
-	 */
-	function addComment($name, $email, $website, $comment, $code, $code_ok, $ip, $private, $anon) {
-		$goodMessage = postComment($name, $email, $website, $comment, $code, $code_ok, $this, $ip, $private, $anon);
-		return $goodMessage;
-	}
-
-	/**
-	 * Returns the count of comments for the image. Comments in moderation are not counted
-	 *
-	 * @return int
-	 */
-	function getCommentCount() {
-		if (is_null($this->commentcount)) {
-			if ($this->comments == null) {
-				$count = query_single_row("SELECT COUNT(*) FROM " . prefix("comments") . " WHERE `type` IN (".zp_image_types("'").") AND `inmoderation`=0 AND `private`=0 AND `ownerid`=" . $this->id);
-				$this->commentcount = array_shift($count);
-			} else {
-				$this->commentcount = count($this->comments);
-			}
-		}
-		return $this->commentcount;
-	}
-
 
 	/**** Image Methods ****/
 
@@ -923,17 +804,19 @@ class _Image extends PersistentObject {
 	 * @return string
 	 */
 	function getImageLink() {
-		return rewrite_path('/' . pathurlencode($this->album->name) . '/' . urlencode($this->filename) . im_suffix(),
-			'/index.php?album=' . urlencode($this->album->name) . '&image=' . urlencode($this->filename));
+		return rewrite_path('/' . pathurlencode($this->album->name) . '/' . urlencode($this->filename) . IM_SUFFIX,
+			'/index.php?album=' . pathurlencode($this->album->name) . '&image=' . urlencode($this->filename));
 	}
 
 	/**
 	 * Returns a path to the original image in the original folder.
 	 *
+	 * @param string $path the "path" to the image. Defaults to the simple WEBPATH
+	 *
 	 * @return string
 	 */
-	function getFullImage() {
-		return getAlbumFolder(WEBPATH) . pathurlencode($this->album->name) . "/" . rawurlencode($this->filename);
+	function getFullImage($path=WEBPATH) {
+		return getAlbumFolder($path) . ($this->album->name) . "/" . ($this->filename);
 	}
 
 	/**
@@ -943,10 +826,11 @@ class _Image extends PersistentObject {
 	 * @return string
 	 */
 	function getSizedImage($size) {
-		$args = getImageParameters(array($size), $this->album->name);
+		$wmt = getWatermarkParam($this, WATERMARK_IMAGE);
+		$args = getImageParameters(array($size, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, $wmt), $this->album->name);
 		$cachefilename = getImageCacheFilename($this->album->name, $this->filename, $args);
 		if (file_exists(SERVERCACHE . $cachefilename) && filemtime(SERVERCACHE . $cachefilename) > $this->filemtime) {
-			return WEBPATH . '/'.CACHEFOLDER . pathurlencode(imgSrcURI($cachefilename));
+			return WEBPATH . '/'.CACHEFOLDER . imgSrcURI($cachefilename);
 		} else {
 			return getImageProcessorURI($args,$this->album->name,$this->filename);
 		}
@@ -965,17 +849,21 @@ class _Image extends PersistentObject {
 	 * @param int $cropy crop y axis
 	 * @param string $class Optional style class
 	 * @param string $id Optional style id
-	 * @param bool $thumbStandin set true to inhibit watermarking
-	 * @param bool $gray set true to force grayscale
+	 * @param bool $thumbStandin set to true to treat as thumbnail
+	 * @param bool $effects set to desired image effect (e.g. 'gray' to force gray scale)
 	 * @return string
 	 */
-	function getCustomImage($size, $width, $height, $cropw, $croph, $cropx, $cropy, $thumbStandin=false, $gray=false) {
-		if ($thumbStandin) {
-			$wmt = getOption('Image_watermark');
+	function getCustomImage($size, $width, $height, $cropw, $croph, $cropx, $cropy, $thumbStandin=false, $effects=NULL) {
+		if ($thumbStandin < 0) {
+			$wmt = '!';
 		} else {
-			$wmt = NULL;
+			if ($thumbStandin) {
+				$wmt = getWatermarkParam($this, WATERMARK_THUMB);
+			} else {
+				$wmt = getWatermarkParam($this,  WATERMARK_IMAGE);
+			}
 		}
-		$args = getImageParameters(array($size, $width, $height, $cropw, $croph, $cropx, $cropy, NULL, NULL, NULL, $thumbStandin, $wmt, NULL, $gray), $this->album->name);
+		$args = getImageParameters(array($size, $width, $height, $cropw, $croph, $cropx, $cropy, NULL, $thumbStandin, NULL, $thumbStandin, $wmt, NULL, $effects), $this->album->name);
 		$cachefilename = getImageCacheFilename($this->album->name, $this->filename,	$args);
 		if (file_exists(SERVERCACHE . $cachefilename) && filemtime(SERVERCACHE . $cachefilename) > $this->filemtime) {
 			return WEBPATH . '/'.CACHEFOLDER . pathurlencode(imgSrcURI($cachefilename));
@@ -986,8 +874,8 @@ class _Image extends PersistentObject {
 
 	/**
 	 * Returns the image file name for the thumbnail image.
-	 * 
-	 * @param string $path override path 
+	 *
+	 * @param string $path override path
 	 *
 	 * @return s
 	 */
@@ -1000,21 +888,24 @@ class _Image extends PersistentObject {
 	}
 
 	/**
-	 * Get a default-sized thumbnail of this image.
+	 * Returns an array of cropping parameters. Used as a "helper" function for various
+	 * inherited getThumb() methods
 	 *
-	 * @return string
+	 * @param string $type the type of thumb (in case it ever matters in the cropping, now it does not.)
 	 */
-	function getThumb($type='image') {
-		if (getOption('thumb_crop') && !is_null($cy = $this->get('thumbY'))) {
-			$ts = getOption('thumb_size');
-			$sw = getOption('thumb_crop_width');
-			$sh = getOption('thumb_crop_height');
+	function getThumbCropping($type) {
+		$sw = getOption('thumb_crop_width');
+		$sh = getOption('thumb_crop_height');
+		if (is_null($cy = $this->get('thumbY'))) {
+			$custom = $cx = $cw = $ch = NULL;
+		} else {
+			$custom = true;
 			$cx = $this->get('thumbX');
 			$cw = $this->get('thumbW');
 			$ch = $this->get('thumbH');
 			// upscale to thumb_size proportions
 			if ($sw == $sh) { // square crop, set the size/width to thumbsize
-				$sw = $sh = $ts;
+				$sw = $sh = getOption('thumb_size');
 			} else {
 				if ($sw > $sh) {
 					$r = $ts/$sw;
@@ -1026,16 +917,33 @@ class _Image extends PersistentObject {
 					$sh = $r * $sh;
 				}
 			}
-			return $this->getCustomImage(NULL, $sw, $sh, $cw, $ch, $cx, $cy, true);
+		}
+		return array($custom, $sw, $sh, $cw, $ch, $cx, $cy);
+	}
+
+	/**
+	 * Get a default-sized thumbnail of this image.
+	 *
+	 * @return string
+	 */
+	function getThumb($type='image') {
+		$ts = getOption('thumb_size');
+		if (getOption('thumb_crop')) {
+			list($custom, $sw, $sh, $cw, $ch, $cx, $cy) = $this->getThumbCropping($type);
+			if ($custom) {
+				return $this->getCustomImage(NULL, $sw, $sh, $cw, $ch, $cx, $cy, true);
+			}
+		} else {
+			$sw = $sh = NULL;
 		}
 		$filename = $this->filename;
-		$wmt = getOption('Image_watermark');
-		$args = getImageParameters(array('thumb', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, $wmt, NULL, NULL), $this->album->name);
+		$wmt = getWatermarkParam($this, WATERMARK_THUMB);
+		$args = getImageParameters(array($ts, NULL, NULL, $sw, $sh, NULL, NULL, NULL, true, NULL, true, $wmt, NULL, NULL), $this->album->name);
 		$cachefilename = getImageCacheFilename($alb = $this->album->name, $filename, $args);
 		if (file_exists(SERVERCACHE . $cachefilename)	&& filemtime(SERVERCACHE . $cachefilename) > $this->filemtime) {
 			return WEBPATH . '/'.CACHEFOLDER . pathurlencode(imgSrcURI($cachefilename));
 		} else {
-			return getImageProcessorURI($args, $this->album->name, $this->filename); 
+			return getImageProcessorURI($args, $this->album->name, $this->filename);
 		}
 	}
 
@@ -1108,30 +1016,101 @@ class _Image extends PersistentObject {
 	}
 
 	/**
-	 * returns the custom data field
-	 *
-	 * @return string
-	 */
-	function getCustomData() {
-		return get_language_string($this->get('custom_data'));
-	}
-
-	/**
-	 * Sets the custom data field
-	 *
-	 * @param string $val the value to be put in custom_data
-	 */
-	function setCustomData($val) { $this->set('custom_data', $val); }
-	
-	/**
 	 * Returns the disk size of the image
 	 *
 	 * @return string
 	 */
 	function getImageFootprint() {
-		return filesize($this->localpath); 
+		return filesize($this->localpath);
+	}
+
+	/**
+	 * Returns the custom watermark name
+	 *
+	 * @return string
+	 */
+	function getWatermark() {
+		return $this->get('watermark');
+	}
+
+	/**
+	 * Set custom watermark
+	 *
+	 * @param string $wm
+	 */
+	function setWatermark($wm) {
+		$this->set('watermark', $wm);
+	}
+
+	/**
+	 * Returns the custom watermark usage
+	 *
+	 * @return bool
+	 */
+	function getWMUse() {
+		return $this->get('watermark_use');
+	}
+
+	/**
+	 * Sets the custom watermark usage
+	 *
+	 * @param $use
+	 */
+	function setWMUse($use) {
+		$this->set('watermark_use', $use);
+
+	}
+
+	/**
+	 * Owner functions
+	 */
+	function getOwner() {
+		$owner = $this->get('owner');
+		if (empty($owner)) {
+			$owner = $this->album->getOwner();
+		}
+		return $owner;
+	}
+	function setOwner($owner) {
+		$this->set('owner',$owner);
+	}
+
+	function isMyItem($action) {
+		$album = $this->album;
+		return $album->isMyItem($action);
+	}
+
+	/**
+	 * returns true if user is allowed to see the image
+	 */
+	function checkAccess(&$hint=NULL, &$show=NULL) {
+		$album = $this->getAlbum();
+		if ($album->isMyItem(LIST_RIGHTS)) {
+			return $this->getShow() || $album->albumSubRights() & (MANAGED_OBJECT_RIGHTS_EDIT | MANAGED_OBJECT_RIGHTS_VIEW);
+		}
+		return $album->checkforGuest($hint, $show) && $this->getShow() && $album->getShow();
+	}
+
+	/**
+	 * Checks if guest is loggedin for the album
+	 * @param unknown_type $hint
+	 * @param unknown_type $show
+	 */
+	function checkforGuest(&$hint=NULL, &$show=NULL) {
+		if (!parent::checkForGuest()) {
+			return false;
+		}
+		$album = $this->getAlbum();
+		return $album->checkforGuest($hint, $show);
+	}
+
+	/**
+	 *
+	 * returns true if there is any protection on the image
+	 */
+	function isProtected() {
+		return $this->checkforGuest() != 'zp_public_access';
 	}
 
 }
-
 ?>

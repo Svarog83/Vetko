@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * zenpage admin-categories.php
  *
@@ -6,171 +6,201 @@
  * @package plugins
  * @subpackage zenpage
  */
-include("zp-functions.php"); ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-   <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<title><?php echo gettext('zenphoto administration'); ?></title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<?php zenpageJSCSS(); ?>  
-<script type="text/javascript">
-<?php if(isset($_GET["edit"])) { // prevent showing the message when adding page or article ?>
-$(document).ready(function() {
-	if(jQuery('#edittitlelink:checked').val() != 1) {
-		$('#catlink').attr("disabled", true); 
-	}
-	$('#edittitlelink').change(function() {
-		if(jQuery('#edittitlelink:checked').val() == 1) {	
-			$('#catlink').removeAttr("disabled"); 
-		} else {
-			$('#catlink').attr("disabled", true); 
+define("OFFSET_PATH",4);
+require_once(dirname(dirname(dirname(__FILE__))).'/admin-globals.php');
+require_once("zenpage-admin-functions.php");
+
+admin_securityChecks(ZENPAGE_NEWS_RIGHTS, currentRelativeURL(__FILE__));
+
+$reports = array();
+if (isset($_GET['bulkaction'])) {
+	$reports[] = zenpageBulkActionMessage(sanitize($_GET['bulkaction']));
+}
+if(isset($_POST['action'])) {
+	XSRFdefender('checkeditems');
+	if ($_POST['checkallaction']=='noaction') {
+		if (updateItemSortorder('categories',$reports)) {
+			$reports[] = "<br clear=\"all\"><p class='messagebox fade-message'>".gettext("Sort order saved.")."</p>";
 		}
+	} else {
+		$action = processZenpageBulkActions('Category');
+		$uri = $_server['REQUEST_URI'];
+		if (strpos($uri, '?')) {
+			$uri .= '&bulkaction='.$action;
+		} else {
+			$uri .= '?bulkaction='.$action;
+		}
+		header('Location: ' .$uri);
+		exit();
+	}
+}
+if(isset($_GET['delete'])) {
+	XSRFdefender('delete_category');
+	$reports[] = deleteCategory($_GET['delete']);
+}
+if(isset($_GET['hitcounter'])) {
+	XSRFdefender('hitcounter');
+	$x = 	$_zp_zenpage->getCategory(sanitize_numeric($_GET['id']));
+	$obj = new ZenpageCategory($x['titlelink']);
+	$obj->set('hitcounter',0);
+	$obj->save();
+}
+if(isset($_GET['publish'])) {
+	XSRFdefender('update');
+	$obj = new ZenpageCategory(sanitize($_GET['titlelink']));
+	$obj->setShow(sanitize_numeric($_GET['publish']));
+	$obj->save();
+}
+if(isset($_GET['save'])) {
+	XSRFdefender('save_categories');
+	addCategory($reports);
+}
+if(isset($_GET['id'])){
+	$x = 	$_zp_zenpage->getCategory(sanitize_numeric($_GET['id']));
+	$result = new ZenpageCategory($x['titlelink']);
+} else if(isset($_GET['update'])) {
+	XSRFdefender('update_categories');
+	$result = updateCategory($reports);
+} else {
+	$result = new ZenpageCategory('');
+}
+
+printAdminHeader('news','categories');
+zp_apply_filter('texteditor_config', '','zenpage');
+printSortableHead();
+zenpageJSCSS();
+?>
+<script type="text/javascript">
+	//<!-- <![CDATA[
+	var deleteCategory = "<?php echo gettext("Are you sure you want to delete this category? THIS CANNOT BE UNDONE!"); ?>";
+	function confirmAction() {
+		if ($('#checkallaction').val() == 'deleteall') {
+			return confirm('<?php echo js_encode(gettext("Are you sure you want to delete the checked items?")); ?>');
+		} else {
+			return true;
+		}
+	}
+	function toggleTitlelink() {
+		if(jQuery('#edittitlelink:checked').val() == 1) {
+			$('#titlelink').removeAttr("disabled");
+		} else {
+			$('#titlelink').attr("disabled", true);
+		}
+	};
+	$(document).ready(function() {
+		$('form [name=checkeditems] #checkallaction').change(function(){
+			if($(this).val() == 'deleteall') {
+				// general text about "items" so it can be reused!
+				alert('<?php echo js_encode(gettext('Are you sure you want to delete all selected items? THIS CANNOT BE UNDONE!')); ?>');
+			}
+		});
 	});
-});
-<?php } ?>
+	// ]]> -->
 </script>
 </head>
 <body>
-<?php 
+<?php
 printLogoAndLinks();
 ?>
 <div id="main">
 	<?php
-	printTabs('articles');
+	printTabs();
 	?>
 	<div id="content">
 		<?php
-		checkRights('categories'); 
-		printSubtabs('articles');
+		$subtab = printSubtabs();
 		?>
 		<div id="tab_articles" class="tabbox">
-			<?php	
-			
-			if(isset($_GET['delete'])) {
-			  deleteCategory();
-			}
-			if(isset($_GET['hitcounter'])) {
-				resetPageOrArticleHitcounter('cat');
-			}
-			if(isset($_GET['save'])) {
-			  addCategory();
-			}
-			if(isset($_GET['id'])){
-			  $result = getCategory($_GET['id']);
-			} else if(isset($_GET['update'])) {
-			  $result = updateCategory();
-			}
-			?> 
-			<h1>
-			<?php 
-			if(isset($_GET['edit'])) {
-				echo gettext('Edit Category:').'<em> '; checkForEmptyTitle(get_language_string($result['cat_name']),'category'); echo '</em>';
-			} else {
-				echo gettext('Categories'); 
+			<?php
+			zp_apply_filter('admin_note', 'categories', $subtab);
+			if ($reports) {
+				$show = array();
+				preg_match_all('/<p class=[\'"](.*?)[\'"]>(.*?)<\/p>/', implode('', $reports),$matches);
+				foreach ($matches[1] as $key=>$report) {
+					$show[$report][] = $matches[2][$key];
+				}
+				foreach ($show as $type=>$list) {
+					echo '<p class="'.$type.'">'.implode('<br />', $list).'</p>';
+				}
 			}
 			?>
-			<span class="zenpagestats"><?php printCategoriesStatistic();?></span></h1>
-			<p class="buttons">
-			<span id="tip"><a href="#"><img src="images/info.png" alt="" /><?php echo gettext('Usage tips'); ?></a></span>
-			<?php if(isset($_GET['edit'])) { ?>
-				<a href="admin-categories.php?tab=categories"><img src="images/add.png" alt="" /><?php echo gettext('Add New Category'); ?></a>
-			<?php } ?>
-			</p>
-			<br clear="all" /><br clear="all" />
-			<div id="tips" style="display:none">	
-				<p><?php echo gettext("A search engine friendly <em>titlelink</em> (aka slug) without special characters to be used in URLs is generated from the title of the currently chosen language automatically if a new category is added. You can edit it later manually if necessary."); ?></p> 
-				<p><?php echo gettext("If you are editing a category check <em>Edit Titlelink</em> if you need to customize how the title appears in URLs. Otherwise it will be automatically updated to any changes made to the title. If you want to prevent this check <em>Enable permaTitlelink</em> and the titlelink stays always the same (recommended if you use Zenphoto's multilingual mode). <strong>Note: </strong> <em>Edit titlelink</em> overrides the permalink setting."); ?></p> 
-				<p><?php echo gettext("<strong>Important:</strong> If you are using Zenphoto's multi-lingual mode the Titlelink is generated from the Title of the currently selected language."); ?></p> 
-				<p><?php echo gettext("Hint: If you need more space for your text use TinyMCE's full screen mode (Click the blue square on the top right of editor's control bar)."); ?></p> 
-			</div>
-			<div style="padding:15px; margin-top: 10px">
-				<?php
-				if(isset($_GET['edit'])) {
-					$formname = 'update';
-					$formaction = 'admin-categories.php?edit&amp;update&amp;tab=categories';
-				} else {
-					$formname = 'addcat';
-					$formaction = 'admin-categories.php?save&amp;tab=categories';
-				}
-				?>
-				<form method="post" name="<?php echo $formname; ?>update" action="<?php echo $formaction; ?>">
-				<?php
-				if(isset($_GET['edit'])) {
-					?>
-					<input type="hidden" name="id" value="<?php echo $result['id'];?>" />
-					<input type="hidden" name="catlink-old" id="catlink-old" value="<?php echo $result['cat_link']; ?>" />
+			<h1>
+			<?php	echo gettext('Categories'); ?><span class="zenpagestats"><?php printCategoriesStatistic();?></span></h1>
+			<form action="admin-categories.php?page=news&amp;tab=categories" method="post" id="checkeditems" name="checkeditems" onsubmit="return confirmAction();">
+				<?php XSRFToken('checkeditems');?>
+				<input	type="hidden" name="action" id="action" value="update" />
+				<p class="buttons">
+					<button class="serialize" type="submit" title="<?php echo gettext('Apply'); ?>">
+						<img src="../../images/pass.png" alt="" /><strong><?php echo gettext('Apply'); ?></strong>
+					</button>
 					<?php
-				}
-				?>
-					<table>
-			    	<tr> 
-				     <?php
-				     if(isset($_GET['edit'])) {
-				     	$cattitlemessage = gettext('Category Title:');
-				     } else {
-				     	$cattitlemessage =  gettext('New Category Title:');
-				     }
-				     	?>
-				      <td class="topalign-padding"><?php echo $cattitlemessage; ?></td>
-				      <td><?php if(isset($_GET['edit'])) { print_language_string_list_zenpage($result['cat_name'],'category',false) ; } else { print_language_string_list_zenpage('','category',false) ;} ?>
-				      	<input name="permalink" type="checkbox" id="permalink" value="1" <?php if(isset($_GET['edit'])) { checkIfChecked($result['permalink']); } else { echo 'checked="checked"'; } ?> /> <?php echo gettext('Enable permaTitleLink'); ?>
-				      </td>
-				    </tr>
-						<?php
-						if(isset($_GET['edit'])) {
-							?>
-					    <tr> 
-					      <td class="topalign-padding"><?php echo gettext('Category TitleLink:'); ?></td>
-					      <td><input name="catlink" type="text" size="85" id="catlink" value="<?php echo $result['cat_link']; ?>" />
-					      <input name="edittitlelink" type="checkbox" id="edittitlelink" value="1" /> <?php echo gettext('Edit TitleLink'); ?>
-					      </td>
-					    </tr>
-							<?php
-						}
+					if (zp_loggedin(MANAGE_ALL_NEWS_RIGHTS)) {
 						?>
-				    <tr>
-				      <td colspan="3">
-				    	<?php 
-				    	if(isset($_GET['edit'])) { 
-				     		$submittext =  gettext('Update Category');
-				    	} else {
-				     		$submittext =  gettext('Save New Category');
-				    	}
-				     	?>
-				      	<p class="buttons">
-					      	<button type="submit" title="<?php echo $submittext; ?>">
-					      		<img src="../../images/pass.png" alt="" />
-					      		<strong><?php echo $submittext; ?></strong>
-					      	</button>
-				      	</p>
-								<p class="buttons">
-									<button type="reset" title="<?php echo gettext('Reset'); ?>">
-										<img src="../../images/reset.png" alt="" />
-										<strong><?php echo gettext('Reset'); ?></strong>
-									</button>
-								</p>
-								<br clear="all" /><br />
-							</td>	
-			    	</tr>
-			 		</table>
-				</form>
-				<table class="bordered">
-				 <tr> 
-				  <th colspan="4"><strong><?php echo gettext('Edit this Category'); ?></strong></th>
-				  </tr>
-					<?php printCategoryList(); ?>
-				</table>
-				
-			</div> <!-- box -->
-			<ul class="iconlegend">
-				<li><img src="../../images/reset.png" alt="" /><?php echo gettext('Reset hitcounter'); ?></li>
-				<li><img src="../../images/fail.png" alt="" /><?php echo gettext('Delete category'); ?></li>
-			</ul>
+						<span class="floatright">
+							<strong><a href="admin-edit.php?newscategory&amp;add&amp;XSRFToken=<?php echo getXSRFToken('add')?>" title="<?php echo gettext('New category'); ?>"><img src="images/add.png" alt="" /> <?php echo gettext('New category'); ?></a></strong>
+						</span>
+						<?php
+						}
+					?>
+				</p>
+				<br clear="all" /><br />
+				<div class="bordered">
+					<div class="headline"><?php echo gettext('Edit this Category'); ?>
+					<?php
+					$checkarray = array(
+													gettext('Set to published') => 'showall',
+													gettext('Set to unpublished') => 'hideall',
+													gettext('*Bulk actions*') => 'noaction',
+													gettext('Delete') => 'deleteall',
+													gettext('Add tags to articles') => 'alltags',
+													gettext('Clear tags of articles') => 'clearalltags',
+													gettext('Reset hitcounter') => 'resethitcounter'
+													);
+					printBulkActions($checkarray);
+					?>
+					</div>
+					<div class="subhead" >
+						<label style="float: right"><?php echo gettext("Check All"); ?>
+							<input type="checkbox" name="allbox" id="allbox" onclick="checkAll(this.form, 'ids[]', this.checked);" />
+						</label>
+					</div>
+						<ul class="page-list">
+						<?php $toodeep = printNestedItemsList('cats-sortablelist','','');	?>
+						</ul>
+					</div>
+					<?php
+					if ($toodeep) {
+						echo '<div class="errorbox">';
+						echo  '<h2>'.gettext('The sort position of the indicated items cannot be recorded because the nesting is too deep. Please move them to a higher level and save your order.').'</h2>';
+						echo '</div>';
+					}
+					?>
+					<span id="serializeOutput" /></span>
+					<input name="update" type="hidden" value="Save Order" />
+					<p class="buttons">
+						<button class="serialize" type="submit" title="<?php echo gettext('Apply'); ?>">
+							<img src="../../images/pass.png" alt="" /><strong><?php echo gettext('Apply'); ?></strong>
+						</button>
+					</p>
+					<ul class="iconlegend">
+					<?php
+					if (GALLERY_SECURITY == 'public') {
+						?>
+						<li><img src="../../images/lock.png" alt="" /><?php echo gettext("Has Password"); ?></li>
+						<?php
+					}
+					?>
+					<li><img src="images/view.png" alt="" /><?php echo gettext('View'); ?></li>
+					<li><img src="../../images/reset.png" alt="" /><?php echo gettext('Reset hitcounter'); ?></li>
+					<li><img src="../../images/fail.png" alt="" /><?php echo gettext('Delete category'); ?></li>
+				</ul>
+			</form>
+
+			<br style="clear: both" /><br />
 		</div> <!-- tab_articles -->
 	</div> <!-- content -->
+	<script type="text/javascript">
 </div> <!-- main -->
 <?php printAdminFooter(); ?>
-
 </body>
 </html>

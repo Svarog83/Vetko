@@ -1,22 +1,24 @@
 <?php
-/** 
+/**
  * A plugin to print the most common html meta tags to the head of your site's pages using
  * general existing Zenphoto info like gallery description, tags or Zenpage news categories.
- *  
- * Just enable the plugin and the meta data will be inserted into your <head> section. 
+ * It also has support for "<link rel="canonical" href="" />"
+ *
+ * Just enable the plugin and the meta data will be inserted into your <head> section.
  * You can choose on the plugin's admin option what tags you want to be printed.
- *   
+ *
  * @author Malte Müller (acrylian)
- * @package plugins 
+ * @package plugins
  */
 
-$plugin_description = gettext("A plugin to print the most common html meta tags (except the charset one which is standard to all theme files anyway) to the head of your site's pages using general existing Zenphoto info like gallery description, tags or Zenpage news categories."); 
+$plugin_description = gettext("A plugin to print the most common HTML meta tags to the head of your site's pages. Tags are selected from existing Zenphoto info such as gallery description, tags, or Zenpage news categories.");
 $plugin_author = "Malte Müller (acrylian)";
-$plugin_version = '1.2.9'; 
-$plugin_URL = "http://www.zenphoto.org/documentation/plugins/_".PLUGIN_FOLDER."---html_meta_tags.php.html";
-$option_interface = new htmlmetatags();
+$plugin_version = '1.4.2';
+$option_interface = 'htmlmetatags';
 
-if (!OFFSET_PATH) addPluginScript(getHTMLMetaData()); // insert the meta tags into the <head></head> if on a theme page.
+if (in_context(ZP_INDEX)) {
+	zp_register_filter('theme_head','getHTMLMetaData'); // insert the meta tags into the <head></head> if on a theme page.
+}
 
 class htmlmetatags {
 
@@ -27,7 +29,7 @@ class htmlmetatags {
 		setOptionDefault('htmlmeta_revisit_after', '10 Days');
 		setOptionDefault('htmlmeta_expires', '43200');
 		setOptionDefault('htmlmeta_tags', '');
-		
+
 		// the html meta tag selector prechecked ones
 		setOptionDefault('htmlmeta_http-equiv-language', '1');
 		setOptionDefault('htmlmeta_name-language', '1');
@@ -48,6 +50,7 @@ class htmlmetatags {
 		setOptionDefault('htmlmeta_name-expires', '1');
 		setOptionDefault('htmlmeta_name-generator', '1');
 		setOptionDefault('htmlmeta_name-date', '1');
+		setOptionDefault('htmlmeta_canonical-url', '0');
 	}
 
  // Gettext calls are removed because some terms like "noindex" are fixed terms that should not be translated so user know what setting they make.
@@ -61,10 +64,12 @@ class htmlmetatags {
 		gettext('Robots') => array('key' => 'htmlmeta_robots', 'type' => OPTION_TYPE_SELECTOR,
 										'selections' => array('noindex' => "noindex", 'index' => "index",	'nofollow' => "nofollow", 'noindex,nofollow' => "noindex,nofollow",'noindex,follow' => "noindex,follow", 'index,nofollow' => "index,nofollow",	'none' => "none"),
 										'desc' => gettext("If and how robots are allowed to visit the site. Default is 'index'. Note that you also should use a robot.txt file.")),
-		gettext('Revisit after') => array('key' => 'htmlmeta_revisit_after', 'type' => OPTION_TYPE_TEXTBOX, 
+		gettext('Revisit after') => array('key' => 'htmlmeta_revisit_after', 'type' => OPTION_TYPE_TEXTBOX,
 									'desc' => gettext("Request the crawler to revisit the page after x days.")),
-		gettext('Expires') => array('key' => 'htmlmeta_expires', 'type' => OPTION_TYPE_TEXTBOX, 
+		gettext('Expires') => array('key' => 'htmlmeta_expires', 'type' => OPTION_TYPE_TEXTBOX,
 									'desc' => gettext("When the page should be loaded directly from the server and not from any cache. You can either set a date/time in international date format <em>Sat, 15 Dec 2001 12:00:00 GMT (example)</em> or a number. A number then means seconds, the default value <em>43200</em> means 12 hours.")),
+		gettext('Canonical URL link') => array('key' => 'htmlmeta_canonical-url', 'type' => OPTION_TYPE_CHECKBOX,
+									'desc' => gettext("This adds a link element to the head of each page with a <em>canonical url</em>.")),
 		gettext('HTML meta tags') => array('key' => 'htmlmeta_tags', 'type' => OPTION_TYPE_CHECKBOX_UL,
 										"checkboxes" => array(
 												"http-equiv='language'" => "htmlmeta_http-equiv-language",
@@ -104,8 +109,8 @@ class htmlmetatags {
 												"name='DC.relation'" => "htmlmeta_name-DC.relation",
 												"name='DC.Date.created'" => "htmlmeta_name-DC.Date.created"
 												),
-										"desc" => gettext("Which of the html meta tags should be used. For info about these in detail please refer to the net."))
-		
+										"desc" => gettext("Which of the HTML meta tags should be used. For info about these in detail please refer to the net."))
+
 		);
 	}
 }
@@ -114,59 +119,92 @@ class htmlmetatags {
  * Prints html meta data to be used in the <head> section of a page
  *
  */
-function getHTMLMetaData() {	
-	global $_zp_gallery, $_zp_current_album, $_zp_current_image, $_zp_current_zenpage_news, $_zp_current_zenpage_page, $_zp_gallery_page, $_zp_current_category;
-	$url = sanitize("http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+function getHTMLMetaData() {
+	global $_zp_gallery, $_zp_galley_page, $_zp_current_album, $_zp_current_image, $_zp_current_zenpage_news,
+					$_zp_current_zenpage_page, $_zp_gallery_page, $_zp_current_category, $_zp_authority;
+	$host = sanitize("http://".$_SERVER['HTTP_HOST']);
+	$url = $host.sanitize($_SERVER['REQUEST_URI']);
 
 	// Convert locale shorttag to allowed html meta format
 	$locale = getOption("locale");
 	$locale = strtr($locale,"_","-");
-
+	$canonicalurl = '';
 	// generate page title, get date
-		$pagetitle = "";
-		$date = strftime(getOption("date_format")); // if we don't have a item date use current date
-		$desc = getBareGalleryDesc();
-	  if(is_object($_zp_current_image) AND is_object($_zp_current_album)) {
-			$pagetitle = getBareImageTitle()." (". getBareAlbumTitle().") - ";
-			$date = getImageDate();
-			$desc = getBareImageDesc();
-		}
-		if(is_object($_zp_current_album) AND !is_object($_zp_current_image)) {
+	$pagetitle = ""; // for gallery index setup below switch
+	$date = strftime(DATE_FORMAT); // if we don't have a item date use current date
+	$desc = getBareGalleryDesc();
+	switch($_zp_gallery_page) {
+		case 'index.php':
+			$desc = getBareGalleryDesc();
+			$canonicalurl = $host.getGalleryIndexURL();
+			break;
+		case 'album.php':
 			$pagetitle = getBareAlbumTitle()." - ";
 			$date = getAlbumDate();
 			$desc = getBareAlbumDesc();
-		}
-		if(function_exists("is_NewsArticle")) {
-			if(is_NewsArticle()) {
-				$pagetitle = getBareNewsTitle()." - ";
-				$date = getNewsDate();
-				$desc = strip_tags(getNewsContent());
-			} else 	if(is_NewsCategory()) {
-				$pagetitle = getCategoryTitle($_zp_current_category)." - ";
-				$date = strftime(getOption("date_format"));
-				$desc = "";
-			} else if(is_Pages()) {
-				$pagetitle = getBarePageTitle()." - ";
-				$date = getPageDate();
-				$desc = strip_tags(getPageContent());
-			} 
-		}
-		// shorten desc to the allowed 200 characters if necesssary.
-		if(strlen($desc) > 200) {
-			$desc = substr($desc,0,200);
-		}
-
-		$pagetitle = $pagetitle.getBareGalleryTitle();
-
-		// get master admin
-		$admins = getAdministrators();
-		$admincount = 0;
-		foreach($admins as $admin) {
-			$admincount++;
-			$author = $admin['name'];
-			if($admincount === 1 ) break;
-		}
-	$meta = ''; 
+			$canonicalurl = $host.getAlbumLinkURL();
+			break;
+		case 'image.php':
+			$pagetitle = getBareImageTitle()." (". getBareAlbumTitle().") - ";
+			$date = getImageDate();
+			$desc = getBareImageDesc();
+			$canonicalurl = $host.getImageLinkURL();
+			break;
+		case 'news.php':
+			if(function_exists("is_NewsArticle")) {
+				if(is_NewsArticle()) {
+					$pagetitle = getBareNewsTitle()." - ";
+					$date = getNewsDate();
+					$desc = strip_tags(getNewsContent());
+					$canonicalurl = $host.getNewsURL($_zp_current_zenpage_news->getTitlelink());
+				} else 	if(is_NewsCategory()) {
+					$pagetitle = $_zp_current_category->getTitlelink()." - ";
+					$date = strftime(DATE_FORMAT);
+					$desc = html_encode(strip_tags($_zp_current_category->getDesc()));
+					$canonicalurl = $host.getNewsCategoryURL($_zp_current_category->getTitlelink());
+				} else {
+					$pagetitle = gettext('News')." - ";
+					$desc = '';
+					$canonicalurl = $host.getNewsIndexURL();
+				}
+			}
+			break;
+		case 'pages.php':
+			$pagetitle = getBarePageTitle()." - ";
+			$date = getPageDate();
+			$desc = html_encode(strip_tags(getPageContent()));
+			$canonicalurl = $host.getPageLinkURL($_zp_current_zenpage_page->getTitlelink());
+			break;
+		case 'archive.php':
+			$pagetitle = gettext('Archive')." - ";
+			$desc = '';
+			$canonicalurl = $host.getCustomPageURL('archive');
+			break;
+		case 'search.php':
+			$pagetitle = gettext('Search')." - ";
+			$desc = '';
+			$canonicalurl = $host.getCustomPageURL('search');
+			break;
+		case 'contact.php':
+			$pagetitle = gettext('Contact')." - ";
+			$desc = '';
+			$canonicalurl = $host.getCustomPageURL('contact');
+			break;
+		default: // for all other possible none standard custom pages
+			$pagetitle = sanitize(@$_GET['p']);
+			$desc = '';
+			$canonicalurl = $host.getCustomPageURL($pagetitle);
+			break;
+	}
+	// shorten desc to the allowed 200 characters if necesssary.
+	if(strlen($desc) > 200) {
+		$desc = substr($desc,0,200);
+	}
+	$pagetitle = $pagetitle.getBareGalleryTitle();
+	// get master admin
+	$admin = $_zp_authority->getAnAdmin(array('`user`=' => $_zp_authority->master_user, '`valid`=' => 1));
+	$author = $admin->getName();
+	$meta = '';
 	if(getOption('htmlmeta_http-equiv-language')) { $meta .= '<meta http-equiv="language" content="'.$locale.'" />'."\n"; }
 	if(getOption('htmlmeta_name-language')) { $meta .= '<meta name="language" content="'.$locale.'" />'."\n"; }
 	if(getOption('htmlmeta_name-content-language')) { $meta .= '<meta name="content-language" content="'.$locale.'" />'."\n"; }
@@ -203,17 +241,69 @@ function getHTMLMetaData() {
 	if(getOption('htmlmeta_name-DC.source')) { $meta .= '<meta name="DC.source" content="'.$url.'" />'."\n"; }
 	if(getOption('htmlmeta_name-DC.relation')) { $meta .= '<meta name="DC.relation" content="'.FULLWEBPATH.'" />'."\n"; }
 	if(getOption('htmlmeta_name-DC.Date.created')) { $meta .= '<meta name="DC.Date.created" content="'.$date.'" />'."\n"; }
-
-	return $meta;
+	if(getOption('htmlmeta_canonical-url')) { 
+		$meta .= '<link rel="canonical" href="'.$canonicalurl.'" />'."\n"; 
+		if(getOption('zp_plugin_seo_locale')) {
+			$langs = generateLanguageList();
+			if(count($langs) != 1) {
+				foreach ($langs as $text=>$lang) {
+					$langcheck = strtr($lang, '_','-');	// in urls we need en_US while for hreflang we need en-US.
+					if($langcheck == $locale) {
+						$altlink = '';
+					} else {
+						switch($_zp_gallery_page) {
+							case 'index.php':
+								$altlink = FULLWEBPATH.'/'.$lang;
+								break;
+							case 'album.php':
+								$altlink = FULLWEBPATH.'/'.$lang.'/'.html_encode($_zp_current_album->name);
+								break;
+							case 'image.php':
+								$altlink = FULLWEBPATH.'/'.$lang.'/'.html_encode($_zp_current_album->name).'/'.html_encode($_zp_current_image->filename).IM_SUFFIX;
+								break;
+							case 'news.php':
+								if(function_exists("is_NewsArticle")) {
+									if(is_NewsArticle()) {
+										$altlink = FULLWEBPATH.'/'.$lang.'/news/'.html_encode($_zp_current_zenpage_news->getTitlelink());
+									} else 	if(is_NewsCategory()) {
+										$altlink = FULLWEBPATH.'/'.$lang.'/news/'.html_encode($_zp_current_category->getTitlelink());
+									} else {
+										$altlink = FULLWEBPATH.'/'.$lang.'/news';
+									}
+								}
+								break;
+							case 'pages.php':
+								$altlink = FULLWEBPATH.'/'.$lang.'/pages/'.html_encode($_zp_current_zenpage_page->getTitlelink());
+								break;
+							case 'archive.php':
+								$altlink = FULLWEBPATH.'/'.$lang.'/page/'.html_encode('archive');
+								break;
+							case 'search.php':
+								$altlink = FULLWEBPATH.'/'.$lang.'/page/'.html_encode('search');
+								break;
+							case 'contact.php':
+								$altlink = FULLWEBPATH.'/'.$lang.'/page/'.html_encode('contact');
+								break;
+							default: // for all other possible none standard custom pages
+								$altlink = FULLWEBPATH.'/'.$lang.'/page/'.html_encode($pagetitle);
+								break;
+						} // switch
+						$meta .= '<link rel="alternate" hreflang="'.$langcheck.'" href="'.$altlink.'" />'."\n";
+					} // if lang
+				} // foreach
+			} // if count
+		} // if option
+	} // if canonical
+	echo $meta;
 }
 
 /**
- * Helper function to list tags/categories as keywords separated by comma. 
+ * Helper function to list tags/categories as keywords separated by comma.
  *
  * @param array $array the array of the tags or categories to list
  */
 function getMetaKeywords() {
-	global $_zp_gallery, $_zp_current_album, $_zp_current_image, $_zp_current_zenpage_news, $_zp_current_zenpage_page, $_zp_gallery_page;
+	global $_zp_gallery, $_zp_current_album, $_zp_current_image, $_zp_current_zenpage_news, $_zp_current_zenpage_page, $_zp_current_category, $_zp_gallery_page,$_zp_zenpage;
 	$words = '';
 	if(is_object($_zp_current_album) OR is_object($_zp_current_image)) {
 		$tags = getTags();
@@ -232,10 +322,10 @@ function getMetaKeywords() {
 			$tags = getTags();
 			$words = getMetaAlbumAndImageTags($tags,"gallery");
 		} else if(is_News()) {
-			$tags = getAllCategories();
+			$tags = $_zp_zenpage->getAllCategories();
 			$words .= getMetaAlbumAndImageTags($tags,"zenpage");
 		} else if (is_NewsCategory()) {
-			$words .= getCurrentNewsCategory();
+			$words .= $_zp_current_category->getTitle();
 		}
 	}
 	return $words;
@@ -257,10 +347,10 @@ function getMetaAlbumAndImageTags($tags,$mode="") {
 			if($count >= count($tags)) $separator = "";
 			switch($mode) {
 				case "gallery":
-					$alltags .= htmlspecialchars($keyword).$separator;
+					$alltags .= html_encode($keyword).$separator;
 					break;
 				case "zenpage":
-					$alltags .= htmlspecialchars($keyword["cat_name"]).$separator;
+					$alltags .= html_encode($keyword["titlelink"]).$separator;
 					break;
 			}
 		}
@@ -269,5 +359,4 @@ function getMetaAlbumAndImageTags($tags,$mode="") {
 	}
 	return $alltags;
 }
-
 ?>

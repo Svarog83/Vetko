@@ -12,22 +12,39 @@ require_once(dirname(__FILE__).'/class-transientimage.php');
 require_once(dirname(__FILE__).'/class-comment.php');
 
 if (getOption('zp_plugin_zenpage')) {
+	require_once(dirname(__FILE__).'/'.PLUGIN_FOLDER.'/zenpage/zenpage-class.php');
 	require_once(dirname(__FILE__).'/'.PLUGIN_FOLDER.'/zenpage/zenpage-class-news.php');
 	require_once(dirname(__FILE__).'/'.PLUGIN_FOLDER.'/zenpage/zenpage-class-page.php');
+	require_once(dirname(__FILE__).'/'.PLUGIN_FOLDER.'/zenpage/zenpage-class-category.php');
 }
-			
+global $class_optionInterface;
+
 // load the class & filter plugins
-if (DEBUG_PLUGINS) debugLog('Loading the "class" plugins.');
-$class_optionInterface = array();
-foreach (getEnabledPlugins() as $extension => $class) {
-	if (($class > 1) || (OFFSET_PATH && $class < 0)) {
-		if (DEBUG_PLUGINS) debugLog('    '.$extension.' ('.$class.')');
-		$option_interface = NULL;
-		require_once(getPlugin($extension.'.php'));
-		if (!is_null($option_interface)) {
-			$class_optionInterface[$extension] = $option_interface;
+if (OFFSET_PATH != 2) {	// setup does not need (and might have problems with) plugins
+	$mask = CLASS_PLUGIN;
+	if (OFFSET_PATH) {
+		$mask = $mask | ADMIN_PLUGIN;
+	}
+	if (DEBUG_PLUGINS) {
+		if (OFFSET_PATH) {
+			debugLog('Loading the "class" and "admin" plugins.');
+		} else {
+			debugLog('Loading the "class" plugins.');
+		}
+	}
+	foreach (getEnabledPlugins() as $extension => $priority) {
+		if ($priority & $mask) {
+			if (DEBUG_PLUGINS) {
+				list($usec, $sec) = explode(" ", microtime());
+				$start = (float)$usec + (float)$sec;
+			}
+			require_once(getPlugin($extension.'.php'));
+			if (DEBUG_PLUGINS) {
+				list($usec, $sec) = explode(" ", microtime());
+				$end = (float)$usec + (float)$sec;
+				debugLog(sprintf('    '.$extension.'('.($priority & PLUGIN_PRIORITY).')=>%.4fs',$end-$start));
+			}
 		}
 	}
 }
-
 ?>

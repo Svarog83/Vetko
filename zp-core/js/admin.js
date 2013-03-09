@@ -1,16 +1,5 @@
 /* Zenphoto administration javascript. */
 
-function addUploadBoxes(placeholderid, copyfromid, num) {
-	for (i=0; i<num; i++) {
-		jQuery('#'+copyfromid).clone().insertBefore('#'+placeholderid);
-		window.totalinputs++;
-		if (window.totalinputs >= 50) {
-			jQuery('#addUploadBoxes').toggle('slow');
-			return;
-		}
-	}
-}
-
 function albumSwitch(sel, unchecknewalbum, msg1, msg2) {
 	var selected = sel.options[sel.selectedIndex];
 	var albumtext = document.getElementById("albumtext");
@@ -19,8 +8,8 @@ function albumSwitch(sel, unchecknewalbum, msg1, msg2) {
 	var titlebox = document.getElementById("albumtitle");
 	var checkbox = document.getElementById("autogen");
 	var newalbumbox = sel.form.newalbum;
-	var folder = sel.form.folder;
-	var exists = sel.form.existingfolder;
+	var folder = document.getElementById("folderslot");
+	var exists = document.getElementById("existingfolder");
 
 	if (selected.value == "") {
 		newalbumbox.checked = true;
@@ -41,7 +30,7 @@ function albumSwitch(sel, unchecknewalbum, msg1, msg2) {
 		albumbox.value = "";
 		folder.value = "";
 		titlebox.value = "";
-		exists.value = false;
+		exists.value = "false";
 		checkbox.checked = true;
 		document.getElementById("foldererror").style.display = "none";
 		toggleAutogen("folderdisplay", "albumtitle", checkbox);
@@ -51,9 +40,11 @@ function albumSwitch(sel, unchecknewalbum, msg1, msg2) {
 		albumbox.value = selected.value;
 		folder.value = selected.value;
 		titlebox.value = selected.text;
-		exists.value = true;
+		exists.value = "true";
 	}
-	return validateFolder(folder, msg1, msg2);
+
+	var rslt = validateFolder(folder, msg1, msg2);
+	return rslt;
 }
 
 
@@ -68,23 +59,20 @@ function contains(arr, key) {
 
 function validateFolder(folderObj, msg1, msg2) {
 	var errorDiv = document.getElementById("foldererror");
-	var exists = document.uploadform.existingfolder.value != "false";
-	var uploadBoxesDiv = document.getElementById("uploadboxes");
+	var exists = $('#existingfolder').val() != "false";
 	var folder = folderObj.value;
+	$('#folderslot').val(folder);
 	if (!exists && albumArray && contains(albumArray, folder)) {
 		errorDiv.style.display = "block";
 		errorDiv.innerHTML = msg1;
-		uploadBoxesDiv.style.display = "none";
 		return false;
 	} else if ((folder == "") || folder.substr(folder.length-1, 1) == '/') {
 		errorDiv.style.display = "block";
 		errorDiv.innerHTML = msg2;
-		uploadBoxesDiv.style.display = "none";
 		return false;
 	} else {
 		errorDiv.style.display = "none";
 		errorDiv.innerHTML = "";
-		uploadBoxesDiv.style.display = "block";
 		return true;
 	}
 }
@@ -159,69 +147,73 @@ function update_direction(obj, element1, element2) {
 	no = obj.options[obj.selectedIndex].value;
 	switch (no) {
 		case 'custom':
-			document.getElementById(element1).style.display = 'block';
-			document.getElementById(element2).style.display = 'block';
+			$('#'+element1).show();
+			$('#'+element2).show();
 			break;
 		case 'manual':
 		case 'random':
 		case '':
-			document.getElementById(element1).style.display = 'none';
-			document.getElementById(element2).style.display = 'none';
+			$('#'+element1).hide();
+			$('#'+element2).hide();
 			break;
 		default:
-			document.getElementById(element1).style.display = 'block';
-			document.getElementById(element2).style.display = 'none';
+			$('#'+element1).show();
+			$('#'+element2).hide();
 			break;
 	}
 }
 
 // Uses jQuery
-function image_deleteconfirm(obj, id, msg) {
-	toggleMoveCopyRename(id, '');
+function deleteConfirm(obj, id, msg) {
 	if (confirm(msg)) {
-		jQuery('#deletemsg'+id).show();
-		obj.checked = true;
+		$('#deletemsg'+id).show();
+		$('#'+obj).attr('checked','checked');
+	} else {
+		$('#'+obj).removeAttr('checked');
 	}
 }
+
 
 // Uses jQuery
 // Toggles the interface for move/copy (select an album) or rename (text
 // field for new filename) or none.
 function toggleMoveCopyRename(id, operation) {
-	if (operation == '') {
-		jQuery('#movecopydiv-'+id).hide();
-		jQuery('#renamediv-'+id).hide();
-		jQuery('#deletemsg'+id).hide();
-		jQuery('#move-'+id).attr('checked',false);
-		jQuery('#copy-'+id).attr('checked',false);
-		jQuery('#rename-'+id).attr('checked',false);
-		jQuery('#Delete-'+id).attr('checked',false);
-	} else if (operation == 'movecopy') {
+	jQuery('#movecopydiv-'+id).hide();
+	jQuery('#renamediv-'+id).hide();
+	jQuery('#deletemsg'+id).hide();
+	jQuery('#move-'+id).removeAttr('checked');
+	jQuery('#copy-'+id).removeAttr('checked');
+	jQuery('#rename-'+id).removeAttr('checked');
+	jQuery('#Delete-'+id).removeAttr('checked');
+	if (operation == 'copy') {
 		jQuery('#movecopydiv-'+id).show();
-		jQuery('#renamediv-'+id).hide();
-		jQuery('#Delete-'+id).attr('checked',false);
-		jQuery('#deletemsg'+id).hide();
+		jQuery('#copy-'+id).attr('checked','checked');
+	} else if (operation == 'move') {
+		jQuery('#movecopydiv-'+id).show();
+		jQuery('#move-'+id).attr('checked','checked');
 	} else if (operation == 'rename') {
-		jQuery('#movecopydiv-'+id).hide();
 		jQuery('#renamediv-'+id).show();
-		jQuery('#Delete-'+id).attr('checked',false);
-		jQuery('#deletemsg'+id).hide();
+		jQuery('#rename-'+id).attr('checked','checked');
 	}
 }
 
-function toggleAlbumMoveCopyRename(prefix, operation) {
-	if (operation == '') {
-		jQuery('#a-'+prefix+'movecopydiv').hide();
-		jQuery('#a-'+prefix+'renamediv').hide();
-		jQuery('#a-'+prefix+'move').attr('checked',false);
-		jQuery('#a-'+prefix+'copy').attr('checked',false);
-		jQuery('#a-'+prefix+'rename').attr('checked',false);
-	} else if (operation == 'movecopy') {
+function toggleAlbumMCR(prefix, operation) {
+	jQuery('#Delete-'+prefix).removeAttr('checked');
+	jQuery('#deletemsg'+prefix).hide();
+	jQuery('#a-'+prefix+'movecopydiv').hide();
+	jQuery('#a-'+prefix+'renamediv').hide();
+	jQuery('#a-'+prefix+'move').removeAttr('checked');
+	jQuery('#a-'+prefix+'copy').removeAttr('checked');
+	jQuery('#a-'+prefix+'rename').removeAttr('checked');
+	if (operation == 'copy') {
 		jQuery('#a-'+prefix+'movecopydiv').show();
-		jQuery('#a-'+prefix+'renamediv').hide();
+		jQuery('#a-'+prefix+'copy').attr('checked','checked');
+	} else if (operation == 'move') {
+		jQuery('#a-'+prefix+'movecopydiv').show();
+		jQuery('#a-'+prefix+'move').attr('checked','checked');
 	} else if (operation == 'rename') {
-		jQuery('#a-'+prefix+'movecopydiv').hide();
 		jQuery('#a-'+prefix+'renamediv').show();
+		jQuery('#a-'+prefix+'rename').attr('checked','checked');
 	}
 }
 
@@ -257,5 +249,75 @@ function toggle_passwords(id, pwd_enable) {
 		jQuery('#password_enabled'+id).val('1');
 	} else {
 		jQuery('#password_enabled'+id).val('0');
+	}
+}
+
+function resetPass(id) {
+	$('#user_name'+id).val('');
+	$('#pass'+id).val('');
+	$('#pass_2'+id).val('');
+	$('.hint'+id).val('');
+	toggle_passwords(id,true);
+}
+
+
+// toggels the checkboxes for custom image watermarks
+function toggleWMUse(id) {
+	if (jQuery('#image_watermark-'+id).val() == '') {
+		jQuery('#WMUSE_'+id).hide();
+	} else {
+		jQuery('#WMUSE_'+id).show();
+	}
+}
+
+String.prototype.replaceAll = function(stringToFind,stringToReplace){
+	var temp = this;
+	var index = temp.indexOf(stringToFind);
+	while(index != -1){
+		temp = temp.replace(stringToFind,stringToReplace);
+		index = temp.indexOf(stringToFind);
+	}
+	return temp;
+}
+
+
+function addNewTag(id,dupmsg) {
+	var tag;
+	tag = $('#newtag_'+id).val();
+	if (tag) {
+		$('#newtag_'+id).val('');
+		var name = id+tag;
+		//htmlentities
+		name = encodeURI(name);
+		name = name.replaceAll('%20','_-_');
+		name = name.replaceAll("'",'%27');
+		name = name.replaceAll('.','__2E__');
+		name = name.replaceAll('+', '_-_');
+		name = name.replaceAll('%', '_--_');
+		var lcname = name.toLowerCase();
+
+		var exists = $('#'+lcname).length;
+		if (exists) {
+			$('#'+lcname).attr('checked',true);
+			clearTagID = '#newtag_'+id;
+			$(clearTagID).val(dupmsg);
+			$(clearTagID).css('color','gray');
+			setTimeout(
+						function() {
+							$(clearTagID).val('');
+							$(clearTagID).css('color','black');
+						}, 3000);
+		} else {
+			html = '<li><label class="displayinline"><input id="'+lcname+'" name="'+name+
+					'" type="checkbox" checked="checked" value="1" />'+tag+'</label></li>';
+			$('#list_'+id).prepend(html);
+		}
+	}
+}
+
+function xsrfWarning(id, msg) {
+	if (!confirm(msg)) {
+		$('#'+id+'_yes').removeAttr('checked');
+		$('#'+id+'_no').attr('checked','checked');
 	}
 }

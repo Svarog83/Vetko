@@ -1,14 +1,35 @@
+<?php setOption('zp_plugin_colorbox',false,false); ?>
 <?php include ("header.php"); ?>
-		<div id="headline" class="clearfix">
-			<h4><?php printHomeLink('', ' | '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php echo gettext('Gallery Index'); ?>"><?php echo getGalleryTitle();?></a></span> | <?php echo gettext("Password Required..."); ?></h4>
-		</div>
-			
-		<div class="error"><?php echo gettext("A password is required for the page you requested."); ?></div>	
-		<?php printPasswordForm(NULL, false); ?>
 
-		<?php if ( ((getOption('image_statistic')!='none')) && (((function_exists('printImageStatistic')) || (getOption('image_statistic')=='random'))) ) { ?>
-		<?php include("image_statistic.php"); ?>
-		<?php } ?>
+	<div class="wrapper" id="breadcrumbs">
+		<div class="centered">
+			<div class="breadcrumbs">
+				<div>
+					<span><?php printHomeLink('', ' &raquo; '); ?><a href="<?php echo htmlspecialchars(getGalleryIndexURL());?>" title="<?php gettext('Albums Index'); ?>"><?php echo gettext('Home'); ?></a> &raquo; <?php echo gettext("Password Required..."); ?></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="wrapper">
+		<div class="centered">
+			<div class="post">
+				<?php if (!zp_loggedin()) { ?>
+				<div class="error"><?php echo gettext("Please Login"); ?></div>	
+				<?php printPasswordForm($hint); ?>
+				<?php } else { ?>
+				<div class="errorbox">
+					<p><?php echo gettext('You are logged in...'); ?></p>
+				</div>
+				<?php } ?>
+
+				<?php if (!zp_loggedin() && function_exists('printRegistrationForm') && $_zp_gallery->isUnprotectedPage('register')) {
+					printCustomPageURL(gettext('Register for this site'), 'register', '', '<br />');
+					echo '<br />';
+				}?>
+			</div>
+		</div>	
+	</div>
 		
 <?php include("footer.php"); ?>
 

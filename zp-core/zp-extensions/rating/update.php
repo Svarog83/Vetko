@@ -13,15 +13,14 @@ require_once('functions-rating.php');
 $id = sanitize_numeric($_POST['id']);
 $table = sanitize($_POST['table'],3);
 $dbtable = prefix($table);
-$ip = getUserIP();
+$ip = getRatingID();
 $unique = '_'.$table.'_'.$id;
-$split_stars = getOption('rating_split_stars')+1;
-$rating = max(0, min(5, round(sanitize_numeric($_POST['star_rating-value'.$unique])/$split_stars)));
+$rating = ceil(sanitize_numeric($_POST['star_rating-value'.$unique])/max(1,getOption('rating_split_stars')));
 $IPlist = query_single_row("SELECT * FROM $dbtable WHERE id= $id");
 if (is_array($IPlist)) {
 	$oldrating = getRatingByIP($ip, $IPlist['used_ips'], $IPlist['rating']);
 } else {
-	$oldrating =false;
+	$oldrating = false;
 }
 if(!$oldrating || getOption('rating_recast')) {
 	if ($rating) {
@@ -33,17 +32,22 @@ if(!$oldrating || getOption('rating_recast')) {
 	}
 	$insertip = serialize($_rating_current_IPlist);
 	if ($oldrating) {
-		$voting = 0;
+		if ($rating) {
+			$voting = '';
+		} else {
+			$voting = ' total_votes=total_votes-1,';	// retract vote
+		}
 		$valuechange = $rating-$oldrating;
 		if ($valuechange>=0) {
 			$valuechange = '+'.$valuechange;
 		}
+		$valuechange = ' total_value=total_value'.$valuechange.',';
 	} else {
-		$voting = 1;
-		$valuechange = '+'.$rating;
+		$voting = ' total_votes=total_votes+1,';
+		$valuechange = ' total_value=total_value+'.$rating.',';
 	}
-	$sql = "UPDATE ".$dbtable.' SET total_votes=total_votes+'.$voting.", total_value=total_value".$valuechange.", rating=total_value/total_votes, used_ips='".$insertip."' WHERE id='".$id."'";
-	$rslt = query($sql,true);
+	$sql = "UPDATE ".$dbtable.' SET'.$voting.$valuechange." rating=total_value/total_votes, used_ips='".$insertip."' WHERE id='".$id."'";
+	$rslt = query($sql,false);
 }
 
 ?>

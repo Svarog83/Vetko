@@ -22,9 +22,8 @@
 
 $plugin_description = gettext("Provides a means allowing users to select the image size to view.");
 $plugin_author = "Stephen Billard (sbillard)";
-$plugin_version = '1.2.9'; 
-$plugin_URL = "http://www.zenphoto.org/documentation/plugins/_".PLUGIN_FOLDER."---viewer_size_image.php.html";
-$option_interface = new viewer_size_image_options();
+$plugin_version = '1.4.2';
+$option_interface = 'viewer_size_image_options';
 
 /**
  * Plugin option handling class
@@ -36,12 +35,16 @@ class viewer_size_image_options {
 		$default = getOption('image_size');
 		setOptionDefault('viewer_size_image_sizes', '$s='.($default-200).'; $s='.($default-100).'; $s='.($default).'; $s='.($default+100).'; $s='.($default+200).';');
 		setOptionDefault('viewer_size_image_default', '$s='.$default);
+		setOptionDefault('viewer_size_image_radio', 2);
 	}
 
 	function getOptionsSupported() {
 		return array(	gettext('Image sizes allowed') => array('key' => 'viewer_size_image_sizes', 'type' => OPTION_TYPE_TEXTAREA,
 										'desc' => gettext('List of sizes from which the viewer may select.<br />The form is "$s=&lt;size&gt;" or "$h=&lt;height&gt;,$w=&lt;width&gt;;"....<br />See printCustomSizedImage() for details')),
-		gettext('Default size') => array('key' => 'viewer_size_image_default', 'type' => OPTION_TYPE_TEXTBOX,
+									gettext('Selector') => array('key' => 'viewer_size_image_radio', 'type' => OPTION_TYPE_RADIO,
+										'buttons' => array(gettext('Radio buttons')=>2, gettext('Drop-down')=>1),
+										'desc' => gettext('Choose the kind of selector to be presented the viewer.')),
+									gettext('Default size') => array('key' => 'viewer_size_image_default', 'type' => OPTION_TYPE_TEXTBOX,
 										'desc' => gettext('The initial size for the image. Format is a single instance of the sizes list.'))
 		);
 	}
@@ -50,7 +53,7 @@ class viewer_size_image_options {
 }
 
 if (!OFFSET_PATH) {
-	$saved = zp_getCookie('viewer_size_image_saved');
+	$saved = @$_COOKIE['viewer_size_image_saved'];	//	This cookie set by JavaScript, so not bound to the IP. cannot use zp_getCookie()
 	if (empty($saved)) {
 		$postdefault = trim(getOption('viewer_size_image_default'));
 	} else {
@@ -66,7 +69,7 @@ if (!OFFSET_PATH) {
  * @param string $default the default (initial) for the image sizing
  * @param array $usersizes an array of sizes which may be choosen.
  */
-function printUserSizeSelectior($text='', $default=NULL, $usersizes=NULL) {
+function printUserSizeSelector($text='', $default=NULL, $usersizes=NULL) {
 	$size = $width = $height = NULL;
 	getViewerImageSize($default, $size, $width, $height);
 	if (!empty($size)) {
@@ -114,20 +117,45 @@ function printUserSizeSelectior($text='', $default=NULL, $usersizes=NULL) {
 	}
 	if (($cookiepath = WEBPATH) == '') $cookiepath = '/';
 	?>
-	<script>
-		function switchimage(obj){
-			var url = $(obj).attr('url');
-			var w = $(obj).attr('im_w');
-			var h = $(obj).attr('im_h');
-			$('#image img').attr('width',w);
-			$('#image img').attr('height',h);
-			$('#image img').attr('src',url);
-			document.cookie='viewer_size_image_saved='+$(obj).attr('value')+'; expires=<?php echo date('Y-m-d H:i:s', time()+COOKIE_PESISTENCE); ?>; path=<?php echo $cookiepath ?>';
+	<script type="text/javascript">
+		// <!-- <![CDATA[
+		<?php
+		$selector = getOption('viewer_size_image_radio') == 1;
+		if ($selector) {
+			?>
+			function switchselection() {
+				var selection = $("#viewer_size_image_selection").val();
+				var items = selection.split(':');
+				$('#image img').attr('width',items[1]);
+				$('#image img').attr('height',items[2]);
+				$('#image img').attr('src',items[3]);
+				document.cookie='viewer_size_image_saved='+items[0]+'; expires=<?php echo date('Y-m-d H:i:s', time()+COOKIE_PESISTENCE); ?>; path=<?php echo $cookiepath ?>';
+			}
+			<?php
+		} else {	//	radio buttons
+			?>
+			function switchimage(obj){
+				var url = $(obj).attr('url');
+				var w = $(obj).attr('im_w');
+				var h = $(obj).attr('im_h');
+				$('#image img').attr('width',w);
+				$('#image img').attr('height',h);
+				$('#image img').attr('src',url);
+				document.cookie='viewer_size_image_saved='+$(obj).attr('value')+'; expires=<?php echo date('Y-m-d H:i:s', time()+COOKIE_PESISTENCE); ?>; path=<?php echo $cookiepath ?>';
+			}
+			<?php
 		}
+		?>
+		// ]]> -->
 	</script>
 	<div>
 	<?php
 	echo $text;
+	if ($selector) {
+		?>
+		<select id="viewer_size_image_selection" name="viewer_size_image_selection" onchange="switchselection();" >
+		<?php
+	}
 	foreach($sizes as $key=>$size) {
 		if (empty($size['$s'])) {
 			$display = sprintf(gettext('%1$s x %2$s px'), $size['$w'],$size['$h']);
@@ -140,15 +168,32 @@ function printUserSizeSelectior($text='', $default=NULL, $usersizes=NULL) {
 			$url = getCustomImageURL($size['$s'], null, null, null, null, null, null, false);
 			$value='$s='.$size['$s'];
 		}
-		$checked ="";
-		if($key == $current) {
-			$checked = 'checked="CHECKED" '; 
+		if ($selector) {
+			$selected = '';
+			if ($key == $current) {
+				$selected = ' selected="selected"';
+			}
+			?>
+			<option id="s<?php echo $key; ?>" value="<?php echo $value.':'.implode(':',$dims).':'.$url; ?>"<?php echo $selected; ?> />
+				<?php echo $display; ?>
+			</option>
+			<?php
+		} else {
+			$checked ="";
+			if($key == $current) {
+				$checked = ' checked="checked"';
+			}
+			?>
+			<input type="radio" name="viewer_size_image_selection" id="s<?php echo $key; ?>" url="<?php echo $url;?>"
+						im_w="<?php echo $dims[0]; ?>" im_h="<?php echo $dims[1]; ?>"
+						value="<?php echo $value; ?>"<?php echo $checked; ?> onclick="switchimage(this);" />
+			<label for="s<?php echo $key; ?>"> <?php echo $display; ?></label>
+			<?php
 		}
+	}
+	if ($selector) {
 		?>
-		<input type="radio" name="viewer_size_image_selection" id="s<?php echo $key; ?>" url="<?php echo $url;?>"
-					im_w="<?php echo $dims[0]; ?>" im_h="<?php echo $dims[1]; ?>"
-					value="<?php echo $value; ?>" <?php echo $checked; ?> onclick="switchimage(this);" />
-		<label for="s<?php echo $key; ?>"> <?php echo $display; ?></label>
+		</select>
 		<?php
 	}
 	?>
@@ -173,29 +218,37 @@ function printUserSizeSelectior($text='', $default=NULL, $usersizes=NULL) {
 function getViewerImageSize($default, &$size, &$width, &$height) {
 	global $postdefault;
 	if (isset($_POST['viewer_size_image_selection']) || empty($default)) {
-		$postdefault = str_replace(',',';',$postdefault);
-		$postdefault = str_replace(' ','',$postdefault).';';
-		$s = $w = $h  = NULL;
-		if (false === eval($postdefault)) {
-			trigger_error(gettext('There is a format error in user size selection'), E_USER_NOTICE);
-		}
-		$size = $s;
-		$width = $w;
-		$height = $h;
+		$msg = gettext('There is a format error in user size selection');
+		$validate = $postdefault;
 	} else {
-		$default = str_replace(',',';',$default).';';
-		$s = $w = $h  = NULL;
-		if (false === eval($default)) {
-			trigger_error(gettext('There is a format error in your $default parameter'), E_USER_NOTICE);
+		$msg = gettext('There is a format error in your $default parameter');
+		$validate = $default;
+	}
+	$size = $width = $height = NULL;
+	preg_match_all('/(\$[shw])[\s]*=[\s]*([0-9]+)/', $validate, $matches);
+	if ($matches) {
+		foreach ($matches[0] as $key=>$str) {
+			switch ($matches[1][$key]) {
+				case '$s':
+					$size = $matches[2][$key];
+					break;
+				case '$w':
+					$width = $matches[2][$key];
+					break;
+				case '$h':
+					$height = $matches[2][$key];
+					break;
+			}
 		}
-		if (!empty($s)) {
-			$size = $s;
+
+		if (!empty($size)) {
 			$width = $height  = NULL;
 		} else {
 			$size = NULL;
-			$width = $w;
-			$height = $h;
 		}
+	}
+	if (empty($size) && empty($width) && empty($height)) {
+		trigger_error($msg, E_USER_NOTICE);
 	}
 }
 

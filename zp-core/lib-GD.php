@@ -22,10 +22,10 @@ class lib_GD_Options {
 		return array();
 	}
 	function canLoadMsg() {
-		if (!extension_loaded('gd')) {
-			return gettext('The <strong><em>GD</em></strong> extension is not available.');
-		} else {
+		if (extension_loaded('gd')) {
 			return '';
+		} else {
+			return gettext('The <strong><em>GD</em></strong> extension is not available.');
 		}
 	}
 }
@@ -39,7 +39,8 @@ if (!function_exists('zp_graphicsLibInfo')) {
 	if (extension_loaded('gd')) { // only define the functions if we have the proper versions
 		$_lib_GD_info = array ();
 		$info = gd_info();
-		$_lib_GD_info['Library'] = sprintf(gettext('PHP GD library <em>%s</em>'),$info['GD Version']);
+		$_lib_GD_info['Library'] = 'GD';
+		$_lib_GD_info['Library_desc'] = sprintf(gettext('PHP GD library <em>%s</em>'),$info['GD Version']);
 		$imgtypes = imagetypes();
 		$_lib_GD_info['GIF'] = $imgtypes & IMG_GIF;
 		$_lib_GD_info['JPG'] = $imgtypes & IMG_JPG;
@@ -166,10 +167,9 @@ if (!function_exists('zp_graphicsLibInfo')) {
 		 * @param int $dst_h
 		 * @param int $src_w
 		 * @param int $src_h
-		 * @param string $suffix
 		 * @return bool
 		 */
-		function zp_resampleImage($dst_image, $src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h, $suffix) {
+		function zp_resampleImage($dst_image, $src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h) {
 			return imagecopyresampled($dst_image, $src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
 		}
 
@@ -545,8 +545,42 @@ if (!function_exists('zp_graphicsLibInfo')) {
 			return imagefontheight($font);
 		}
 
-		require_once(PHPScript('5.1.0', '_functions_GD.php'));
-
+		/**
+		 * provides image blur support for lib-GD:zp_imageUnsharpMask
+		 *
+		 * @param image $imgCanvas
+		 * @param int $radius
+		 * @param int $w
+		 * @param int $h
+		 */
+		function imageBlurGD($imgCanvas, $imgCanvas2, $radius, $w, $h) {
+			// Gaussian blur matrix:
+			//    1    2    1
+			//    2    4    2
+			//    1    2    1
+			//////////////////////////////////////////////////
+			for ($i = 0; $i < $radius; $i++)    {
+				if (function_exists('imageconvolution')) { // PHP >= 5.1
+					$matrix = array(
+					array( 1, 2, 1 ),
+					array( 2, 4, 2 ),
+					array( 1, 2, 1 )
+					);
+					imageconvolution($imgCanvas, $matrix, 16, 0);
+				}
+			}
+		}
 	}
+
+	/**
+	 *
+	 * creates an image from an image stream
+	 * @param $string
+	 */
+	function zp_imageFromString($string) {
+		return imagecreatefromstring($string);
+	}
+
 }
+
 ?>

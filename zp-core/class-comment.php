@@ -7,23 +7,25 @@
 // force UTF-8 Ø
 
 class Comment extends PersistentObject {
-	
+
+	var $comment_error_text = NULL;
+
 	/**
 	 * This is a simple class so that we have a convienient "handle" for manipulating comments.
 	 *
 	 * @return Comment
 	 */
-	
+
 	/**
 	 * Constructor for a comment
 	 *
 	 * @param int $id set to the ID of the comment if not a new one.
 	 * @return Comment
 	 */
-	function Comment($id=NULL) {
-		$new = parent::PersistentObject('comments', array('id'=>$id), NULL, true, is_null($id));
+	function __construct($id=NULL) {
+		$new = parent::PersistentObject('comments', array('id'=>$id), 'id', true, is_null($id));
 	}
-	
+
 	/**
 	 * Sets up default items on new comment objects
 	 *
@@ -31,9 +33,9 @@ class Comment extends PersistentObject {
 	function setDefaults() {
 		$this->set('date', date('Y-m-d H:i:s'));
 	}
-	
+
 	// convienence get & set functions
-	
+
 	/**
 	 * returns the comment date/time
 	 *
@@ -54,7 +56,7 @@ class Comment extends PersistentObject {
 			$this->set('date', $newtime);
 		}
 	}
-	
+
 	/**
 	 * Returns the id of the comment owner
 	 *
@@ -67,7 +69,7 @@ class Comment extends PersistentObject {
 	 * @param int $value
 	 */
 	function setOwnerID($value) { $this->set('ownerid', $value); }
-	
+
 	/**
 	 * Returns the commentor's name
 	 *
@@ -80,7 +82,7 @@ class Comment extends PersistentObject {
 	 * @param string $value
 	 */
 	function setName($value) { $this->set('name', $value); }
-	
+
 	/**
 	 * returns the email address of the commentor
 	 *
@@ -93,7 +95,7 @@ class Comment extends PersistentObject {
 	 * @param string $value
 	 */
 	function setEmail($value) { $this->set('email', $value); }
-	
+
 	/**
 	 * returns the Website of the commentor
 	 *
@@ -106,7 +108,7 @@ class Comment extends PersistentObject {
 	 * @param string $value
 	 */
 	function setWebsite($value) { $this->set('website', $value); }
-	
+
 	/**
 	 * Returns the comment text
 	 *
@@ -119,7 +121,7 @@ class Comment extends PersistentObject {
 	 * @param string $value
 	 */
 	function setComment($value) { $this->set('comment', $value); }
-	
+
 	/**
 	 * Returns true if the comment is marked for moderation
 	 *
@@ -132,18 +134,13 @@ class Comment extends PersistentObject {
 	 * @param int $value
 	 */
 	function setInModeration($value) { $this->set('inmoderation', $value); }
-	
+
 	/**
 	 * Returns the 'type' of the comment. i.e. the class of the owner object
 	 *
 	 * @return string
 	 */
 	function getType() {
-		$type = $this->get('type');
-		$image_types = explode(',',zp_image_types(''));
-		if (in_array($type, $image_types)) {
-			$type = 'images';
-		}
 		return $type;
 	}
 	/**
@@ -152,13 +149,9 @@ class Comment extends PersistentObject {
 	 * @param string $type
 	 */
 	function setType($type) {
-		$image_types = explode(',',zp_image_types(''));
-		if (in_array($type, $image_types)) {
-			$type = 'images';
-		}
 		$this->set('type', $type);
 	}
-	
+
 	/**
 	 * Returns the IP address of the comment poster
 	 *
@@ -171,7 +164,7 @@ class Comment extends PersistentObject {
 	 * @param string $value
 	 */
 	function setIP($value) { $this->set('ip', $value); }
-	
+
 	/**
 	 * Returns true if the comment is flagged private
 	 *
@@ -184,7 +177,7 @@ class Comment extends PersistentObject {
 	 * @param bool $value
 	 */
 	function setPrivate($value) { $this->set('private', $value); }
-	
+
 	/**
 	 * Returns true if the comment is flagged anonymous
 	 *
@@ -197,7 +190,7 @@ class Comment extends PersistentObject {
 	 * @param bool $value
 	 */
 	function setAnon($value) { $this->set('anon', $value); }
-	
+
 	/**
 	 * Returns the custom data field of the comment
 	 *

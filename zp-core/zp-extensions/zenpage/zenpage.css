@@ -11,7 +11,7 @@ img {
 
 .zenpagestats {
 	margin-left: 5px;
-	font-size: 0.8em; 
+	font-size: 0.8em;
 	color: #5A5A4B;
 }
 
@@ -46,7 +46,6 @@ td.rightcolumnmiddle {
 	padding-left: 15px;
 	vertical-align: top;
 	text-align: left;
-
 }
 
 td.middlecolumn {
@@ -170,106 +169,37 @@ DIV.container {
 	margin: 0;
 }
 
-FIELDSET {
+DIV.container FIELDSET {
 	border: 1px solid #ccc;
 	padding: 1em;
 	margin: 0;
 }
 
-LEGEND {
+DIV.container LEGEND {
 	color: #ccc;
 	font-size: 120%;
 }
 
-LABEL {
+DIV.container LABEL {
 	display: block;
 	margin-top: 10px;
 }
 
-IMG {
+
+DIV.container IMG {
 	margin: 5px;
 }
 
-UL.tabNavigation {
-	list-style: none;
-	margin: 2px;
-	padding: 0;
-}
 
-UL.tabNavigation LI {
-	display: inline;
-}
 
-UL.tabNavigation LI A {
-	padding: 3px 5px;
-	background-color: #EEEEEE;
-	color: #6b7d84;
-	text-decoration: none;
-	border: 1px solid #C7D3D8;
-}
-
-UL.tabNavigation LI A.selected {
-	background-color: white;
-	color: black;
-	padding: 3px 5px;
-}
-
-UL.tabNavigation LI A:hover {
-	background-color: white;
-	color: gray;
-	padding: 3px 5px;
-}
-
-UL.tabNavigation LI A:active {
-	background-color: white;
-	color: black;
-	padding: 3px 5px;
-}
-
-UL.tabNavigation LI A:focus {
-	outline: 0;
-	color: #6b7d84;
-}
-
-div.tabs>div {
-	padding: 0px;
-	margin: 0px;
-	border: 0px solid #333;
-}
-
-div.tabs>div h2 {
-	margin: 0;
-}
-
-#first {
-	background-color: none;
-	margin-left: 0px;
-}
-
-#second {
-	background-color: none;
-	margin-left: 0px;
-}
-
-#third {
-	background-color: none;
-	margin-left: 0px;
-}
-
-.tabs textarea {
-	border: 1px solid #C7D3D8;
-	width: 600px;
-	height: 150px;
-}
-
-/* admin text fields 
+/* admin text fields
 ***************************/
 .inputfield {
 	width: 600px;
 }
 
 .pagecontent {
-	width: 600px; 
+	width: 600px;
 	height: 500px;
 }
 
@@ -287,32 +217,41 @@ div.tabs>div h2 {
 /* scrollable sortables for zenpage
 -------------------------------------------------*/
 	/* CSS for checklists */
-.zenpagechecklist,
+div.zenpagechecklist,
 #zenpagetags .tagchecklist {
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 15em;
 	overflow: auto;
-	width: 17.2em;
+	width: 19.6em;
 	background-color: white;
 	padding: 0;
 	margin: 0px 0 0 0;
+	-moz-border-radius: 0px 0px 5px 5px;
+	-khtml-border-radius: 0px 0px 5px 5px;
+	-webkit-border-radius: 0px 0px 5px 5px;
+	border-radius: 0px 0px 5px 5px;
 }
-
 .zenpagechecklist ul,
 #zenpagetags .tagchecklist ul {
 	padding: 0;
 	margin: 0;
 }
+.zenpagechecklist ul {
+	padding: 0 0 0 10px;
+}
 
-.zenpagechecklist li
 #zenpagetags .tagchecklist li {
 	background: white;
-	padding-left: 0;
+	padding-left: 0px;
 	height: 1.5em;
 	margin: 0;
 	border-bottom: 1px dotted gray;
 	font-weight: normal;
+}
+.zenpagechecklist li {
+	border-top: 1px dotted gray;
+	list-style-type: none;
 }
 
 .zenpagechecklist label,
@@ -324,25 +263,26 @@ div.tabs>div h2 {
 	text-indent: -25px;
 }
 
-.zenpagechecklist label:hover,
-.zenpagechecklist label.hover
-#zenpagetags .tagchecklist label:hover,
-#zenpagetags .tagchecklist label.hover {
+div.zenpagechecklist label:hover,
+div.zenpagechecklist label.hover,
+#zenpagetags .tagchecklist li:hover,
+#zenpagetags .tagchecklist li label.hover {
 	background: #F1F2F3;
 	color: #333;
 }
 
-* html .zenpagechecklist label {
+* html div.zenpagechecklist label {
 	height: 1%;
 }
+
 
 
 /* CSS for language_string_list - Modified version for zenpage*/
 .zenpage_language_string_list {
 	border: 1px solid #ccc;
 	list-style: none;
-	height: 4em;
-	width: 600px;
+	height: 5.5em;
+	width: 605px;
 	overflow: auto;
 	background-color: white;
 }
@@ -354,7 +294,7 @@ div.tabs>div h2 {
 }
 
 .zenpage_language_string_list label {
-	display: block;
+	display: inline;
 	margin: 0;
 	padding: 0;
 }
@@ -368,13 +308,13 @@ div.tabs>div h2 {
 	height: 1%;
 }
 
-/* CSS for language_string_listbox 
+/* CSS for language_string_listbox
 --------------------------------------*/
 .zenpage_language_string_listbox {
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 35em;
-	width: 600px;
+	width: 605px;
 	overflow: auto;
 	background-color: white;
 }
@@ -398,6 +338,11 @@ div.tabs>div h2 {
 
 * html .zenpage_language_string_listbox label {
 	height: 1%;
+}
+
+/* used for the password list on pages that is too wide as it uses Zenphoto css by default */
+ul.language_string_list {
+	width: 205px !important;
 }
 
 
@@ -424,8 +369,12 @@ div.tabs>div h2 {
 	background-image: url(../../images/admin-headlineback.jpg);
 	background-repeat: repeat-x;
 	margin-bottom: 0;
+	-moz-border-radius: 5px 5px 0px 0px;
+	-khtml-border-radius: 5px 5px 0px 0px;
+	-webkit-border-radius: 5px 5px 0px 0px;
+	border-radius: 5px 05px 0px 0px;
 }
-	
+
 .box-edit-zenpage {
 	margin: 0 0 10px 0;
 	padding: 0px 8px 8px 8px;
@@ -434,6 +383,10 @@ div.tabs>div h2 {
 	border-bottom-width: 5px;
 	width: 16em;
 	line-height: 1.5em;
+	-moz-border-radius: 0px 0px 5px 5px;
+	-khtml-border-radius: 0px 0px 5px 5px;
+	-webkit-border-radius: 0px 0px 5px 5px;
+	border-radius: 0px 0px 5px 5px;
 }
 
 /* check box label and p styling - edit page */
@@ -473,4 +426,28 @@ div.tabs>div h2 {
 .expired {
 	color: red;
 	font-weight: normal;
+}
+
+div.floatright form {
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+form#articledatesdropdown,
+form#unpublisheddropdown,
+form#categoriesdropdown {
+margin-right: 0px;
+}
+
+form#sortorderdropdown {
+margin-right: 0px;
+}
+
+
+/* Checkbox category bulk selector */
+#mass_cats_data li {
+	text-align: left;
+	list-style: none;
+	padding: 0;
+	margin: 0  10px 0 -30px;
 }

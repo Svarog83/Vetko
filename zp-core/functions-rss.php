@@ -4,6 +4,29 @@
  * @package functions
  */
 
+/**
+ * Returns the rss channel main title part (gallery and/or website title)
+ *
+ * @return string
+ */
+function getRSSChanneltitle() {
+	global $_zp_gallery;
+	$mode = getOption('feed_title');
+	$locale = getRSSLocale();
+	switch($mode) {
+		case 'gallery':
+			$channeltitle = strip_tags(get_language_string($_zp_gallery->get('gallery_title'), $locale));
+			break;
+		case 'website':
+			$channeltitle = strip_tags(get_language_string($_zp_gallery->get('website_title'), $locale));
+			break;
+		case 'both':
+			$channeltitle = strip_tags(get_language_string($_zp_gallery->get('website_title'), $locale).' - '.get_language_string($_zp_gallery->get('gallery_title'), $locale));
+		break;
+	}
+	return $channeltitle;
+}
+
 
 /**
  * Returns the host
@@ -11,20 +34,9 @@
  * @return string
  */
 function getRSSHost() {
-	$host = htmlentities($_SERVER["HTTP_HOST"], ENT_QUOTES, 'UTF-8');
+	$host = html_encode($_SERVER["HTTP_HOST"]);
 	return $host;
 }
-
-/**
- * Returns the feed's URI
- *
- * @return string
- */
-function getRSSURI() {
-	$uri = htmlentities($_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"], ENT_QUOTES, 'UTF-8');
-	return $uri;
-}
-
 
 /**
  * Returns the item id from the feed URL for item specific rss
@@ -60,19 +72,24 @@ function getRSSTitle() {
  * @return string
  */
 function getRSSAlbumTitle() {
+	global $_zp_gallery;
 	$rssmode = getRSSAlbumsmode();
 	if(isset($_GET['albumtitle'])) {
-		$albumname = " (".sanitize(urldecode($_GET['albumtitle'])).")";
-	} else if ($rssmode === "albums") {
-		$albumname = gettext("Latest Albums");
+		$albumname = ' - '.html_encode(sanitize(urldecode($_GET['albumtitle']))).' ('.gettext(' - latest images').')';
+	} elseif ($rssmode == "albums" && !isset($_GET['folder'])) {
+		$albumname = ' ('.gettext('latest albums').')';
+	} elseif ($rssmode == 'albums' && isset($_GET['folder'])) {
+		$folder = sanitize(urldecode($_GET['folder']));
+		$albobj = new Album($_zp_gallery,$folder);
+		$albumname = ' - '.html_encode(strip_tags($albobj->getTitle())).' ('.gettext('latest albums').')';
 	} else {
-		$albumname = "";
+		$albumname = ' ('.gettext('latest images').')';
 	}
 	return $albumname;
 }
 
 /**
- * Returns the rss type from the feed's url
+ * Returns the RSS type from the feed's url
  *
  * @return string
  */
@@ -111,7 +128,7 @@ function getRSSLocaleXML() {
 }
 
 /**
- * Returns the albums rss mode from the feed's url
+ * Returns the albums RSS mode from the feed's url
  *
  * @return string
  */
@@ -133,7 +150,7 @@ function getRSSAlbumsmode() {
  */
 function getRSSImageAndAlbumPaths($arrayfield) {
 	$arrayfield = sanitize($arrayfield);
-	if(getOption('mod_rewrite')) {
+	if(MOD_REWRITE) {
 		$albumpath = "/"; $imagepath = "/";
 		$modrewritesuffix = getOption('mod_rewrite_image_suffix');
 	} else  {
@@ -165,9 +182,9 @@ function getRSSImageSize() {
 		$size = $size;
 	} else {
 		if($rssmode == "albums") {
-			$size = getOption('feed_imagesize_albums'); // uncropped image size
+			$size = getOption('feed_imagesize_albums'); // un-cropped image size
 		} else {
-			$size = getOption('feed_imagesize'); // uncropped image size
+			$size = getOption('feed_imagesize'); // un-cropped image size
 		}
 	}
 	return $size;
@@ -184,16 +201,24 @@ function getRSSAlbumnameAndCollection($arrayfield) {
 	if(!empty($arrayfield)) {
 		if(isset($_GET['albumname'])) {
 			$albumfolder = sanitize_path($_GET['albumname']);
+			if(!file_exists(ALBUM_FOLDER_SERVERPATH.'/'.$albumfolder)) {
+				$albumfolder = NULL;
+			}
 			$collection = FALSE;
 		} else if(isset($_GET['folder'])) {
 			$albumfolder = sanitize_path($_GET['folder']);
-			$collection = TRUE;
+			if(!file_exists(ALBUM_FOLDER_SERVERPATH.'/'.$albumfolder)) {
+				$albumfolder = NULL;
+				$collection = FALSE;
+			} else {
+				$collection = TRUE;
+			}
 		} else {
 			$albumfolder = NULL;
 			$collection = FALSE;
 		}
 		$array = array(
-	"albumfolder" => $albumfolder, 
+	"albumfolder" => $albumfolder,
 	"collection" => $collection
 		);
 		return $array[$arrayfield];
@@ -201,7 +226,7 @@ function getRSSAlbumnameAndCollection($arrayfield) {
 }
 
 /**
- * Returns the News Catagory title or catlink (name) or the mode (all news or category only) for the Zenpage news feed.
+ * Returns the News category title or catlink (name) or the mode (all news or category only) for the Zenpage news feed.
  *
  * @param string $arrayfield "catlink", "catttitle" or "option"
  * @return string
@@ -211,7 +236,8 @@ function getRSSNewsCatOptions($arrayfield) {
 	if(!empty($arrayfield)) {
 		if(isset($_GET['category'])) {
 			$catlink = sanitize($_GET['category']);
-			$cattitle = htmlspecialchars(getCategoryTitle($catlink));
+			$catobj = new ZenpageCategory($catlink);
+			$cattitle = html_encode($catobj->getTitle());
 			$option = "category";
 		} else {
 			$catlink = "";
@@ -219,80 +245,53 @@ function getRSSNewsCatOptions($arrayfield) {
 			$option = "news";
 		}
 		$array = array(
-"catlink" => $catlink,
-"cattitle" => $cattitle,
-"option" => $option
-		);
+										"catlink" => $catlink,
+										"cattitle" => $cattitle,
+										"option" => $option
+									);
 		return $array[$arrayfield];
 	}
 }
 
 /**
- * Returns the mimetype for the standard gallery items
- *
- * @param string $ext The extension/suffix of the filename
- * @return string
- */
-function getMimeType($ext) {
-	switch($ext) {
-		case  ".flv":
-			$mimetype = "video/x-flv";
-			break;
-		case ".mp3":
-			$mimetype = "audio/mpeg";
-			break;
-		case ".mp4":
-			$mimetype = "video/mpeg";
-			break;
-		case ".3gp":
-			$mimetype = "video/3gpp";
-			break;
-		case ".mov":
-			$mimetype = "video/quicktime";
-			break;
-		case ".jpg":
-		case ".jpeg":
-			$mimetype = "image/jpeg";
-			break;
-		case ".gif":
-			$mimetype = "image/gif";
-			break;
-		case ".png":
-			$mimetype = "image/png";
-			break;
-		default:
-			$mimetype = "image/jpeg";
-			break;
-	}
-	return $mimetype;
-}
-
-/**
- * Gets the rss file name from the feed url and clears out query items and special chars
+ * Gets the RSS file name from the feed url and clears out query items and special chars
  *
  * @return string
  */
 function getRSSCacheFilename() {
-	$uri = getRSSURI();
-	$array = explode("/",$uri);
-	$filename = array_pop($array);
+	$uri = explode('?',$_SERVER["REQUEST_URI"]);
+	$filename = array();
+	foreach (explode('&',$uri[1]) as $param) {
+		$p = explode('=', $param);
+		if (isset($p[1]) && !empty($p[1])) {
+			$filename[] = $p[1];
+		} else {
+			$filename[] = $p[0];
+		}
+	}
+	$filename = seoFriendly(implode('_',$filename));
+	return $filename.".xml";
+
+
+	//old way
 	$replace = array(
-	"albumname="=>"_",
-	"albumsmode="=>"_",
-	"title=" => "_",
-	"folder=" => "_",
-	"type=" => "-",
-	"albumtitle=" => "_",
-	"category=" => "_",
-	"id=" => "_",
-	"lang=" => "_",
-	"&amp;" => "_", 
-	"&" => "_", 
-	".php" => "",
-	"/"=>"-",
-	"?"=> ""
-	);
-	$filename = strtr($filename,$replace);
+										WEBPATH.'/' => '',
+										"albumname="=>"_",
+										"albumsmode="=>"_",
+										"title=" => "_",
+										"folder=" => "_",
+										"type=" => "-",
+										"albumtitle=" => "_",
+										"category=" => "_",
+										"id=" => "_",
+										"lang=" => "_",
+										"&amp;" => "_",
+										"&" => "_",
+										"index.php" => "",
+										"/"=>"-",
+										"?"=> ""
+									);
+	$filename = strtr($_SERVER["REQUEST_URI"],$replace);
 	$filename = preg_replace("/__/","_",$filename);
 	$filename = seoFriendly($filename);
 	return $filename.".xml";
@@ -303,7 +302,8 @@ function getRSSCacheFilename() {
  *
  */
 function startRSSCache() {
-	if(getOption("feed_cache")) {
+	$caching = getOption("feed_cache") && !zp_loggedin();
+	if($caching) {
 		$cachefilepath = SERVERPATH."/cache_html/rss/".getRSSCacheFilename();
 		if(file_exists($cachefilepath) AND time()-filemtime($cachefilepath) < getOption("feed_cache_expire")) {
 			echo file_get_contents($cachefilepath); // PHP >= 4.3
@@ -322,13 +322,18 @@ function startRSSCache() {
  *
  */
 function endRSSCache() {
-	if(getOption("feed_cache")) {
+	$caching = getOption("feed_cache") && !zp_loggedin();
+	if($caching) {
 		$cachefilepath = SERVERPATH."/cache_html/rss/".getRSSCacheFilename();
 		if(!empty($cachefilepath)) {
-			$pagecontent = ob_get_clean();
-			$fh = fopen($cachefilepath,"w");
-			fputs($fh, $pagecontent);
-			fclose($fh);
+			mkdir_recursive(SERVERPATH."/cache_html/rss/");
+			$pagecontent = ob_get_contents();
+			ob_end_clean();
+			if ($fh = @fopen($cachefilepath,"w")) {
+				fputs($fh, $pagecontent);
+				fclose($fh);
+				clearstatcache();
+			}
 			echo $pagecontent;
 		}
 	}
@@ -336,31 +341,45 @@ function endRSSCache() {
 
 
 /**
-	 * Cleans out the RSS cache folder
-	 *
-	 * @param string $cachefolder the sub-folder to clean
-	 */
-	function clearRSSCache($cachefolder=NULL) {
-		if (is_null($cachefolder)) {
-			$cachefolder = "../cache_html/rss/";
-		}
-		if (is_dir($cachefolder)) {
-			$handle = opendir($cachefolder);
-			while (false !== ($filename = readdir($handle))) {
-				$fullname = $cachefolder . '/' . $filename;
-				if (is_dir($fullname) && !(substr($filename, 0, 1) == '.')) {
-					if (($filename != '.') && ($filename != '..')) {
-						clearRSSCache($fullname);
-						rmdir($fullname);
-					}
-				} else {
-					if (file_exists($fullname) && !(substr($filename, 0, 1) == '.')) {
-						unlink($fullname);
-					}
+ * Cleans out the RSS cache folder
+ *
+ * @param string $cachefolder the sub-folder to clean
+ */
+function clearRSSCache($cachefolder=NULL) {
+	if (is_null($cachefolder)) {
+		$cachefolder = "../cache_html/rss/";
+	}
+	if (is_dir($cachefolder)) {
+		$handle = opendir($cachefolder);
+		while (false !== ($filename = readdir($handle))) {
+			$fullname = $cachefolder . '/' . $filename;
+			if (is_dir($fullname) && !(substr($filename, 0, 1) == '.')) {
+				if (($filename != '.') && ($filename != '..')) {
+					clearRSSCache($fullname);
+					rmdir($fullname);
 				}
-
+			} else {
+				if (file_exists($fullname) && !(substr($filename, 0, 1) == '.')) {
+					unlink($fullname);
+				}
 			}
-			closedir($handle);
+
+		}
+		closedir($handle);
+	}
+}
+
+function RSShitcounter() {
+	if(!zp_loggedin() && getOption('feed_hitcounter')) {
+		$rssuri = getRSSCacheFilename();
+		$type = 'rsshitcounter';
+		$checkitem = query_single_row("SELECT `data` FROM ".prefix('plugin_storage')." WHERE `aux` = ".db_quote($rssuri)." AND `type` = '".$type."'",true);
+		if($checkitem) {
+			$hitcount = $checkitem['data']+1;
+			query("UPDATE ".prefix('plugin_storage')." SET `data` = ".$hitcount." WHERE `aux` = ".db_quote($rssuri)." AND `type` = '".$type."'",true);
+		} else {
+			query("INSERT INTO ".prefix('plugin_storage')." (`type`,`aux`,`data`) VALUES ('".$type."',".db_quote($rssuri).",1)",true);
 		}
 	}
+}
 ?>

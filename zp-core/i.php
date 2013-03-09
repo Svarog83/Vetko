@@ -14,6 +14,9 @@
  *   cy - crop y position: the y (vertical) position of the crop area.
  *   q  - JPEG quality (1-100): sets the quality of the resulting image.
  *   t  - Set for custom images if used as thumbs.
+ *   wmk - the watermark image to overlay
+ *   gray - grayscale the image
+ *   admin - request is from the back-end
  *
  * 	 Cropping is performed on the original image before resizing is done.
  * - cx and cy are measured from the top-left corner of the image.
@@ -37,11 +40,11 @@ $debug = isset($_GET['debug']);
 if (!isset($_GET['a']) || !isset($_GET['i'])) {
 	header("HTTP/1.0 404 Not Found");
 	header("Status: 404 Not Found");
-	imageError(gettext("Too few arguments! Image not found."), 'err-imagenotfound.gif');
+	imageError(gettext("Too few arguments! Image not found."), 'err-imagenotfound.png');
 }
 
 // Fix special characters in the album and image names if mod_rewrite is on:
-// URL looks like: "/album1/subalbum/image/picture.jpg"
+// URL looks like: "/album1/subalbum/picture.jpg"
 
 list($ralbum, $rimage) = rewrite_get_album_image('a', 'i');
 $ralbum = internalToFilesystem($ralbum);
@@ -55,7 +58,11 @@ $adminrequest = isset($_GET['admin']);
 // This validates the input as well.
 $args = array(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 if (isset($_GET['s'])) { //0
-	$args[0] = min(abs($_GET['s']), MAX_SIZE);
+	if (is_numeric($_GET['s'])) {
+		$args[0] = min(abs($_GET['s']), MAX_SIZE);
+	} else {
+		$args[0] = sanitize($_GET['s']);
+	}
 }
 if (isset($_GET['w'])) {  //1
 	$args[1] = min(abs($_GET['w']), MAX_SIZE);
@@ -64,34 +71,39 @@ if (isset($_GET['h'])) { //2
 	$args[2] = min(abs($_GET['h']), MAX_SIZE);
 }
 if (isset($_GET['cw'])) { //3
-	$args[3] = $_GET['cw'];
+	$args[3] = sanitize($_GET['cw']);
 }
 if (isset($_GET['ch'])) { //4
-	$args[4] = $_GET['ch'];
+	$args[4] = sanitize($_GET['ch']);
 }
 if (isset($_GET['cx'])) { //5
-	$args[5] = $_GET['cx'];
+	$args[5] = sanitize($_GET['cx']);
 }
 if (isset($_GET['cy'])) { //6
-	$args[6] = $_GET['cy'];
+	$args[6] = sanitize($_GET['cy']);
 }
 if (isset($_GET['q'])) { //7
-	$args[7] = $_GET['q'];
+	$args[7] = sanitize($_GET['q']);
 }
-//8 thumb
-//9 crop
+if (isset($_GET['thumb'])) { // 8
+	$args[10] = 1;
+}
+if (isset($_GET['c'])) {// 9
+	$args[9] = sanitize($_GET['c']);
+}
 if (isset($_GET['t'])) { //10
-	$args[10] = $_GET['t'];
+	$args[10] = sanitize($_GET['t']);
 }
 if (isset($_GET['wmk']) && !$adminrequest) { //11
-	$args[11] = $_GET['wmk'];
+	$args[11] = sanitize($_GET['wmk']);
 }
 $args [12] = $adminrequest; //12
 
-if (isset($_GET['gray'])) {	//13
-	$args[13] = $_GET['gray'];
+if (isset($_GET['effects'])) {	//13
+	$args[13] = sanitize($_GET['effects']);
 }
-	
+
+
 if ( !isset($_GET['s']) && !isset($_GET['w']) && !isset($_GET['h'])) {
 	// No image parameters specified
 	if (getOption('album_folder_class') !== 'external') {
@@ -102,21 +114,21 @@ if ( !isset($_GET['s']) && !isset($_GET['w']) && !isset($_GET['h'])) {
 	$args[0] = MAX_SIZE;
 }
 $args = getImageParameters($args,filesystemToInternal($album));
-list($size, $width, $height, $cw, $ch, $cx, $cy, $quality, $thumb, $crop, $thumbstandin, $passedWM, $adminrequest, $gray) = $args;
-if (DEBUG_IMAGE) debugLog("i.php($ralbum, $rimage): \$size=$size, \$width=$width, \$height=$height, \$cw=$cw, \$ch=$ch, \$cx=$cx, \$cy=$cy, \$quality=$quality, \$thumb=$thumb, \$crop=$crop, \$thumbstandin=$thumbstandin, \$passedWM=$passedWM, \$adminrequest=$adminrequest, \$gray=$gray");
+list($size, $width, $height, $cw, $ch, $cx, $cy, $quality, $thumb, $crop, $thumbstandin, $passedWM, $adminrequest, $effects) = $args;
+if (DEBUG_IMAGE) debugLog("i.php($ralbum, $rimage): \$size=$size, \$width=$width, \$height=$height, \$cw=$cw, \$ch=$ch, \$cx=$cx, \$cy=$cy, \$quality=$quality, \$thumb=$thumb, \$crop=$crop, \$thumbstandin=$thumbstandin, \$passedWM=$passedWM, \$adminrequest=$adminrequest, \$effects=$effects");
 $allowWatermark = !$thumb && !$adminrequest;
 
 // Construct the filename to save the cached image.
 $newfilename = getImageCacheFilename(filesystemToInternal($album), filesystemToInternal($image), $args);
 $newfile = SERVERCACHE . $newfilename;
 if (trim($album)=='') {
-	$imgfile = getAlbumFolder() . $image;
+	$imgfile = ALBUM_FOLDER_SERVERPATH . $image;
 } else {
-	$imgfile = getAlbumFolder() . $album.'/'.$image;
+	$imgfile = ALBUM_FOLDER_SERVERPATH . $album.'/'.$image;
 }
 
 if ($debug) imageDebug($album, $image, $args, $imgfile);
-	
+
 
 /** Check for possible problems ***********
  ******************************************/
@@ -125,12 +137,12 @@ if (!is_dir(SERVERCACHE)) {
 	@mkdir(SERVERCACHE, CHMOD_VALUE);
 	@chmod(SERVERCACHE, CHMOD_VALUE);
 	if (!is_dir(SERVERCACHE))
-		imageError(gettext("The cache directory does not exist. Please create it and set the permissions to 0777."), 'err-cachewrite.gif');
+		imageError(gettext("The cache directory does not exist. Please create it and set the permissions to 0777."), 'err-cachewrite.png');
 }
 if (!is_writable(SERVERCACHE)) {
 	@chmod(SERVERCACHE, CHMOD_VALUE);
 	if (!is_writable(SERVERCACHE))
-		imageError(gettext("The cache directory is not writable! Attempts to chmod didn't work."), 'err-cachewrite.gif');
+		imageError(gettext("The cache directory is not writable! Attempts to chmod didn't work."), 'err-cachewrite.png');
 }
 if (!file_exists($imgfile)) {
 	$imgfile = $rimage; // undo the sanitize
@@ -148,20 +160,24 @@ if (!file_exists($imgfile)) {
 		} else {
 			$source2 = '';
 		}
-
-		if ($source != ZENFOLDER) {
+		switch($source) {
+			case ZENFOLDER:
+			case USER_PLUGIN_FOLDER:
+				break;
+			default:
 			$source = THEMEFOLDER.'/'.$source;
+			break;
 		}
 		$args[3] = $args[4] = 0;
 		$args[5] = 1;    // full crops for these default images
-		$args[9] = NULL; 
+		$args[9] = NULL;
 		$imgfile = SERVERPATH .'/'. $source.$source2 . "/" . $imgfile;
-		
-	} 
-	if (!file_exists($imgfile)) {	
+
+	}
+	if (!file_exists($imgfile)) {
 		header("HTTP/1.0 404 Not Found");
 		header("Status: 404 Not Found");
-		imageError(gettext("Image not found; file does not exist."), 'err-imagenotfound.gif');
+		imageError(gettext("Image not found; file does not exist."), 'err-imagenotfound.png');
 	}
 }
 
@@ -191,7 +207,7 @@ if (file_exists($newfile) & !$adminrequest) {
 
 if ($process) { // If the file hasn't been cached yet, create it.
 	// setup standard image options from the album theme if it exists
-	if (!cacheImage_protected($newfilename, $imgfile, $args, $allowWatermark, false, $theme, $album)) {
+	if (!cacheImage($newfilename, $imgfile, $args, $allowWatermark, $theme, $album)) {
 		imageError(gettext('Image processing resulted in a fatal error.'));
 	}
 	$fmt = filemtime($newfile);
@@ -201,7 +217,6 @@ $path = $protocol . '/'.CACHEFOLDER . pathurlencode(imgSrcURI($newfilename));
 
 if (!$debug) {
 	// ... and redirect the browser to it.
-	header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $fmt).' GMT');
 	$suffix = getSuffix($newfilename);
 	switch ($suffix) {
 		case 'bmp':
@@ -218,6 +233,7 @@ if (!$debug) {
 			pageError(405, gettext("Method Not Allowed"));
 			exit();
 	}
+	header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $fmt).' GMT');
 	header('Content-Type: image/'.$suffix);
 	header('Location: ' . $path, true, 301);
 	exit();

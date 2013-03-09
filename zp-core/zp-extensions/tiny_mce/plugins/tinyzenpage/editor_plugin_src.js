@@ -2,7 +2,7 @@
  * $Id: editor_plugin_src.js 201 2007-02-12 15:56:56Z spocke $
  *
  * @author Moxiecode
- * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright 2004-2008, Moxiecode Systems AB, All rights reserved.
  */
 
 (function() {
@@ -22,7 +22,7 @@
 			// Register the command so that it can be invoked by using tinyMCE.activeEditor.execCommand('mceExample');
 			ed.addCommand('mcetinyzenpage', function() {
 				ed.windowManager.open({
-					file : url + '/dialog.php',
+					file : url + '/tinyzenpage.php',
 					width : 320 + parseInt(ed.getLang('tinyzenpage.delta_width', 0)),
 					height : 120 + parseInt(ed.getLang('tinyzenpage.delta_height', 0)),
 					inline : 1
@@ -67,8 +67,8 @@
 		 */
 		getInfo : function() {
 			return {
-				longname : 'tinyzenpage',
-				author : 'Malte MŸller (acrylian)',
+				longname : 'tinyZenpage - Insert images, albums, Zenpage pages and articles',
+				author : 'Malte Mueller (acrylian)',
 				authorurl : 'http://wwww.maltem.de',
 				infourl : 'http://zenpage.maltem.de',
 				version : "1.0"

@@ -1,32 +1,27 @@
 <?php
 /**
  * Mailing using PHPMailer classes
- * 
+ *
  * Configure the plugin options as necessary.
- * 
+ *
+ * @author Stephen Billard (sbillard)
  * @package plugins
  */
-$plugin_is_filter = 5;
+$plugin_is_filter = 8|CLASS_PLUGIN;
 $plugin_description = gettext("Zenphoto outgoing mail handler based on the <em>PHPMailer</em> class mailing facility.");
 $plugin_author = "Stephen Billard (sbillard)";
-$plugin_version = '1.2.9'; 
-$plugin_URL = "http://www.zenphoto.org/documentation/plugins/_".PLUGIN_FOLDER."---PHPMailer.html";
-$plugin_disable = (version_compare(PHP_VERSION, '5.0.0') != 1) ? gettext('PHP version 5 or greater is required') : false;
-if ($plugin_disable) {
-	setOption('zp_plugin_PHPMailer',0);
-} else {
-	$option_interface = new zp_PHPMailer();
-	zp_register_filter('sendmail', 'zenphoto_PHPMailer');
-	require_once(dirname(__FILE__).'/PHPMailer/class.phpmailer.php');
-}
+$plugin_version = '1.4.2';
+$option_interface = 'zp_PHPMailer';
+zp_register_filter('sendmail', 'zenphoto_PHPMailer');
+
 
 /**
  * Option handler class
  *
  */
 class zp_PHPMailer {
-	
-	
+
+
 	/**
 	 * class instantiation function
 	 *
@@ -41,7 +36,7 @@ class zp_PHPMailer {
 		setOptionDefault('PHPMailer_password','');
 		setOptionDefault('PHPMailer_secure',0);
 	}
-	
+
 	/**
 	 * Reports the supported options
 	 *
@@ -75,7 +70,7 @@ class zp_PHPMailer {
 	function handleOption($option, $currentValue) {
 		if($option=="PHPMailer_password") {
 			?>
-			<input type="password" size="40" name="<?php echo $option; ?>" style="width: 338px" value="<?php echo $currentValue; ?>">
+			<input type="password" size="40" name="<?php echo $option; ?>" style="width: 338px" value="<?php echo html_encode($currentValue); ?>">
 			<?php
 		}
 	}
@@ -83,14 +78,15 @@ class zp_PHPMailer {
 }
 
 function zenphoto_PHPMailer($msg, $email_list, $subject, $message, $from_mail, $from_name, $cc_addresses) {
+	require_once(dirname(__FILE__).'/PHPMailer/class.phpmailer.php');
 	switch (getOption('PHPMailer_mail_protocol')) {
 		case 'pop3':
 			require_once(dirname(__FILE__).'/PHPMailer/class.pop3.php');
 			$pop = new POP3();
-			$authorized = $pop->Authorise(getOption('PHPMailer_server'), getOption('PHPMailer_pop_port'), 30, getOption('PHPMailer_user'), getOption('PHPMailer_password'), 1);
+			$authorized = $pop->Authorise(getOption('PHPMailer_server'), getOption('PHPMailer_pop_port'), 30, getOption('PHPMailer_user'), getOption('PHPMailer_password'), 0);
 			$mail = new PHPMailer();
 			$mail->IsSMTP();
-			$mail->Port = getOption('PHPMailer_smtp_port'); 
+			$mail->Port = getOption('PHPMailer_smtp_port');
 			$mail->Host  = getOption('PHPMailer_server');
 			break;
 		case 'smtp':
@@ -117,7 +113,7 @@ function zenphoto_PHPMailer($msg, $email_list, $subject, $message, $from_mail, $
 	$mail->Body = $message;
 	$mail->AltBody = '';
 	$mail->IsHTML(false);
-	
+
 	foreach ($email_list as $to_name=>$to_mail) {
 		if (is_numeric($to_name)) {
 			$mail->AddAddress($to_mail);
@@ -131,7 +127,7 @@ function zenphoto_PHPMailer($msg, $email_list, $subject, $message, $from_mail, $
 		}
 	}
 	if (!$mail->Send()) {
-		if (!empty($msg)) $msg .= '<br/>';
+		if (!empty($msg)) $msg .= '<br />';
 		$msg .= sprintf(gettext('<code>PHPMailer</code> failed to send <em>%1$s</em>. ErrorInfo:%2$s'), $subject, $mail->ErrorInfo);
 	}
 	return $msg;

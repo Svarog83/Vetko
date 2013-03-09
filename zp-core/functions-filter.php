@@ -17,9 +17,10 @@
  * @author Ozh
  * @since 1.3
  */
- 
+
 // force UTF-8 Ø
 
+global $_zp_filters;
 $_zp_filters = array();
 /* This global var will collect filters with the following structure:
  * $_zp_filter['hook']['array of priorities']['serialized function names']['array of ['array (functions, accepted_args)]']
@@ -28,19 +29,20 @@ $_zp_filters = array();
 /**
  * Registers a filtering function
  * Filtering functions are used to post process zenphoto elements or to trigger functions when a filter occur
- * 
+ *
  * Typical use:
- * 
+ *
  *		zp_register_filter('some_hook', 'function_handler_for_hook');
  *
- * @global array $_zp_filters Storage for all of the filters
+ * global array $_zp_filters Storage for all of the filters
  * @param string $hook the name of the zenphoto element to be filtered
  * @param callback $function_name the name of the function that is to be called.
- * @param integer $priority optional. Used to specify the order in which the functions associated with a particular action are executed (default=10, lower=earlier execution, and functions with the same priority are executed in the order in which they were added to the filter)
- * @param int $accepted_args optional. The number of arguments the function accept (default is the number provided).
+ * @param integer $priority optional. Used to specify the order in which the functions associated with a particular
+ * 																		action are executed (default=5, lower=earlier execution, and functions with
+ * 																		the same priority are executed in the order in which they were added to the filter)
  */
-function zp_register_filter($hook, $function_name, $priority = 5, $accepted_args = NULL) {
-	global $_zp_filters;
+function zp_register_filter($hook, $function_name, $priority = NULL) {
+	global $_zp_filters, $_EnabledPlugins;
 	$bt = @debug_backtrace();
 	if (is_array($bt)) {
 		$b = array_shift($bt);
@@ -48,15 +50,23 @@ function zp_register_filter($hook, $function_name, $priority = 5, $accepted_args
 	} else {
 		$base = 'unknown';
 	}
+	if (is_null($priority)) {
+		$priority = @$_EnabledPlugins[stripSuffix($base)];
+		if (is_null($priority)) {
+			$priority = 5;
+		} else {
+			$priority = $priority & PLUGIN_PRIORITY;
+		}
+	}
 	// At this point, we cannot check if the function exists, as it may well be defined later (which is OK)
-	
+
 	$id = zp_filter_unique_id($hook, $function_name, $priority);
-	
+
 	$_zp_filters[$hook][$priority][$id] = array(
 		'function' => $function_name,
-		'accepted_args' => $accepted_args,
 		'script' => $base
 	);
+	if (DEBUG_FILTERS) debugLog($base.'=>'.$function_name.' registered to '.$hook.' at priority '.$priority);
 }
 
 
@@ -65,7 +75,7 @@ function zp_register_filter($hook, $function_name, $priority = 5, $accepted_args
  *
  * Simply using a function name is not enough, as several functions can have the same name when they are enclosed in classes.
  *
- * @global array $_zp_filters storage for all of the filters
+ * global array $_zp_filters storage for all of the filters
  * @param string $hook hook to which the function is attached
  * @param string|array $function used for creating unique id
  * @param int|bool $priority used in counting how many hooks were applied.  If === false and $function is an object reference, we return the unique id only if it already has one, false otherwise.
@@ -103,7 +113,7 @@ function zp_filter_unique_id($hook, $function, $priority) {
  * This function is called for each zenphoto element which supports
  * plugin filtering. It is called after any zenphoto specific actions are
  * completed and before the element is used.
- * 
+ *
  * Typical use:
  *
  * 		1) Modify a variable if a function is attached to hook 'zp_hook'
@@ -112,10 +122,10 @@ function zp_filter_unique_id($hook, $function, $priority) {
  *
  *		2) Trigger functions is attached to event 'zp_event'
  *		zp_apply_filter( 'zp_event' );
- * 
+ *
  * Returns an element which may have been filtered by a filter.
  *
- * @global array $_zp_filters storage for all of the filters
+ * global array $_zp_filters storage for all of the filters
  * @param string $hook the name of the zenphoto element
  * @param mixed $value the value of the element before filtering
  * @return mixed
@@ -124,28 +134,24 @@ function zp_apply_filter($hook, $value = '') {
 	global $_zp_filters;
 	if ( !isset($_zp_filters[$hook]) )
 		return $value;
-	
-	$args = func_get_args();
 
+	$args = func_get_args();
 	// Sort filters by priority
 	ksort($_zp_filters[$hook]);
-	
 	// Loops through each filter
 	reset( $_zp_filters[$hook] );
+	if (DEBUG_FILTERS) $debug = 'Apply filters for '.$hook;
 	do {
-		foreach( (array) current($_zp_filters[$hook]) as $the_ )
+		foreach( (array) current($_zp_filters[$hook]) as $the_ ) {
 			if ( !is_null($the_['function']) ){
+				if (DEBUG_FILTERS) $debug .= "\n    ".$the_['function'];
 				$args[1] = $value;
-				$count = $the_['accepted_args'];
-				if (is_null($count)) {
-					$value = call_user_func_array($the_['function'], array_slice($args, 1));
-				} else {
-					$value = call_user_func_array($the_['function'], array_slice($args, 1, (int) $count));
-				}
+				$value = call_user_func_array($the_['function'], array_slice($args, 1));
 			}
-
+		}
 	} while ( next($_zp_filters[$hook]) !== false );
-	
+	if (DEBUG_FILTERS) debugLog($debug);
+
 	return $value;
 }
 
@@ -160,7 +166,7 @@ function zp_apply_filter($hook, $value = '') {
  * To remove a hook, the $function_to_remove and $priority arguments must match
  * when the hook was added.
  *
- * @global array $_zp_filters storage for all of the filters
+ * global array $_zp_filters storage for all of the filters
  * @param string $hook The filter hook to which the function to be removed is hooked.
  * @param callback $function_to_remove The name of the function which should be removed.
  * @param int $priority optional. The priority of the function (default: 10).
@@ -169,7 +175,7 @@ function zp_apply_filter($hook, $value = '') {
  */
 function zp_remove_filter($hook, $function_to_remove, $priority = 10, $accepted_args = 1) {
 	global $_zp_filters;
-	
+
 	$function_to_remove = zp_filter_unique_id($hook, $function_to_remove, $priority);
 
 	$remove = isset ($_zp_filters[$hook][$priority][$function_to_remove]);
@@ -178,6 +184,7 @@ function zp_remove_filter($hook, $function_to_remove, $priority = 10, $accepted_
 		unset ($_zp_filters[$hook][$priority][$function_to_remove]);
 		if ( empty($_zp_filters[$hook][$priority]) )
 			unset ($_zp_filters[$hook]);
+		if (DEBUG_FILTERS) debugLog($function_to_remove.' removed from '.$hook);
 	}
 	return $remove;
 }
@@ -186,7 +193,7 @@ function zp_remove_filter($hook, $function_to_remove, $priority = 10, $accepted_
 /**
  * Check if any filter has been registered for a hook.
  *
- * @global array $_zp_filters storage for all of the filters
+ * global array $_zp_filters storage for all of the filters
  * @param string $hook The name of the filter hook.
  * @param callback $function_to_check optional.  If specified, return the priority of that function on this hook or false if not attached.
  * @return int|boolean Optionally returns the priority on that hook for the specified function.
@@ -209,7 +216,33 @@ function zp_has_filter($hook, $function_to_check = false) {
 	return false;
 }
 
-
-
+/**
+ *
+ * Returns the position of the function in the hook queue
+ * @param $hook
+ * @param $function
+ */
+function zp_filter_slot($hook,$function) {
+	global $_zp_filters;
+	if (empty($_zp_filters[$hook])) {
+		return false;
+	}
+	if (!$idx = zp_filter_unique_id($hook, $function, false)) {
+		return false;
+	}
+	// Sort filters by priority
+	$filters = $_zp_filters[$hook];
+	ksort($filters);
+	$c = 0;
+	foreach ( (array) array_keys($filters) as $priority ) {
+		foreach ($filters[$priority] as $filter=>$data) {
+			if ( $filter == $idx ) {
+				return $c;
+			}
+			$c++;
+		}
+	}
+	return false;
+}
 
 ?>

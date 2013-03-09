@@ -7,276 +7,289 @@
  * @subpackage zenpage
  */
 
-class ZenpagePage extends PersistentObject {
-	
-	var $comments = NULL;//Contains an array of the comments of the current article
-	var $commentcount; //Contains the number of comments
-	
-	function ZenpagePage($titlelink) {
-		$titlelink = sanitize($titlelink);
-		if (!is_string($titlelink) || empty($titlelink)) return NULL;
-		$new = parent::PersistentObject('zenpage_pages', array('titlelink'=>$titlelink), NULL, true);
-	}
-	
+class ZenpagePage extends ZenpageItems {
 
-	/**
-	 * Returns the id of the page
-	 *
-	 * @return string
-	 */
-	function getID() {
-		return $this->get("id");
+	var $manage_rights = MANAGE_ALL_PAGES_RIGHTS;
+	var $manage_some_rights = ZENPAGE_PAGES_RIGHTS;
+	var $view_rights = VIEW_PAGES_RIGHTS;
+
+	function __construct($titlelink, $allowCreate=NULL) {
+		$new = parent::PersistentObject('pages', array('titlelink'=>$titlelink), 'titlelink', true, empty($titlelink), $allowCreate);
 	}
 
 	/**
-	 * Returns the partent id of the page
+	 * Returns the sort order
 	 *
 	 * @return string
 	 */
-	function getParentID() {
-		return $this->get("parentid");
-	}
-		
-	/**
-	 * Returns the title of the page
-	 *
-	 * @return string
-	 */
-	function getTitle() {
-		return get_language_string($this->get("title"));
-	}
-	
-	/**
-	 * Returns the content of the page
-	 *
-	 * @return string
-	 */
-	function getContent() {
-		return get_language_string($this->get("content"));
-	}
-	
-	/**
-	 * Returns the extra content of the page
-	 *
-	 * @return string
-	 */
-	function getExtraContent() {
-		return get_language_string($this->get("extracontent"));
-	}
-		
-	/**
-	 * Returns the sort order of the page
-	 *
-	 * @return string
-	 */
-	function getSortOrder() {
-		return $this->get("sort_order");
-	}
-	
-	/**
-	 * Returns the show status of the page, "1" if published
-	 *
-	 * @return string
-	 */
-	function getShow() {
-		return $this->get("show");
-	}
-	
-	/**
-	 * Returns the titlelink of the page
-	 *
-	 * @return string
-	 */
-	function getTitlelink() {
-		return $this->get("titlelink");
-	}
+	function getSortOrder() { return $this->get('sort_order'); }
 
 	/**
-	 * Returns the codeblocks of the page as an serialized array
+	 * Stores the sort order
 	 *
-	 * @return array
+	 * @param string $sortorder image sort order
 	 */
-	function getCodeblock() {
-		return $this->get("codeblock");
-	}
+	function setSortOrder($sortorder) { $this->set('sort_order', $sortorder); }
 
 	/**
-	 * Returns the author of the page
+	 * Returns the guest user
 	 *
 	 * @return string
 	 */
-	function getAuthor() {
-		return $this->get("author");
-	}
+	function getUser() { return $this->get('user');	}
 
 	/**
-	 * Returns the date of the page
+	 * Sets the guest user
 	 *
-	 * @return string
+	 * @param string $user
 	 */
-	function getDateTime() {
-		return $this->get("date");
-	}
-	
+	function setUser($user) { $this->set('user', $user);	}
+
 	/**
-	 * Returns the last change date of the page
+	 * Returns the password
 	 *
 	 * @return string
 	 */
-	function getLastchange() {
-		return $this->get("lastchange");
-	}
-		
-	/**
-	 * Returns the last change author of the page
-	 *
-	 * @return string
-	 */
-	function getLastchangeAuthor() {
-		return $this->get("lastchangeauthor");
-	}
-	
-	/**
-	 * Returns the hitcount of the page
-	 *
-	 * @return string
-	 */
-	function getHitcounter() {
-		return $this->get("hitcounter");
-	}
-	
-	/**
-	 * Returns the locked status of the page (only used on admin)
-	 *
-	 * @return string
-	 */
-	function getLocked() {
-		return $this->get("locked");
-	}
-	
-	/**
-	 * Returns the perma link status of the page (only used on admin)
-	 *
-	 * @return string
-	 */
-	function getPermalink() {
-		return $this->get("permalink");
-	}
-	
-/**
-	 * Returns the expire date  of the page
-	 *
-	 * @return string
-	 */
-	function getExpireDate() {
-		$dt = $this->get("expiredate");
-		if ($dt == '0000-00-00 00:00:00') {
+	function getPassword() {
+			if (GALLERY_SECURITY != 'public') {
 			return NULL;
 		} else {
-			return $dt;
+			return $this->get('password');
 		}
 	}
-	
+
 	/**
-	 * Returns the tag data of an album
+	 * Sets the encrypted password
+	 *
+	 * @param string $pwd the cleartext password
+	 */
+	function setPassword($pwd) {
+		global $_zp_authority;
+		if (empty($pwd)) {
+			$this->set('password', "");
+		} else {
+			$this->set('password', $_zp_authority->passwordHash($this->get('user'), $pwd));
+		}
+	}
+
+	/**
+	 * Returns the password hint
 	 *
 	 * @return string
 	 */
-	function getTags() {
-		return readTags($this->id, 'zenpage_pages');
+	function getPasswordHint() {
+		return get_language_string($this->get('password_hint'));
 	}
 
 	/**
-	 * Stores tag information of an album
+	 * Sets the password hint
 	 *
-	 * @param string $tags the tag list
+	 * @param string $hint the hint text
 	 */
-	function setTags($tags) {
-		if (!is_array($tags)) {
-			$tags = explode(',', $tags);
-		}
-		storeTags($tags, $this->id, 'zenpage_pages');
-	}
-	
-	/****************
-	 * Comments
-	 ****************/
+	function setPasswordHint($hint) { $this->set('password_hint', $hint); }
 
 	/**
-	 * Returns true of comments are allowed
-	 *
-	 * @return bool
+	 * duplicates an article
+	 * @param string $newtitle the title for the new article
 	 */
-	function getCommentsAllowed() { return $this->get('commentson'); }
-	
-	/**
-	 * Returns an array of comments of the current page
-	 *
-	 * @param bool $moderated if false, comments in moderation are ignored
-	 * @param bool $private if false ignores private comments
-	 * @param bool $desc set to true for descending order
-	 * @return array
-	 */
-	function getComments($moderated=false, $private=false, $desc=false) {
-		$sql = "SELECT *, (date + 0) AS date FROM " . prefix("comments") .
- 			" WHERE `type`='pages' AND `ownerid`='" . $this->get('id') . "'";
-		if (!$moderated) {
-			$sql .= " AND `inmoderation`=0";
+	function copy($newtitle) {
+		$newID = $newtitle;
+		$id = parent::copy(array('titlelink'=>$newID));
+		if (!$id) {
+			$newID = $newtitle.':'.seoFriendly(date('Y-m-d_H-i-s'));
+			$id = parent::copy(array('titlelink'=>$newID));
 		}
-		if (!$private) {
-			$sql .= " AND `private`=0";
+		if ($id) {
+			$newobj = new ZenpagePage($newID);
+			$newobj->setTitle($newtitle);
+			$newobj->setSortOrder(NULL);
+			$newobj->setTags($this->getTags());
+			$newobj->setDateTime(date('Y-m-d H:i:s'));
+			$newobj->setShow(0);
+			$newobj->save();
+			return $newobj;
 		}
-		$sql .= " ORDER BY id";
-		if ($desc) {
-			$sql .= ' DESC';
-		}
-		$comments = query_full_array($sql);
-		$this->comments = $comments;
-		return $this->comments;
+		return false;
 	}
 
-
 	/**
-	 * Adds a comment to the  page
-	 * assumes data is coming straight from GET or POST
+	 * Deletes a page (and also if existing its subpages) from the database
 	 *
-	 * Returns a comment object
-	 *
-	 * @param string $name Comment author name
-	 * @param string $email Comment author email
-	 * @param string $website Comment author website
-	 * @param string $comment body of the comment
-	 * @param string $code Captcha code entered
-	 * @param string $code_ok Captcha md5 expected
-	 * @param string $ip the IP address of the comment poster
-	 * @param bool $private set to true if the comment is for the admin only
-	 * @param bool $anon set to true if the poster wishes to remain anonymous
-	 * @return object
 	 */
-	function addComment($name, $email, $website, $comment, $code, $code_ok, $ip, $private, $anon) {
-		$goodMessage = postComment($name, $email, $website, $comment, $code, $code_ok, $this, $ip, $private, $anon);
-		return $goodMessage;
-	}
-
-
-	/**
-	 * Returns the count of comments for the current page. Comments in moderation are not counted
-	 *
-	 * @return int
-	 */
-	function getCommentCount() {
-		global $_zp_current_zenpage_page;
-		$id = $this->get('id');
-		if (is_null($this->commentcount)) {
-			if ($this->comments == null) {
-				$count = query_single_row("SELECT COUNT(*) FROM " . prefix("comments") . " WHERE `type`='pages' AND `inmoderation`=0 AND `private`=0 AND `ownerid`=" . $id);
-				$this->commentcount = array_shift($count);
-			} else {
-				$this->commentcount = count($this->comments);
+	function remove() {
+		if ($success = parent::remove()) {
+			$sortorder = $this->getSortOrder();
+			if ($this->id) {
+				$success = $success && query("DELETE FROM " . prefix('obj_to_tag') . "WHERE `type`='pages' AND `objectid`=" . $this->id);
+				$success = $success && query("DELETE FROM ".prefix('comments')." WHERE ownerid = ".$this->getID().' AND type="pages"'); // delete any comments
+				//	remove subpages
+				$mychild = strlen($sortorder)+4;
+				$result = query_full_array('SELECT * FROM '.prefix('pages')." WHERE `sort_order` like '".$sortorder."-%'");
+				if (is_array($result)) {
+					foreach ($result as $row) {
+						if (strlen($row['sort_order']) == $mychild) {
+							$subpage = new ZenpagePage($row['titlelink']);
+							$success = $success && $subpage->remove();
+						}
+					}
+				}
 			}
 		}
-		return $this->commentcount;
+		return $success;
+	}
+
+/**
+ * Gets the parent pages recursivly to the page whose parentid is passed or the current object
+ *
+ * @param int $parentid The parentid of the page to get the parents of
+ * @param bool $initparents
+ * @return array
+ */
+	function getParents(&$parentid='',$initparents=true) {
+		global $parentpages, $_zp_zenpage;
+		$allitems = $_zp_zenpage->getPages();
+		if($initparents) {
+			$parentpages = array();
+		}
+		if(empty($parentid)) {
+			$currentparentid = $this->getParentID();
+		} else {
+			$currentparentid = $parentid;
+		}
+		foreach($allitems as $item) {
+			$obj = new ZenpagePage($item['titlelink']);
+			$itemtitlelink = $obj->getTitlelink();
+			$itemid = $obj->getID();
+			$itemparentid = $obj->getParentID();
+			if($itemid == $currentparentid) {
+				array_unshift($parentpages,$itemtitlelink);
+				$obj->getParents($itemparentid,false);
+			}
+		}
+		return $parentpages;
+	}
+
+
+
+/**
+ * Gets the sub pages recursivly by titlelink
+ * @return array
+ */
+	function getPages() {
+		global $_zp_zenpage;
+		$subpages = array();
+		$sortorder = $this->getSortOrder();
+		$pages = $_zp_zenpage->getPages();
+		foreach($pages as $page) {
+			$pageobj = new ZenpagePage($page['titlelink']);
+			if($pageobj->getParentID() == $this->getID() && $pageobj->getSortOrder()  != $sortorder) { // exclude the page itself!
+				array_push($subpages,$pageobj->getTitlelink());
+			}
+		}
+		if(count($subpages) != 0) {
+			return $subpages;
+		} else {
+			return array();
+		}
+	}
+
+/**
+ * Gets the sub pages recursivly by titlelink
+ * @return array
+ * @deprecated
+ */
+	function getSubPages() {
+		deprecated_function_notify(gettext('Use the Zenpage Page class method getPages().'));
+		return $this->getPages();
+	}
+
+	/**
+	 * Checks if user is allowed to access the page
+	 * @param $hint
+	 * @param $show
+	 */
+	function checkforGuest(&$hint=NULL, &$show=NULL) {
+		if (!parent::checkForGuest()) {
+			return false;
+		}
+		$pageobj = $this;
+		$hash = $pageobj->getPassword();
+		while(empty($hash) && !is_null($pageobj)) {
+			$parentID = $pageobj->getParentID();
+			if (empty($parentID)) {
+				$pageobj = NULL;
+			} else {
+				$sql = 'SELECT `titlelink` FROM '.prefix('pages').' WHERE `id`='.$parentID;
+				$result = query_single_row($sql);
+				$pageobj = new ZenpagePage($result['titlelink']);
+				$hash = $pageobj->getPassword();
+			}
+		}
+		if (empty($hash)) { // no password required
+			return 'zp_public_access';
+		} else {
+			$authType = "zp_page_auth_" . $pageobj->get('id');
+			$saved_auth = zp_getCookie($authType);
+			if ($saved_auth == $hash) {
+				return $authType;
+			} else {
+				$user = $pageobj->getUser();
+				$show = (!empty($user));
+				$hint = $pageobj->getPasswordHint();
+				return false;
+			}
+		}
+	}
+
+/**
+ * Checks if a page is protected and returns TRUE or FALSE
+ * NOTE: This function does only check if a password is set not if it has been entered! Use $this->checkforGuest() for that.
+ *
+ * @return bool
+ */
+	function isProtected() {
+		return $this->checkforGuest() != 'zp_public_access';
+	}
+
+	/**
+	 * Checks if user is author of page
+	 * @param bit $action what the caller wants to do
+	 *
+	 * returns true of access is allowed
+	 */
+	function isMyItem($action) {
+		global $_zp_current_admin_obj;
+		if (parent::isMyItem($action)) {
+			return true;
+		}
+		if (zp_loggedin($action)) {
+			if (GALLERY_SECURITY != 'public' && $this->getShow() && $action == LIST_RIGHTS) {
+				return LIST_RIGHTS;
+			}
+			if ($_zp_current_admin_obj->getUser() == $this->getAuthor()) {
+				return true;
+			}
+			$mypages = $_zp_current_admin_obj->getObjects('pages');
+			if (!empty($mypages)) {
+				if (array_search($this->getTitlelink(),$mypages)!==false) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	* Returns full path to a specific page
+	*
+	* @return string
+	*/
+	function getPageLink() {
+		return $this->getPagesLinkPath().urlencode($this->getTitlelink());
 	}
 
 }
+
+
+
 ?>

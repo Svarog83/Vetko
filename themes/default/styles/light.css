@@ -1,7 +1,7 @@
 /*
 
 	Zen Photo Default 1.0
-	
+
 */
 
 /* Basics
@@ -53,11 +53,11 @@ body {
 	padding-bottom: 14px;
 	margin-bottom: 20px;
 	/*min-height: 40px;
-  _height: 40px;*/
+	_height: 40px;*/
 }
-#gallerytitle h2 { 
-	font-weight: normal; 
-	font-size: 12pt; 
+#gallerytitle h2 {
+	font-weight: normal;
+	font-size: 12pt;
 	margin-top: 18px;
 	width:510px;
 }
@@ -97,7 +97,7 @@ h3 {
 	margin-top: 30px;
 }
 h3 a:link, h3 a:visited { text-decoration: none; }
-h3 a:hover { text-decoration: underline; }
+h3 a:hover { text-decoration: none; }
 
 
 /* Miscellaneous
@@ -121,22 +121,22 @@ blockquote {
 }
 
 #imagemetadata {
-  text-align: right;
+	text-align: right;
 }
 
 #imagemetadata table {
-  text-align: left;
-  line-height: 1em;
-  border: 1px solid #ccc;
-  top: 2em;
-  right: 0px;
-  background-color: #fafafa;
+	text-align: left;
+	line-height: 1em;
+	border: 1px solid #ccc;
+	top: 2em;
+	right: 0px;
+	background-color: #fafafa;
 }
 
 #imagemetadata table td {
-  border-bottom: 1px solid #f0f0f0;
-  background-color: #f8f8f8;
-  padding: 2px 5px;
+	border-bottom: 1px solid #f0f0f0;
+	background-color: #f8f8f8;
+	padding: 2px 5px;
 }
 
 
@@ -191,7 +191,7 @@ ul.pagelist li.next {
 }
 
 #exif_link {
-  float: right;
+	float: right;
 }
 
 /* Tags
@@ -220,17 +220,22 @@ ul.pagelist li.next {
 
 /* Image Thumbnails
 ------------------------------ */
+#images {
+	float: left;
+	width: 590px;
+	border: 0px solid gray;
+}
 .imagethumb a, .imagethumb a:hover {
 	display: block;
 	padding: 9px;
 	margin: 0px 9px 9px 0px;
 	line-height: 0px;
-    border: 1px solid #e6e6e6;
-    background-color: #f6f6f6;
+		border: 1px solid #e6e6e6;
+		background-color: #f6f6f6;
 }
 .imagethumb a:visited {
-    background-color: #fcfcfc;
-    border: 1px solid #f8f8f8;
+		background-color: #fcfcfc;
+		border: 1px solid #f8f8f8;
 }
 .imagethumb a:hover {
 	background-color: #f3f3f3;
@@ -251,17 +256,17 @@ ul.pagelist li.next {
 }
 .album {
 	margin: 0 12px 8px 0;
-    padding: 10px 8px 2px 10px;
+		padding: 10px 8px 2px 10px;
 	float: left;
 	width: 305px;
 	border: 1px solid #E7F0F5;
 	background: #F7F9FD;
-    line-height: 100%;
+		line-height: 100%;
 }
 .album a img {  }
 .album .thumb {
-    float: left; 
-    margin-right: 6px;
+		float: left;
+		margin-right: 6px;
 }
 .album h3 {
 	padding: 0;
@@ -270,8 +275,8 @@ ul.pagelist li.next {
 .album p {
 	line-height: 12px;
 	font-size: 11px;
-    padding: 4px 0px 0px;
-    margin: 0px;
+		padding: 4px 0px 0px;
+		margin: 0px;
 }
 .albumdesc small {
 	color: #8DB8CF;
@@ -280,7 +285,7 @@ ul.pagelist li.next {
 
 /* Individual Image
 ------------------------------ */
-.image { 
+.image {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -330,10 +335,6 @@ ul.pagelist li.next {
 #comments {
 	clear: both;
 }
-.error { 
-  color: #C33; 
-  font-weight: bold; 
-}
 .comment {
 	padding: 10px;
 	border: 1px solid #E7F0F5;
@@ -352,6 +353,27 @@ ul.pagelist li.next {
 	font-size: 85%;
 }
 
+/* jQuery pagination comments */
+
+.Pagination {
+	margin-bottom: 10px;
+}
+
+.Pagination span.current,
+.Pagination span.next,
+.Pagination a,
+.Pagination a.next {
+	padding:0px 4px 0px 4px;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.Pagination span.prev,
+.Pagination a.prev {
+	padding:0px 4px 0px 0px;
+	margin-left: 0;
+	margin-right: 0px;
+}
 
 /* Forms
 ------------------------------ */
@@ -395,7 +417,7 @@ label:hover {
 	border-bottom: 1px solid #E6E6DF;
 	border-left: 1px solid #E6E6DF;
 	background: #fff;
-    z-index: 2; 	text-align: left;
+		z-index: 2; 	text-align: left;
 }
 #admin_data{
 	top: 0px;
@@ -429,8 +451,8 @@ label:hover {
 text-decoration: none;
 }
 #search ul {
-border: 1px solid #ccc; position:absolute; text-align:left; list-style: none; 
-height: 8em; width: 20em; overflow: auto; 
+border: 1px solid #ccc; position:absolute; text-align:left; list-style: none;
+height: 8em; width: 20em; overflow: auto;
 background-color: white;
 }
 
@@ -439,8 +461,8 @@ position: relative;
 top: 4px;
 }
 .clear {
-  clear:both;
-  height:10px;
+	clear:both;
+	height:10px;
 }
 
 /* Archive View
@@ -510,6 +532,9 @@ ul.archive .month {
 	font-weight: bold;
 	margin: 0px;
 }
+.errorlist {
+	list-style-type: none;
+}
 
 /* Zenphoto link
 ------------------------------ */
@@ -527,7 +552,9 @@ ul.archive .month {
 }
 
 /* centering flowplayer 3 on image.php */
-#image .flowplayer {
+#image .flowplayer,
+.jp-audio,
+.jp-video {
 	margin: 0 auto;
 }
 
@@ -559,3 +586,118 @@ table.password td.submit{
 table.password td.hint{
 	text-align:left;
 }
+.textobject {
+	font-size: 12px;
+	line-height: 16px;
+	text-align: left !important;
+	text-decoration: none !important;
+	overflow:scroll !important;
+}
+/* box for important notes
+------------------------------ */
+.notebox {
+	padding: 5px 10px 5px 10px;
+	background-color: #FFEFB7;
+	border-width: 1px 1px 2px 1px;
+	border-color: #FFDEB5;
+	border-style: solid;
+	margin-bottom: 10px;
+	font-size: 100%;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.notebox li {
+	list-style-type: none;
+}
+
+.notebox h2,.notebox strong {
+	color: #663300;
+	font-size: 100%;
+	font-weight: bold;
+	margin-bottom: 1em;
+}
+/* Messages
+------------------------------ */
+.messagebox {
+	background-color: #C0FFA8;
+	padding: 10px 15px 10px 15px;
+	border-width: 1px 1px 2px 1px;
+	border-color: #8BD37C;
+	border-style: solid;
+	margin-bottom: 10px;
+}
+
+.messagebox h2 {
+	color: #006633;
+	font-size: 100%;
+	font-weight: bold;
+	margin-bottom: 1em;
+}
+
+/* Login
+------------------------------ */
+#loginform {
+	padding: 10px;
+	width: 370px;
+	margin: 25px auto;
+	margin-top: 15%;
+	margin-left: 0 auto;
+	font-size: 100%;
+	background: #F7F8F9;
+	border-top: 1px solid #BAC9CF;
+	border-left: 1px solid #BAC9CF;
+	border-right: 1px solid #BAC9CF;
+	border-bottom: 5px solid #BAC9CF;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+#loginform fieldset {
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	border: 1px solid lightgray;
+	text-align:center;
+}
+
+#loginform input.textfield {
+	margin: 0px;
+	width:270px;
+	font-size: 100%;
+	padding: 4px;
+}
+
+.logon_form_text {
+	padding: 4px;
+	text-align:left;
+	margin-left: 10px;
+	margin-left: 5px;
+}
+
+.logon_link {
+	text-align:center;
+}
+
+.button {
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+label {
+	cursor: pointer;
+}
+
+label:hover {
+	color: #000;
+}
+
+#registration_form {
+	width:370px;
+}
+
