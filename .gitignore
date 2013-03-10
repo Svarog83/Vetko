@@ -1,0 +1,5 @@
+#PHPStorm and eclipse project files
+.buildpath
+.project
+.settings
+.idea
