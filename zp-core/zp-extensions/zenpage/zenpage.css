@@ -35,23 +35,6 @@ td {
 	padding-bottom: 6px;
 }
 
-/* right column on admin pages */
-td.rightcolumn {
-	padding-left: 15px;
-	vertical-align: top;
-	text-align: left;
-}
-
-td.rightcolumnmiddle {
-	padding-left: 15px;
-	vertical-align: top;
-	text-align: left;
-}
-
-td.middlecolumn {
-vertical-align: top;
-}
-
 #pageslist {
 	list-style: none;
 	margin: 0;
@@ -216,7 +199,7 @@ DIV.container IMG {
 
 /* scrollable sortables for zenpage
 -------------------------------------------------*/
-	/* CSS for checklists */
+/* CSS for checklists */
 div.zenpagechecklist,
 #zenpagetags .tagchecklist {
 	border: 1px solid #ccc;
@@ -263,6 +246,10 @@ div.zenpagechecklist,
 	text-indent: -25px;
 }
 
+.box-edit-unpadded {
+	width: 257px;
+}
+
 div.zenpagechecklist label:hover,
 div.zenpagechecklist label.hover,
 #zenpagetags .tagchecklist li:hover,
@@ -282,7 +269,7 @@ div.zenpagechecklist label.hover,
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 5.5em;
-	width: 605px;
+	width: 100%;
 	overflow: auto;
 	background-color: white;
 }
@@ -314,7 +301,7 @@ div.zenpagechecklist label.hover,
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 35em;
-	width: 605px;
+	width: 100%;
 	overflow: auto;
 	background-color: white;
 }
@@ -406,7 +393,6 @@ ul.language_string_list {
 .scheduledpublishing, .expire {
 	color: red;
 	font-weight: normal;
-	font-style: normal;
 }
 
 .scheduledate {
@@ -416,7 +402,7 @@ ul.language_string_list {
 
 .inactivescheduledate {
 	color: red;
-	font-weight: normal;
+	font-weight: bold;
 }
 
 .expiredate {
@@ -425,7 +411,7 @@ ul.language_string_list {
 }
 .expired {
 	color: red;
-	font-weight: normal;
+	font-weight: bold;
 }
 
 div.floatright form {
@@ -436,11 +422,11 @@ div.floatright form {
 form#articledatesdropdown,
 form#unpublisheddropdown,
 form#categoriesdropdown {
-margin-right: 0px;
+	margin-right: 0px;
 }
 
 form#sortorderdropdown {
-margin-right: 0px;
+	margin-right: 0px;
 }
 
 

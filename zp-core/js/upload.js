@@ -10,7 +10,7 @@ function updateFolder(nameObj, folderID, checkboxID, msg1, msg2) {
 	var fnamesuffix = "";
 	var count = 1;
 	if (autogen && name != "") {
-		fname = soejs(name);
+		fname = seoFriendlyJS(name);
 		while (contains(albumArray, parentfolder + fname + fnamesuffix)) {
 			fnamesuffix = "-"+count;
 			count++;
@@ -20,13 +20,3 @@ function updateFolder(nameObj, folderID, checkboxID, msg1, msg2) {
 	return validateFolder(folder, msg1, msg2);
 }
 
-function switchUploader() {
-	var urlx = '?uploadtype='+$('#uploadtype option:selected').val()+
-							'&album='+$('#albumselectmenu').val()+
-							'&albumtitle='+encodeURIComponent($('#albumtitle').val())+
-							'&folderdisplay='+encodeURIComponent($('#folderdisplay').val());
-	if ($('#autogen').attr("checked")) urlx = urlx+'&autogen=1';
-	if ($('#publishalbum').attr("checked")) urlx = urlx+'&publishalbum=1';
-	if ($('#newalbumcheckbox').attr("checked")) urlx = urlx+'&new';
-	window.location = urlx;
-}

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * zenpage news class
  *
@@ -6,16 +7,26 @@
  * @package plugins
  * @subpackage zenpage
  */
+if (!defined('NEWS_POSITION_NORMAL')) { // No idea why this is needed, but clones get already defined errors.
+	define('NEWS_POSITION_NORMAL', 0);
+	define('NEWS_POSITION_STICKY', 1);
+	define('NEWS_POSITION_STICK_TO_TOP', 9);
+}
 
 class ZenpageNews extends ZenpageItems {
 
 	var $manage_rights = MANAGE_ALL_NEWS_RIGHTS;
 	var $manage_some_rights = ZENPAGE_NEWS_RIGHTS;
-	var $view_rights = VIEW_NEWS_RIGHTS;
+	var $view_rights = ALL_NEWS_RIGHTS;
 	var $categories = NULL;
+	var $index = NULL;
 
-	function __construct($titlelink, $allowCreate=NULL) {
-		$new = parent::PersistentObject('news', array('titlelink'=>$titlelink), 'titlelink', true, empty($titlelink), $allowCreate);
+	function __construct($titlelink, $allowCreate = NULL) {
+		if (is_array($titlelink)) {
+			$titlelink = $titlelink['titlelink'];
+		}
+		$new = $this->instantiate('news', array('titlelink' => $titlelink), 'titlelink', true, empty($titlelink), $allowCreate);
+		$this->exists = $this->loaded;
 	}
 
 	/**
@@ -26,20 +37,25 @@ class ZenpageNews extends ZenpageItems {
 	 */
 	function getCategories() {
 		if (is_null($this->categories)) {
-			$this->categories = query_full_array("SELECT * FROM ".prefix('news_categories')." as cat,".prefix('news2cat')." as newscat WHERE newscat.cat_id = cat.id AND newscat.news_id = ".$this->getID()." ORDER BY cat.titlelink",false,'title');
+			$this->categories = query_full_array("SELECT * FROM " . prefix('news_categories') . " as cat," . prefix('news2cat') . " as newscat WHERE newscat.cat_id = cat.id AND newscat.news_id = " . $this->getID() . " ORDER BY cat.titlelink", false, 'title');
+			if (!$this->categories) {
+				$this->categories = array();
+			}
 		}
 		return $this->categories;
 	}
+
 	function setCategories($categories) {
-		$result = query('DELETE FROM '.prefix('news2cat').' WHERE `news_id`='.$this->getID());
-		$result = query_full_array("SELECT * FROM ".prefix('news_categories')." ORDER BY titlelink");
+		$result = query('DELETE FROM ' . prefix('news2cat') . ' WHERE `news_id`=' . $this->getID());
+		$result = query_full_array("SELECT * FROM " . prefix('news_categories') . " ORDER BY titlelink");
 		foreach ($result as $cat) {
-			if (in_array($cat['titlelink'],$categories)) {
-				query("INSERT INTO ".prefix('news2cat')." (cat_id, news_id) VALUES ('".$cat['id']."', '".$this->getID()."')");
+			if (in_array($cat['titlelink'], $categories)) {
+				query("INSERT INTO " . prefix('news2cat') . " (cat_id, news_id) VALUES ('" . $cat['id'] . "', '" . $this->getID() . "')");
 			}
 		}
 	}
-/**
+
+	/**
 	 * Returns true if the article is sticky
 	 *
 	 * @return bool
@@ -47,8 +63,17 @@ class ZenpageNews extends ZenpageItems {
 	function getSticky() {
 		return $this->get('sticky');
 	}
+
 	function setSticky($v) {
-		$this->set('sticky',$v);
+		$this->set('sticky', $v);
+	}
+
+	function getTruncation() {
+		return $this->get('truncation');
+	}
+
+	function setTruncation($v) {
+		$this->set('truncation', $v);
 	}
 
 	/**
@@ -57,10 +82,10 @@ class ZenpageNews extends ZenpageItems {
 	 */
 	function copy($newtitle) {
 		$newID = $newtitle;
-		$id = parent::copy(array('titlelink'=>$newID));
+		$id = parent::copy(array('titlelink' => $newID));
 		if (!$id) {
-			$newID = $newtitle.':'.seoFriendly(date('Y-m-d_H-i-s'));
-			$id = parent::copy(array('titlelink'=>$newID));
+			$newID = $newtitle . ':' . seoFriendly(date('Y-m-d_H-i-s'));
+			$id = parent::copy(array('titlelink' => $newID));
 		}
 		if ($id) {
 			$newobj = new ZenpageNews($newID);
@@ -73,10 +98,10 @@ class ZenpageNews extends ZenpageItems {
 			foreach ($this->getCategories() as $cat) {
 				$categories[] = $cat['cat_id'];
 			}
-			$result = query_full_array("SELECT * FROM ".prefix('news_categories')." ORDER BY titlelink");
+			$result = query_full_array("SELECT * FROM " . prefix('news_categories') . " ORDER BY titlelink");
 			foreach ($result as $cat) {
-				if (in_array($cat['id'],$categories)) {
-					query("INSERT INTO ".prefix('news2cat')." (cat_id, news_id) VALUES ('".$cat['id']."', '".$id."')");
+				if (in_array($cat['id'], $categories)) {
+					query("INSERT INTO " . prefix('news2cat') . " (cat_id, news_id) VALUES ('" . $cat['id'] . "', '" . $id . "')");
 				}
 			}
 			return $newobj;
@@ -84,39 +109,41 @@ class ZenpageNews extends ZenpageItems {
 		return false;
 	}
 
-/**
- * Deletes an news article from the database
- *
- */
+	/**
+	 * Deletes an news article from the database
+	 *
+	 */
 	function remove() {
 		if ($success = parent::remove()) {
 			if ($this->id) {
 				$success = query("DELETE FROM " . prefix('obj_to_tag') . "WHERE `type`='news' AND `objectid`=" . $this->getID());
-				$success = $success && query("DELETE FROM ".prefix('news2cat')." WHERE news_id = ".$this->getID()); // delete the category association
-				$success = $success && query("DELETE FROM ".prefix('comments')." WHERE ownerid = ".$this->getID().' AND type="news"'); // delete any comments
+				$success = $success && query("DELETE FROM " . prefix('news2cat') . " WHERE news_id = " . $this->getID()); // delete the category association
+				$success = $success && query("DELETE FROM " . prefix('comments') . " WHERE ownerid = " . $this->getID() . ' AND type="news"'); // delete any comments
 			}
 		}
 		return $success;
 	}
 
-/**
- * Checks if an article (not CombiNews gallery items!) is in a password protected category and returns TRUE or FALSE
- * NOTE: This function does not check if the password has been entered! Use checkAccess() for that.
- *
- * @param bool $only set to true to know if the news article belongs only to protected categories (i.e. it is protected)
- *
- * @return array
- */
-	function inProtectedCategory($only=false) {
+	/**
+	 * Checks if an article is in a password protected category and returns TRUE or FALSE
+	 * NOTE: This function does not check if the password has been entered! Use checkAccess() for that.
+	 *
+	 * @param bool $only set to true to know if the news article belongs only to protected categories (i.e. it is protected)
+	 *
+	 * @return array
+	 */
+	function inProtectedCategory($only = false) {
 		$categories = $this->getCategories();
-		if(!empty($categories)) {
-			foreach($categories as $cat) {
+		if (!empty($categories)) {
+			foreach ($categories as $cat) {
 				$catobj = new ZenpageCategory($cat['titlelink']);
 				$password = $catobj->getPassword();
-				if(!empty($password)) {
-					if (!$only) return true;
+				if (!empty($password)) {
+					if (!$only)
+						return true;
 				} else {
-					if ($only) return false;
+					if ($only)
+						return false;
 				}
 			}
 			return $only;
@@ -136,13 +163,13 @@ class ZenpageNews extends ZenpageItems {
 	 * returns true if the article exists in any published category (or in no categories)
 	 */
 	function categoryIsVisible() {
-		if (zp_loggedin(VIEW_NEWS_RIGHTS)) return true;
+		if (zp_loggedin(ALL_NEWS_RIGHTS))
+			return true;
 		global $_zp_zenpage;
 		$categories = $this->getCategories(false);
-		if(count($categories) > 0) {
-			$structure = $_zp_zenpage->getCategoryStructure();
-			foreach($categories as $cat) {
-				if ($structure[$cat['cat_id']]['show']) {
+		if (count($categories) > 0) {
+			foreach ($categories as $cat) {
+				if ($_zp_zenpage->visibleCategory($cat)) {
 					return true;
 				}
 			}
@@ -157,12 +184,12 @@ class ZenpageNews extends ZenpageItems {
 	 * @param $hint
 	 * @param $show
 	 */
-	function checkforGuest(&$hint=NULL, &$show=NULL) {
+	function checkforGuest(&$hint = NULL, &$show = NULL) {
 		if (!parent::checkForGuest()) {
 			return false;
 		}
 		$categories = $this->getCategories();
-		if (empty($categories)) {	//	cannot be protected!
+		if (empty($categories)) { //	cannot be protected!
 			return 'zp_public_access';
 		} else {
 			foreach ($categories as $cat) {
@@ -192,7 +219,7 @@ class ZenpageNews extends ZenpageItems {
 				return LIST_RIGHTS;
 			}
 			if ($_zp_current_admin_obj->getUser() == $this->getAuthor()) {
-				return true;	//	he is the author
+				return true; //	he is the author
 			}
 			if ($this->getShow() && $action == LIST_RIGHTS) {
 				return true;
@@ -201,7 +228,7 @@ class ZenpageNews extends ZenpageItems {
 			if (!empty($mycategories)) {
 				foreach ($this->getCategories() as $category) {
 					$cat = new ZenpageCategory($category['titlelink']);
-					if ($cat->isMyItem($action)) {
+					if ($cat->isMyItem(ZENPAGE_NEWS_RIGHTS)) { // only override item visibility if we "own" the category
 						return true;
 					}
 				}
@@ -217,11 +244,11 @@ class ZenpageNews extends ZenpageItems {
 	 * @return bool
 	 */
 	function inNewsCategory($catlink) {
-		if(!empty($catlink)) {
+		if (!empty($catlink)) {
 			$categories = $this->getCategories();
 			$count = 0;
-			foreach($categories as $cat) {
-				if($catlink == $cat['titlelink']) {
+			foreach ($categories as $cat) {
+				if ($catlink == $cat['titlelink']) {
 					$count = 1;
 					break;
 				}
@@ -239,15 +266,15 @@ class ZenpageNews extends ZenpageItems {
 	 * @return bool
 	 */
 	function inSubNewsCategoryOf($catlink) {
-		if(!empty($catlink)) {
+		if (!empty($catlink)) {
 			$categories = $this->getCategories();
 			$count = 0;
-			foreach($categories as $cat) {
+			foreach ($categories as $cat) {
 				$catobj = new ZenpageCategory($cat['titlelink']);
 				$parentid = $catobj->getParentID();
 				$parentcats = $catobj->getParents();
-				foreach($parentcats as $parentcat) {
-					if($catlink == $parentcat) {
+				foreach ($parentcats as $parentcat) {
+					if ($catlink == $parentcat) {
 						$count = 1;
 						break;
 					}
@@ -260,16 +287,93 @@ class ZenpageNews extends ZenpageItems {
 	}
 
 	/**
-	* Returns the url to a news article
-	*
-	*
-	* @return string
-	*/
-	function getNewsLink() {
-		return $this->getNewsBaseURL().$this->getNewsTitlePath().urlencode($this->getTitlelink());
+	 * Returns the url to a news article
+	 *
+	 *
+	 * @return string
+	 */
+	function getLink() {
+		return zp_apply_filter('getLink', rewrite_path(_NEWS_ . '/' . $this->getTitlelink() . '/', '/index.php?p=news&title=' . $this->getTitlelink()), $this, NULL);
 	}
 
-} // zenpage news class end
+	/**
+	 * Returns the url to a news article
+	 *
+	 *
+	 * @return string
+	 * @deprecated since version 1.4.6
+	 */
+	function getNewsURL() {
+		Zenpage_internal_deprecations::getNewsURL();
+		return $this->getLink();
+	}
 
+	/**
+	 * Get the index of this article
+	 *
+	 * @param string $sortorder
+	 * @param bool $sortdirection TRUE for ascending, FALSE for descending
+	 * @param bool $sticky If sticky article should come first
+	 * @return int
+	 */
+	function getIndex() {
+		global $_zp_zenpage, $_zp_current_zenpage_news;
+		if (func_num_args() != 0) {
+			Zenpage_internal_deprecations::getIndex();
+		}
+		if ($this->index == NULL) {
+			$articles = $_zp_zenpage->getArticles(0, NULL, true);
+			for ($i = 0; $i < count($articles); $i++) {
+				$article = $articles[$i];
+				if ($this->getTitlelink() == $article['titlelink']) {
+					$this->index = $i;
+					break;
+				}
+			}
+		}
+		return $this->index;
+	}
 
+	/**
+	 * Return the previous article
+	 *
+	 * @return object
+	 */
+	function getPrevArticle() {
+		global $_zp_zenpage, $_zp_current_zenpage_news;
+		if (func_num_args() != 0) {
+			Zenpage_internal_deprecations::getPrevArticle();
+		}
+		$index = $this->getIndex();
+		$article = $_zp_zenpage->getArticle($index - 1);
+		return $article;
+	}
+
+	/**
+	 * Returns the next article.
+	 *
+	 * @return object
+	 */
+	function getNextArticle() {
+		global $_zp_zenpage, $_zp_current_zenpage_news;
+		if (func_num_args() != 0) {
+			Zenpage_internal_deprecations::getNextArticle();
+		}
+		$index = $this->getIndex();
+		$article = $_zp_zenpage->getArticle($index + 1);
+		return $article;
+	}
+
+	/**
+	 * Returns the page number in the news loop
+	 *
+	 * @return int
+	 */
+	function getNewsLoopPage() {
+		$index = $this->getIndex();
+		return floor(($index / ZP_ARTICLES_PER_PAGE) + 1);
+	}
+
+}
+// zenpage news class end
 ?>

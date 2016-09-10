@@ -9,9 +9,8 @@
 define('OFFSET_PATH', 1);
 require_once(dirname(__FILE__).'/admin-globals.php');
 
-admin_securityChecks(THEMES_RIGHTS, currentRelativeURL(__FILE__));
+admin_securityChecks(THEMES_RIGHTS, currentRelativeURL());
 
-$gallery = new Gallery();
 $_GET['page'] = 'themes';
 
 /* handle posts */
@@ -24,10 +23,11 @@ if (isset($_GET['action'])) {
 				$alb = sanitize_path($_GET['themealbum']);
 				$newtheme = sanitize($_GET['theme']);
 				if (empty($alb)) {
-					$gallery->setCurrentTheme($newtheme);
-					$gallery->save();
+					$_zp_gallery->setCurrentTheme($newtheme);
+					$_zp_gallery->save();
+					$_set_theme_album = NULL;
 				} else {
-					$_set_theme_album = new Album($gallery, $alb);
+					$_set_theme_album = newAlbum($alb);
 					$oldtheme = $_set_theme_album->getAlbumTheme();
 					$_set_theme_album->setAlbumTheme($newtheme);
 					$_set_theme_album->save();
@@ -37,8 +37,10 @@ if (isset($_GET['action'])) {
 					require_once($opthandler);
 					$opt = new ThemeOptions();	//	prime the default options!
 				}
-				header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/admin-themes.php?themealbum=".$_GET['themealbum']);
-				exit();
+				/* set any "standard" options that may not have been covered by the theme */
+				standardThemeOptions($newtheme, $_set_theme_album);
+				header("Location: " . FULLWEBPATH . "/" . ZENFOLDER . "/admin-themes.php?themealbum=".sanitize($_GET['themealbum']));
+				exitZP();
 			}
 			break;
 			// Duplicate a theme
@@ -46,6 +48,7 @@ if (isset($_GET['action'])) {
 			if (isset($_GET['source']) && isset($_GET['target']) && isset($_GET['name'])) {
 				$message = copyThemeDirectory(sanitize($_GET['source'],3), sanitize($_GET['target'],3), sanitize($_GET['name'],3));
 			}
+			$_zp_gallery = new Gallery();	//	flush out remembered themes
 			break;
 		case 'deletetheme':
 			if (isset($_GET['theme'])) {
@@ -54,6 +57,7 @@ if (isset($_GET['action'])) {
 				} else {
 					$message = sprintf(gettext('Error removing theme <em>%s</em>'),html_encode($theme));
 				}
+				$_zp_gallery = new Gallery();	//	flush out remembered themes
 				break;
 			}
 	}
@@ -90,18 +94,18 @@ echo "\n" . '<div id="main">';
 printTabs();
 echo "\n" . '<div id="content">';
 
-	$galleryTheme = $gallery->getCurrentTheme();
+	$galleryTheme = $_zp_gallery->getCurrentTheme();
 	$themelist = array();
 	if (zp_loggedin(ADMIN_RIGHTS)) {
-		$gallery_title = $gallery->getTitle();
+		$gallery_title = $_zp_gallery->getTitle();
 		if ($gallery_title != gettext("Gallery")) {
 			$gallery_title .= ' ('.gettext("Gallery").')';
 		}
 		$themelist[$gallery_title] = '';
 	}
-	$albums = $gallery->getAlbums(0);
+	$albums = $_zp_gallery->getAlbums(0);
 	foreach ($albums as $alb) {
-		$album = new Album($gallery, $alb);
+		$album = newAlbum($alb);
 		if ($album->isMyItem(THEMES_RIGHTS)) {
 			$key = $album->getTitle();
 			if ($key != $alb) {
@@ -112,7 +116,7 @@ echo "\n" . '<div id="content">';
 	}
 	if (!empty($_REQUEST['themealbum'])) {
 		$alb = sanitize_path($_REQUEST['themealbum']);
-		$album = new Album($gallery, $alb);
+		$album = newAlbum($alb);
 		$albumtitle = $album->getTitle();
 		$themename = $album->getAlbumTheme();
 		$current_theme = $themename;
@@ -120,15 +124,15 @@ echo "\n" . '<div id="content">';
 		$current_theme = $galleryTheme;
 		foreach ($themelist as $albumtitle=>$alb) break;
 		if (empty($alb)) {
-			$themename = $gallery->getCurrentTheme();
+			$themename = $_zp_gallery->getCurrentTheme();
 		} else {
 			$alb = sanitize_path($alb);
-			$album = new Album($gallery, $alb);
+			$album = newAlbum($alb);
 			$albumtitle = $album->getTitle();
 			$themename = $album->getAlbumTheme();
 		}
 	}
-	$themes = $gallery->getThemes();
+	$themes = $_zp_gallery->getThemes();
 	if (empty($themename)) {
 		$current_theme = $galleryTheme;
 		$theme = $themes[$galleryTheme];
@@ -174,7 +178,7 @@ echo "\n" . '<div id="content">';
 
 <p>
 	<?php echo gettext('Themes allow you to visually change the entire look and feel of your gallery. Theme files are located in your Zenphoto <code>/themes</code> folder.'); ?>
-	<?php echo gettext('You can download more themes from the <a href="http://www.zenphoto.org/zp/theme/">zenphoto themes page</a>.'); ?>
+	<?php echo gettext('You can download more themes from the <a href="http://www.zenphoto.org/theme/">zenphoto themes page</a>.'); ?>
 	<?php echo gettext('Place the downloaded themes in the <code>/themes</code> folder and they will be available for your use.') ?>
 </p>
 
@@ -188,13 +192,16 @@ echo "\n" . '<div id="content">';
 		<th><b><?php echo gettext('Action'); ?></b></th>
 	</tr>
 	<?php
-$themes = $gallery->getThemes();
-$current_theme_style = "background-color: #ECF1F2;";
+	$zenphoto_date = date('Y-m-d H:i:s',filemtime(SERVERPATH.'/'.ZENFOLDER.'/version.php'));
+$current_theme_style = 'class="currentselection"';
 foreach($themes as $theme => $themeinfo) {
-	$style = ($theme == $current_theme) ? " style=\"$current_theme_style\"" : "";
+	$style = ($theme == $current_theme) ? ' '.$current_theme_style : '';
 	$themedir = SERVERPATH . '/themes/'.internalToFilesystem($theme);
 	$themeweb = WEBPATH . "/themes/$theme";
-	if (themeIsEditable($theme, $themes)) {
+	if (zenPhotoTheme($theme)) {
+		$whose = 'Zenphoto official theme';
+		$ico = 'images/zp_gold.png';
+	} else {
 		$whose = gettext('third party theme');
 		$path = $themedir.'/logo.png';
 		if (file_exists($path)) {
@@ -202,14 +209,11 @@ foreach($themes as $theme => $themeinfo) {
 		} else {
 			$ico = 'images/place_holder_icon.png';
 		}
-	} else {
-		$whose = 'Zenphoto official theme';
-		$ico = 'images/zp_gold.png';
 	}
 	?>
 	<tr>
 		<td style="margin: 0px; padding: 0px;">
-		<?php
+			<?php
 			if (file_exists("$themedir/theme.png")) {
 				$themeimage = "$themeweb/theme.png";
 			}	else if (file_exists("$themedir/theme.gif")) {
@@ -227,12 +231,21 @@ foreach($themes as $theme => $themeinfo) {
 			?>
 		</td>
 		<td <?php echo $style; ?>>
-			<img class="zp_logoicon" src="<?php echo $ico; ?>" alt="" />
+			<img class="zp_logoicon" src="<?php echo $ico; ?>" alt="<?php echo gettext('logo'); ?>" title="<?php echo $whose; ?>" />
 			<strong><?php echo $themeinfo['name']; ?></strong>
 			<br />
 			<?php echo $themeinfo['author']; ?>
 			<br />
-			Version <?php echo $themeinfo['version']; ?>, <?php echo $themeinfo['date']; ?>
+			<?php
+			if ($ico == 'images/zp_gold.png') {
+				$version = ZENPHOTO_VERSION;
+				$date = $zenphoto_date;
+			} else {
+				$version = $themeinfo['version'];
+				$date = $themeinfo['date'];
+			}
+			echo gettext('Version').' '. $version.', '.$date;
+			?>
 			<br />
 			<?php echo $themeinfo['desc']; ?>
 			<br /><br />
@@ -245,7 +258,7 @@ foreach($themes as $theme => $themeinfo) {
 				?>
 				<li>
 				<p class="buttons">
-					<a onclick="launchScript('admin-themes.php',['action=settheme','themealbum=<?php echo pathurlencode($alb); ?>','theme=<?php echo $theme; ?>','XSRFToken=<?php echo getXSRFToken('admin-themes')?>']);" title="<?php printf(gettext('Set %s as your theme'),$theme); ?>">
+					<a onclick="launchScript('admin-themes.php',['action=settheme','themealbum=<?php echo pathurlencode($alb); ?>','theme=<?php echo $theme; ?>','XSRFToken=<?php echo getXSRFToken('admin-themes')?>']);">
 						<img src="images/pass.png" alt="" /><?php echo gettext("Activate"); ?>
 					</a>
 				</p>
@@ -257,7 +270,7 @@ foreach($themes as $theme => $themeinfo) {
 					?>
 					<li>
 					<p class="buttons">
-						<a onclick="launchScript('admin-themes.php',['action=settheme','themealbum=<?php echo pathurlencode($alb); ?>','theme=<?php echo $theme; ?>','XSRFToken=<?php echo getXSRFToken('admin-themes')?>']);" title="<?php printf(gettext('Assign %s as your album theme'),$theme); ?>">
+						<a onclick="launchScript('admin-themes.php',['action=settheme','themealbum=<?php echo pathurlencode($alb); ?>','theme=<?php echo $theme; ?>','XSRFToken=<?php echo getXSRFToken('admin-themes')?>']);">
 							<img src="images/pass.png" alt="" /><?php echo gettext("Assign"); ?>
 						</a>
 					</p>
@@ -268,11 +281,11 @@ foreach($themes as $theme => $themeinfo) {
 				}
 			}
 
-			if (themeIsEditable($theme, $themes)) {
+			if (themeIsEditable($theme)) {
 				?>
 				<li>
 				<p class="buttons">
-					<a onclick="launchScript('admin-themes-editor.php',['theme=<?php echo $theme; ?>']);" title="<?php printf(gettext('Edit %s'),$theme); ?>">
+					<a onclick="launchScript('admin-themes-editor.php',['theme=<?php echo $theme; ?>']);">
 						<img src="images/pencil.png" alt="" /><?php echo gettext("Edit"); ?>
 					</a>
 				</p><br />
@@ -282,7 +295,7 @@ foreach($themes as $theme => $themeinfo) {
 					?>
 					<li>
 					<p class="buttons">
-						<a onclick="launchScript('admin-themes.php',['action=deletetheme','themealbum=<?php echo pathurlencode($alb); ?>','theme=<?php echo $theme; ?>','XSRFToken=<?php echo getXSRFToken('admin-themes')?>']);" title="<?php printf(gettext('Delete this %s'),$theme); ?>">
+						<a onclick="launchScript('admin-themes.php',['action=deletetheme','themealbum=<?php echo pathurlencode($alb); ?>','theme=<?php echo $theme; ?>','XSRFToken=<?php echo getXSRFToken('admin-themes')?>']);">
 							<img src="images/edit-delete.png" alt="" /><?php echo gettext("Delete"); ?>
 						</a>
 					</p>
@@ -293,7 +306,7 @@ foreach($themes as $theme => $themeinfo) {
 				?>
 				<li class="zp_copy_theme">
 				<p class="buttons">
-					<a onclick="copyClick('<?php echo $theme; ?>');" title="<?php printf(gettext('Duplicate %s'), $theme); ?>">
+					<a onclick="copyClick('<?php echo $theme; ?>');">
 						<img src="images/page_white_copy.png" alt="" /><?php echo gettext("Duplicate"); ?>
 					</a>
 				</p>

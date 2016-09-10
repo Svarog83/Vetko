@@ -1,7 +1,13 @@
 /*
 	Zen Photo Admin
-*/ /* Basics
+*/
+
+/* Basics
 ------------------------------ */
+* {
+	line-height: 19px;
+}
+
 html { /* Force vertical scrollbar to prevent page shift "jog" */
 	/* IE */
 	overflow-y: scroll;
@@ -11,7 +17,7 @@ html { /* Force vertical scrollbar to prevent page shift "jog" */
 }
 
 body {
-	font: normal 82% "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font: normal 82% Arial, "Helvetica Neue", Helvetica, sans-serif;
 	color: #4B4B4B;
 	text-align: center;
 	background-color: #f1f1f1;
@@ -21,8 +27,16 @@ body {
 	padding: 0;
 }
 
+
+
 em {
 	color: black;
+}
+
+.inlinecode {
+	color: #00008B;
+	font-size: 12px;
+	font-family: Geneva, Courier, monospace;
 }
 
 /* Main Layout
@@ -50,6 +64,7 @@ em {
 	color: #597580;
 	font-size: 85%;
 	margin: 8px 30px 0px;
+	padding-bottom: 15px;
 	text-align: right;
 }
 
@@ -84,12 +99,10 @@ em {
 }
 
 #content {
-	padding: 20px 30px 20px 30px;
+	padding: 20px 30px 50px 30px;
 	background-color: #fff;
 	border-top: 1px solid #CBCBCB;
 	border-bottom: 5px solid #CBCBCB;
-	min-height: 450px;
-	_height: 450px; /* IE Only */
 }
 
 /* Text Styles
@@ -130,7 +143,7 @@ h3 {
 }
 
 p {
-	line-height: 1.2em;
+	width: 97%;
 	margin-bottom: 0.8em;
 }
 
@@ -158,30 +171,31 @@ code {
  * @copyright	2006-2008 Live Web Institute
  *
  */
-
+ul.no_bullets, ol.no_bullets {
+	list-style: none;
+}
 ul.nav,
 ul.nav li,
 ul.nav ul {
- list-style: none;
- margin: 0;
- padding: 0;
+	list-style: none;
+	margin: 0;
+	padding: 0;
 }
 
 ul.nav {
- position: relative;
- z-index: 597;
- float: left;
- padding: 0;
+	position: relative;
+	z-index: 100;
+	float: left;
+	padding: 0;
 	_padding: 0 0 0 30px;
 	margin: 0 0 0 30px;
 	height: 30px;
 }
 
 ul.nav li {
- float: left;
- line-height: 1.3em;
- vertical-align: middle;
- zoom: 1;
+	float: left;
+	vertical-align: middle;
+	zoom: 1;
 }
 
 
@@ -211,9 +225,9 @@ ul.nav li a {
 
 ul.nav li.hover,
 ul.nav li:hover {
- position: relative;
- z-index: 599;
- cursor: default;
+	position: relative;
+	z-index: 599;
+	cursor: default;
 }
 
 ul.nav li a:hover {
@@ -260,17 +274,17 @@ ul.nav li.currentsubtab a {
 }
 
 ul.nav ul {
- visibility: hidden;
- position: absolute;
- top: 30px;
- left: 0;
- z-index: 598;
- width: 100%;
+	visibility: hidden;
+	position: absolute;
+	top: 30px;
+	left: 0;
+	z-index: 598;
+	width: 100%;
 
 }
 
 ul.nav ul li {
- float: none;
+	float: none;
 
 }
 /* These are the dropdown sublist entries */
@@ -281,30 +295,29 @@ ul.nav ul.subdropdown li a {
 	-webkit-border-radius: 0px;
 	border-radius: 0px;
 	margin: 0;
-	padding: 6px 12px;
+	padding: 5px;
 	top: 0;
+	width: 100%;
 	min-width: 100px;
-	height: 21px;
-	_height: 24px;
+	height: auto;
 	background: #F8F8F8;
+	font-size: 14px;
 }
 
 ul.nav ul.subdropdown li a:hover {
- border: 1px solid #CBCBCB;
- margin: 0;
- padding: 6px 12px;
- top: 0;
- height: 21px;
- _height: 24px;
+	border: 1px solid #CBCBCB;
+	margin: 0;
+	padding: 5px;
+	top: 0;
 }
 
 ul.nav ul ul {
- top: 1px;
- left: 99%;
+	top: 1px;
+	left: 99%;
 }
 
 ul.nav li:hover > ul {
- visibility: visible;
+	visibility: visible;
 }
 
 
@@ -314,10 +327,12 @@ ul.nav li:hover > ul {
 	_padding: 0 0 0 30px;
 	margin: 0 0 0 30px;
 	height: 30px;
+
 }
 
 .subnav li {
 	display: inline;
+
 }
 
 .subnav li a {
@@ -372,7 +387,7 @@ ul.nav li:hover > ul {
 	_top: 1px; /* IE Only */
 }
 
-.subnav li   . a:hover {
+.subnav li a:hover {
 	border-top: 1px solid #CBCBCB;
 	border-left: 1px solid #CBCBCB;
 	border-right: 1px solid #CBCBCB;
@@ -388,6 +403,12 @@ ul.nav li:hover > ul {
 
 /* Messages
 ------------------------------ */
+.border {
+	padding: 10px;
+	margin-bottom: 10px;
+	font-size: 100%;
+	background-color: #FAFAFA !important;
+}
 .messagebox {
 	background-color: #C0FFA8;
 	padding: 10px 15px 10px 15px;
@@ -406,6 +427,11 @@ ul.nav li:hover > ul {
 
 /* Error Messages
 ------------------------------ */
+.error {
+	color: #DD6666;
+	font-weight: bold;
+}
+
 .errorbox {
 	padding: 10px 15px 10px 15px;
 	background-color: #FDD;
@@ -430,14 +456,18 @@ ul.nav li:hover > ul {
 /* Warning Messages
 ------------------------------ */
 .warningbox {
-	padding: 20px;
-	background-color: #FFFF00;
-	border-top: 1px solid #996600;
-	border-left: 1px solid #996600;
-	border-right: 1px solid #996600;
-	border-bottom: 5px solid #996600;
+	padding: 5px 10px 5px 10px;
+	background-color: #fcf676;
+	border-width: 1px 1px 2px 1px;
+	border-style: solid;
+	border-color: #FFDEB5;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	margin-bottom: 10px;
 	font-size: 100%;
+	list-style-type: none;
 }
 
 .warningbox li {
@@ -475,7 +505,6 @@ ul.nav li:hover > ul {
 	color: #663300;
 	font-size: 100%;
 	font-weight: bold;
-	margin-bottom: 1em;
 }
 
 /* Miscellaneous
@@ -547,17 +576,6 @@ table.bordered tr td {
 	border-bottom: 1px solid #E5E5E5;
 }
 
-/*****
-/* some additions for the plugins and options tables, easier to read if top aligned IMHO */
-table.options td {
-	padding: 16px 16px 10px 16px !important;
-	vertical-align: top;
-}
-table.options td p {
- margin-top: 0;
-}
-/*******/
-
 table.bordered tr.alt1 td {
 	background-color: #ECF1F2;
 	border-bottom: 2px solid #dddddd;
@@ -580,9 +598,58 @@ table.bordered table.compact td {
 	margin: 0px;
 }
 
+table.options {
+	width: 100%;
+	padding: 0px;
+	border-spacing: 0px;
+	background: #E5E5E5;
+	border: 1px solid #E5E5E5;
+	border-bottom-width: 5px;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+table.options th {
+	font-weight: bold;
+	padding: 8px 0px 4px 10px;
+	border-bottom: 2px solid #cccccc;
+	background: #ECF1F2;
+	background-image: url(images/admin-headlineback.jpg);
+	background-repeat: repeat-x;
+}
+
+table.options .subhead {
+	border-top: 1px solid #cccccc;
+}
+
+table.options td {
+	padding: 16px 16px 10px 16px !important;
+	vertical-align: top;
+}
+table.options td p {
+	margin-top: 0;
+}
+
+table.options tr td {
+	padding: 8px 16px;
+	margin: 0px;
+	background-color: #fff;
+	border: none;
+}
+
+table.formlayout {
+	width: 100%;
+}
+
 table.formlayout td {
 	padding: 2px;
 	vertical-align: top;
+}
+
+table.formlayout td.bulk_checkbox {
+	width: 21px;
 }
 
 table.checkboxes {
@@ -604,8 +671,18 @@ table.checkboxes td {
 }
 
 .box {
-	padding: 0;
+	padding: 4px;
 	background-color: #FAFAFA;
+	border: 1px solid #E5E5E5;
+	border-bottom-width: 5px;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+.boxb {
+	padding: 4px;
+	background-color: LightGray;
 	border: 1px solid #E5E5E5;
 	border-bottom-width: 5px;
 	-moz-border-radius: 5px;
@@ -625,16 +702,68 @@ table.checkboxes td {
 	border-radius: 5px;
 }
 
+div.outerbox {
+	width: 100%;
+	padding: 0px;
+	border-spacing: 0px;
+	background-color: white;
+	border: 1px solid #E5E5E5;
+}
+
 .innerbox {
 	background: none;
 	border: 0px solid #BAC9CF;
 	border-bottom-width: 0px;
 }
 
+.innerbox_dark {
+	background-color: #FAFAFA;
+	border: 0px solid #BAC9CF;
+	border-bottom-width: 0px;
+}
+
+
 .imagethumb {
 	margin: 1px;
 	padding: 1px;
 }
+
+/* middle and right columns on admin edit pages */
+.width100percent { /* workaround to get the album edit table right */
+	width: 100%;
+}
+
+td.leftcolumn {
+	width: 200px;
+	min-width:150px;
+	white-space: nowrap;
+	vertical-align: top;
+	text-align:left;
+}
+
+td.rightcolumn {
+	padding-left: 15px;
+	vertical-align: top;
+	width: 258px;
+}
+
+td.rightcolumnmiddle {
+	padding-left: 15px;
+	vertical-align: top;
+	text-align: left;
+}
+
+td.middlecolumn {
+	vertical-align: top;
+	padding-right: 20px !important;
+	width: 100%;
+}
+
+td.middlecolumn input{
+	width: 100%;
+}
+
+
 
 /* Sortable Images
 ------------------------------ */
@@ -688,20 +817,32 @@ td.albumicons {
 	width: 150px;
 	text-align: right;
 }
+.icons2 img {
+	border: 0px;
+}
 
 .icons2b { /* adjustment for the author column page-admin.php */
 	width: 62px;
 	text-align: left;
+}
+.icons2b img {
+	border: 0px;
 }
 
 .icons3 {
 	width: 150px;
 	text-align: left;
 }
+.icons3 img {
+	border: 0px;
+}
 
 .icons3b {
 	width: 145px;
 	text-align: left;
+}
+.icons3b img {
+	border: 0px;
 }
 
 
@@ -718,9 +859,9 @@ textarea {
 	font-size: 100%;
 }
 table.mceLayout td {
-margin: 0 !important;
-padding: 0 !important;
-background-color: transparent !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	background-color: transparent !important;
 }
 
 input.tags {
@@ -740,112 +881,87 @@ input.tags {
 	font-size: 100%;
 }
 
-#overview-leftcolumn {
-	border: 0px solid gray;
-	width: 45%;
-	float: left;
-}
-
-#overview-rightcolumn {
-	border: 0px solid gray;
-	width: 50%;
-	float: left;
-}
-
-#overview-stats {
-	float: left;
-	width: 400px;
-	margin: 0 0 10px 10px;
-	padding: 0px;
-}
-
-#overview-maint,#overview-utility {
-	float: left;
-	width: 520px;
-	margin: 0 0px 10px 0px;
-	padding: 0px;
+.utility_buttons_field {
+	padding-left: 0px;
+	padding-right: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	margin: 15px;
+	border: 1px solid #cccccc;
+	width: 460px;
 }
 
 .overview_utility_buttons {
-	padding-bottom: 10px;
+	padding-bottom: 5px;
+	width: 220px;
 }
 
-#overview-comments,#overview-gallerystats,#overview-info,#overview-news
-	{
-	float: left;
-	width: 90%;
-	margin: 0 0 10px 0px;
+.overview-utility {
+	width: 500px;
+	margin: 0 0 15px 0px;
 	padding: 0px;
+	float: left;
 }
 
-#overview-comments h3,#overview-gallerystats h3,#overview-utility h2,#overview-info h3
-	{
+.overview-utility h3,.overview-utility h2 {
 	font-weight: bold;
 	padding-left: 10px;
 	margin: 0;
 }
 
-#overview-comments ul,#overview-gallerystats ul,#overview-utility ul,#overview-info ul,#overview-maint ul,#overview-stats ul,#overview-news ul
-	{
-	width: 95%;
+.overview-utility ul {
+	width: 480px;
+	margin-left: 10px;
 	list-style-type: none;
-	padding: 10px;
+	padding: 0px;
+	border-top: 1px solid #dfdfdf;
+
 }
 
-#overview-comments ul li,#overview-gallerystats ul li,#overview-utility ul li,#overview-info ul li,#overview-maint ul li,#overview-news ul li
-	{
-	margin-bottom: .5em;
-	line-height: 1.3em;
+.overview-utility ul li {
+	margin-bottom: 0em;
 	margin-left: 0px;
+	padding: 4px 4px 3px 4px;
+	border-bottom: 1px solid #dfdfdf;
 }
 
-#overview-utility fieldset {
-	padding: 10px 5px 5px 5px;
-	margin: 15px;
-	border: 1px solid #cccccc;
+.overview-install-info {
+	z-index: 50;
 }
 
-#overview-utility fieldset legend {
+.overiew-gallery-stats ul,
+.overview-install-info ul {
+	border-top: 1px solid #dfdfdf;
+}
+.overiew-gallery-stats  ul li,
+.overview-install-info ul li{
+	padding: 4px 1px 3px 1px;
+	border-bottom: 1px solid #dfdfdf;
+}
+
+.overview-utility fieldset legend {
 	margin: 0 5px 0px 5px;
 	padding: 0 5px 0 5px;
 	font-weight: bold;
-	text-transform: capitalize;
 }
 
-#overview-utility form {
+.overview-utility form {
 	max-height: 100px;
 	float: left;
 	padding-left: 8px;
 }
 
-#overview-info ul.plugins {
-	width: 450px;
-	list-style-type: none;
-	padding: 0px 0px 10px 10px;
+.overview-utility ul.filters,
+.overview-utility ul.filters li {
+	border: 0px !important;
 }
 
-#overview-info ul.plugins li {
-	margin-left: 1em;
-	margin-bottom: 0em;
-}
-
-#overview-info ul.filters {
-	width: 450px;
-	list-style-type: none;
-	padding: 0;
-}
-
-#overview-info ul.filters li {
-	margin-left: 1em;
-	margin-bottom: 0em;
-}
-
-#overview-comments .commentmeta {
+.overview-utility .commentmeta {
 	font-size: 90%;
 	color: #999;
 }
 
-#overview-comments .commentbody {
+.overview-utility .commentbody {
 	font-size: 100%;
 }
 
@@ -914,11 +1030,11 @@ acronym {
 /* Login
 ------------------------------ */
 #loginform {
+	text-align: left;
 	padding: 10px;
-	width: 370px;
+	width: 365px;
 	margin: 25px auto;
 	margin-top: 15%;
-	margin-left: 0 auto;
 	font-size: 100%;
 	background: #F7F8F9;
 	border-top: 1px solid #BAC9CF;
@@ -938,7 +1054,7 @@ acronym {
 	border-radius: 5px 5px 5px 5px;
 	border: 1px solid lightgray;
 	padding:10px;
-	text-align:center;
+	text-align:left;
 }
 
 #loginform input.textfield {
@@ -957,11 +1073,6 @@ acronym {
 
 .logon_link {
 	text-align:center;
-}
-
-.button {
-	cursor: pointer;
-	padding: 5px 10px;
 }
 
 label {
@@ -1070,6 +1181,11 @@ label:hover {
 
 /* Pretty Buttons
 ------------------------------------- */
+.button {
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
 .buttons a,.buttons button {
 	display: block;
 	float: left;
@@ -1171,30 +1287,22 @@ button.positive,.buttons a.positive {
 	color: #fff;
 }
 
-.buttons .tooltip {
+.buttons .fixedwidth {
+	text-align: left;
 	width: 17em;
-	text-align: left;
 }
 
-#tooltip {
-	position: absolute;
-	z-index: 3000;
-	border: 1px solid gray;
-	background-color: #f5f5f5;
-	padding: 5px;
-	opacity: 0.95;
-	width: 300px;
-	text-align: left;
-	color: black;
+
+/*sidebar vertical buttons */
+.box-edit .buttons a,
+.theme_links .buttons a{
+	width: 90% !important;
 }
 
-#tooltip h3,#tooltip div {
-	margin: 0;
-}
 
 /* scrollable checklists
 -----------------------------*/
-	/* Undo some styles from the master stylesheet */
+/* Undo some styles from the master stylesheet */
 .tagchecklist li {
 	background: none;
 	padding-left: 0;
@@ -1252,7 +1360,6 @@ button.positive,.buttons a.positive {
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 120px;
-	width: 255px;
 	overflow: auto;
 	background-color: white;
 }
@@ -1276,14 +1383,14 @@ button.positive,.buttons a.positive {
 	text-align: left;
 	float: left;
 }
+.tag_div {
+	width: 100%;
+}
+
 .new_tag {
-	padding: 0 0.2em 0 25px;
-	border-top:none;
-	border-left:none;
-	border-right:none;
-	border-bottom: 1px dotted #BAC9CF;
+	border:none;
 	text-decoration: none;
-	outline: none
+	outline: none;
 	margin: 0;
 	padding: 0;
 }
@@ -1292,22 +1399,22 @@ button.positive,.buttons a.positive {
 	top: 4px;
 	text-decoration: none;
 	border:none;
-	outline: none
+	outline: none;
 }
 .new_tag a:visited {
 	text-decoration: none;
 	border:none;
-	outline: none
+	outline: none;
 }
 .new_tag a:hover {
 	text-decoration: none;
 	border:none;
-	outline: none
+	outline: none;
 }
 .new_tag a:active {
 	text-decoration: none;
 	border:none;
-	outline: none
+	outline: none;
 }
 
 /* CSS for tag rename lists */
@@ -1387,33 +1494,28 @@ button.positive,.buttons a.positive {
 
 /* scrollable checklists
 -----------------------------*/
-	/* Undo some styles from the master stylesheet */
+/* Undo some styles from the master stylesheet */
 .albumchecklist li {
 	background: none;
-	padding-left: 0;
+	padding: 1px 5px 1px 0;
 	text-align: left;
+	border-bottom: 1px dotted #C6D880;
 }
 
 /* CSS for album checklists */
 .albumchecklist {
 	border: 1px solid #ccc;
+	margin: 0;
+	padding: 0;
 	list-style: none;
 	height: 8em;
 	overflow: auto;
-	width: 460px;
+	width: 458px;
 	background-color: white;
-}
-
-.albumchecklist,.albumchecklist li {
-	margin: 0;
-	padding: 0;
-	border-bottom: 1px dotted #C6D880;
 }
 
 .albumchecklist label {
 	display: block;
-	padding: 0 0.2em 0 25px;
-	text-indent: -25px;
 }
 
 .albumchecklist label:hover,.albumchecklist label.hover {
@@ -1425,20 +1527,20 @@ button.positive,.buttons a.positive {
 	height: 1%;
 }
 
-.customchecklist li {
-	background: none;
-	padding-left: 0;
-	text-align: left;
-}
-
 /* CSS for custom checklists */
 .customchecklist {
 	border: 1px solid #ccc;
 	list-style: none;
-	height: 8em;
+	height: 15em;
 	overflow: auto;
 	width: 20em;
 	background-color: white;
+}
+
+.customchecklist li {
+	background: none;
+	padding-left: 0;
+	text-align: left;
 }
 
 .customchecklist,.customchecklist li {
@@ -1455,6 +1557,10 @@ button.positive,.buttons a.positive {
 .customchecklist label:hover,.customchecklist label.hover {
 	background: #777;
 	color: #fff;
+}
+
+.grouphighlight {
+	color: brown;
 }
 
 /* CSS for wide checklists */
@@ -1594,7 +1700,6 @@ ul.pagelist li.current {
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 5.5em;
-	width: 26em;
 	overflow: auto;
 	background-color: white;
 }
@@ -1611,7 +1716,7 @@ ul.pagelist li.current {
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 5.5em;
-	width: 18em;
+	width: 19em;
 	overflow: auto;
 	background-color: white;
 }
@@ -1642,7 +1747,6 @@ ul.pagelist li.current {
 	border: 1px solid #ccc;
 	list-style: none;
 	height: 14em;
-	width: 26em;
 	overflow: auto;
 	background-color: white;
 }
@@ -1659,7 +1763,7 @@ ul.pagelist li.current {
 }
 
 .language_string_listbox label:hover,.language_string_listbox label.hover
-	{
+{
 	background: #F1F2F3;
 	color: #333;
 }
@@ -1761,7 +1865,6 @@ span.tagMatches span {
 	border: 1px solid #cccccc;
 	border-bottom-width: 5px;
 	width: 18.4em;
-	line-height: 1.5em;
 	-moz-border-radius: 0 0 5px 5px;
 	-khtml-border-radius: 0 0 5px 5px;
 	-webkit-border-radius: 0 0 5px 5px;
@@ -1770,7 +1873,6 @@ span.tagMatches span {
 
 .checkboxlabel {
 	padding-right: .5em;
-	white-space: nowrap;
 	float: left;
 }
 
@@ -1858,11 +1960,11 @@ fieldset,
 	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	margin-bottom: 5px;
-	line-height: 20px;
+	width: 335px;
 }
 
 .box-rights legend {
-	text-weight: bold;
+	font-weight: bold;
 	color: black;
 }
 
@@ -1882,6 +1984,15 @@ fieldset,
 	margin-bottom: 10px;
 }
 
+#logon_box fieldset {
+	width: 310px;
+	text-align: left;
+}
+
+#logon_box input#user,
+#logon_box input#pass {
+	width: 300px;
+}
 /* short checklist */
 .shortchecklist {
 	border: 1px solid #ccc;
@@ -1915,7 +2026,6 @@ fieldset,
 
 /* css for the log viewer */
 .logtext {
-	line-height: 0.7em;
 	border-spacing: 1px;
 	border: 1px solid #BAC9CF;
 	max-height: 600px;
@@ -2064,25 +2174,36 @@ button.positive,.log_buttons a.positive {
 }
 
 .metadata_table {
+	width:100%;
 	table-layout: fixed;
-	border: 1px solid #BAC9CF;
 	word-wrap: break-word;
 }
 
+.medtadata_tag {
+	width:30%;
+	text-align: right;
+}
+
 .metadata_container {
-	width: 350px;
-	height: 320px;
+	border: 1px solid #BAC9CF;
+	width: 100%;
+	height: 180px;
 	overflow:scroll;
 	overflow-x:hidden;
 }
 
 .resizeable_metadata {
-	height=240px;
+	height: 240px;
 	overflow:scroll;
 }
 
 /* Codeblock fields tabs
 -------------------------------------------------*/
+.codeblock {
+	background-color: transparent;
+	margin-left: 0px;
+}
+
 UL.tabNavigation {
 	list-style: none;
 	margin: 2px;
@@ -2138,21 +2259,6 @@ div.tabs>div h2 {
 	margin: 0;
 }
 
-#first {
-	background-color: none;
-	margin-left: 0px;
-}
-
-#second {
-	background-color: none;
-	margin-left: 0px;
-}
-
-#third {
-	background-color: none;
-	margin-left: 0px;
-}
-
 .tabs textarea {
 	border: 1px solid #C7D3D8;
 	width: 98%;
@@ -2164,6 +2270,19 @@ div.tabs>div h2 {
 	display: inline !important;
 	white-space:nowrap;
 }
+.displayinlineright {
+	display: inline !important;
+	float:right;
+	white-space:nowrap;
+}
+.displayrightsmall {
+	float:right;
+	white-space:nowrap;
+	font-size:85%;
+}
+.displayleft {
+	float:left;
+}
 
 .nomargin {
 	margin: 0 !important;
@@ -2173,6 +2292,10 @@ div.tabs>div h2 {
 	padding: 0 !important;
 }
 
+.icon-position-top1 {
+	position: relative;
+	top: 1px;
+}
 .icon-position-top3 {
 	position: relative;
 	top: 3px;
@@ -2236,27 +2359,27 @@ table.bordered2 td {
 	padding: 0;
 	display: block;
 }
-	ul.page-list, ul.page-list ul {
-			margin: 0 0 0 20px;
-			padding: 0;
-			list-style-type: none;
-		}
+ul.page-list, ul.page-list ul {
+	margin: 0 0 0 20px;
+	padding: 0;
+	list-style-type: none;
+}
 
-		ul.page-list {
-			margin: 2.5em 0 1.5em 0;
-		}
+ul.page-list {
+	margin: 2.5em 0 1.5em 0;
+}
 
-		.page-list li {
-			margin: 0px 0 0 0;
-			padding: 0;
-		}
+.page-list li {
+	margin: 0px 0 0 0;
+	padding: 0;
+}
 
-		.page-list li table {
-			border: 0;
-			padding: 0px;
-			margin: 0;
-			cursor: move;
-		}
+.page-list li table {
+	border: 0;
+	padding: 0px;
+	margin: 0;
+	cursor: move;
+}
 
 .placeholder {
 	background-color: #cfcfcf;
@@ -2299,8 +2422,8 @@ div.bordered .headline {
 }
 
 div.bordered .subhead  {
-padding-top: 5px;
-padding-right: 20px;
+	padding-top: 5px;
+	padding-right: 20px;
 }
 
 
@@ -2313,13 +2436,13 @@ div.bordered .page-list_row {
 }
 
 div.bordered .page-list_row .page-list_title {
- float: left;
- width: 20%;
- height: 30px;
- padding: 20px 0px 0px 45px;
- background-image: url(images/drag_handle.png) !important;
- background-repeat: no-repeat;
- background-position: 15px 20px;
+	float: left;
+	width: 20%;
+	height: 30px;
+	padding: 20px 0px 0px 45px;
+	background-image: url(images/drag_handle.png) !important;
+	background-repeat: no-repeat;
+	background-position: 15px 20px;
 
 }
 div.bordered .page-list_row .page-list_albumthumb {
@@ -2338,17 +2461,17 @@ div.bordered .page-list_row .page-list_albumthumb img {
 
 
 div.bordered .page-list_row .page-list_albumtitle {
- float: left;
- width: 25%;
- height: 30px;
- padding: 20px 0px 0px 10px;
+	float: left;
+	width: 25%;
+	height: 30px;
+	padding: 20px 0px 0px 10px;
 
 }
 
 div.bordered .page-list_row .page-list_extra {
- float: left;
- padding-top: 20px;
- margin-right: 20px;
+	float: left;
+	padding-top: 20px;
+	margin-right: 20px;
 }
 
 div.bordered .page-list_row .page-list_extra a img {
@@ -2392,6 +2515,193 @@ div.bordered .page-list_row .page-list_icon .checkbox {
 }
 
 img.zp_logoicon {
-position: relative;
-top: 3px;
+	position: relative;
+	top: 3px;
+}
+
+/* background-color for currently selected items */
+.currentselection,
+tr.currentselection td {
+	background-color: #ECF1F2 !important;
+}
+
+/* background-color for "shown" plugins */
+.highlightselection,
+tr.highlightselection td {
+	background-color: #D4DBDB !important;
+}
+
+
+.clearall {
+	clear: both !important;
+}
+.clearleft {
+	clear: left !important;
+}
+.clearright {
+	clear: right !important;
+}
+
+/*
+Tooltip styling
+************************************/
+.ui-tooltip, .arrow:after {
+	background: #f5f5f5;
+  border: 2px solid #4D4D4D;
+}
+.ui-tooltip {
+  padding: 10px 20px;
+  color: black;
+  border-radius: 20px;
+  font: 14px "Helvetica Neue", Sans-Serif;
+  box-shadow: 0 0 7px black;
+  text-align:left;
+	background: #f5f5f5;
+}
+.arrow {
+  width: 70px;
+  height: 16px;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  margin-left: -35px;
+  bottom: -16px;
+}
+.arrow.top {
+  top: -16px;
+  bottom: auto;
+}
+.arrow.left {
+  left: 20%;
+}
+.arrow:after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: -20px;
+  width: 25px;
+  height: 25px;
+  box-shadow: 6px 5px 9px -9px black;
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  tranform: rotate(45deg);
+}
+.arrow.top:after {
+  bottom: -20px;
+  top: auto;
+}
+
+
+#form_editcomment label {
+	width: 30% !important;
+	float: left;
+	display: block;
+}
+
+#form_editcomment input {
+	width: 60% !important;
+}
+
+
+#form_editcomment textarea {
+	clear: both !important;
+	display: block;
+	width: 100% !important;
+}
+
+
+.commentformedit_fields {
+	width: 60%;
+	float: left;
+}
+
+.commentformedit_box {
+	width:260px;
+	float:right;
+}
+
+/* prevent jumping toolbar buttons of TinyMCE4 in some browsers */
+.mce-container .mce-toolbar button {
+	border: 0 !Important;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+
+/* thumb albumsort */
+#images,
+#images li {
+	display: inline;
+	margin: 0;
+	padding: 0;
+}
+
+#images li {
+	list-style-type: none;
+	float: left;
+	margin: 0 8px 8px 0;
+}
+
+#images li p {
+	margin: -5px 0 0 0 !important;
+	padding: 0;
+}
+
+/* definition lists */
+
+dl {
+	display: block;
+	clear: both;
+	width: 100%;
+}
+
+dt,dd {
+	display: inline-block;
+	width: 35%;
+	margin: 0;
+	padding: 5px;
+}
+
+dt {
+	font-weight: bold;
+}
+
+.bar {
+	background: #f0f0f0;
+}
+
+dd {
+	width: 60%;
+	margin-left: -10px;
+}
+
+.top {
+	vertical-align: top;
+}
+
+ul.userlist {
+	clear: both;
+	padding: 0;
+	margin: 0px;
+	list-style-type: none;
+}
+
+
+form.dirty button[type=submit],
+form.dirty input[type=submit] {
+	border: 1px solid #74b341 !important;
+	background: #d7e5a6;
+}
+
+form.dirty button[type=submit]:hover,
+form.dirty button[type=submit]:active,
+form.dirty input[type=submit]:hover,
+form.dirty input[type=submit]:active{
+	border: 1px solid green !important;
+	background: #eff6d5;
 }

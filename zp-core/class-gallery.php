@@ -1,14 +1,16 @@
 <?php
+
 /**
  * Gallery Class
  * @package classes
  */
-
 // force UTF-8 Ø
+$_zp_gallery = new Gallery();
 
 class Gallery {
 
 	var $albumdir = NULL;
+	var $table = 'gallery';
 	protected $albums = NULL;
 	protected $theme;
 	protected $themes;
@@ -22,16 +24,17 @@ class Gallery {
 	 * @return Gallery
 	 */
 	function __construct() {
-		// Set our album directory
+// Set our album directory
 		$this->albumdir = ALBUM_FOLDER_SERVERPATH;
-		if (GALLERY_DATA) {
-			$this->data = unserialize(GALLERY_DATA);
+		$data = getOption('gallery_data');
+		if ($data) {
+			$this->data = getSerializedArray($data);
 		}
 		if (isset($this->data['unprotected_pages'])) {
-			$pages = @unserialize($this->data['unprotected_pages']);
-			if (is_array($pages)) $this->unprotected_pages = $pages;	//	protect against a failure
+			$pages = getSerializedArray($this->data['unprotected_pages']);
+			if (is_array($pages))
+				$this->unprotected_pages = $pages; //	protect against a failure
 		}
-
 	}
 
 	/**
@@ -39,8 +42,26 @@ class Gallery {
 	 *
 	 * @return string
 	 */
-	function getTitle() {
-		return get_language_string($this->get('gallery_title'));
+	function getTitle($locale = NULL) {
+		$text = $this->get('gallery_title');
+		if ($locale !== 'all') {
+			$text = get_language_string($text, $locale);
+		}
+		$text = zpFunctions::unTagURLs($text);
+		return $text;
+	}
+
+	/**
+	 * Returns a tag stripped title
+	 * @param string $locale
+	 * @return string
+	 */
+	function getBareTitle($locale = NULL) {
+		return getBare($this->getTitle($locale));
+	}
+
+	function setTitle($title) {
+		$this->set('gallery_title', zpFunctions::tagURLs($title));
 	}
 
 	/**
@@ -48,8 +69,23 @@ class Gallery {
 	 *
 	 * @return string
 	 */
-	function getDesc() {
-		return(get_language_string($this->get('Gallery_description')));
+	function getDesc($locale = NULL) {
+		$text = $this->get('Gallery_description');
+		if ($locale == 'all') {
+			return zpFunctions::unTagURLs($text);
+		} else {
+			return applyMacros(zpFunctions::unTagURLs(get_language_string($text, $locale)));
+		}
+		return $text;
+	}
+
+	/**
+	 * Sets the gallery description
+	 * @param string $desc
+	 */
+	function setDesc($desc) {
+		$desc = zpFunctions::tagURLs($desc);
+		$this->set('Gallery_description', $desc);
 	}
 
 	/**
@@ -63,6 +99,7 @@ class Gallery {
 			return $this->get('gallery_password');
 		}
 	}
+
 	function setPassword($value) {
 		$this->set('gallery_password', $value);
 	}
@@ -72,16 +109,23 @@ class Gallery {
 	 *
 	 * @return string
 	 */
-	function getPasswordHint() {
-		return get_language_string($this->get('gallery_hint'));
+	function getPasswordHint($locale = NULL) {
+		$text = $this->get('gallery_hint');
+		if ($locale !== 'all') {
+			$text = get_language_string($text, $locale);
+		}
+		$text = zpFunctions::unTagURLs($text);
+		return $text;
 	}
+
 	function setPasswordHint($value) {
-		$this->set('gallery_hint', $value);
+		$this->set('gallery_hint', zpFunctions::tagURLs($value));
 	}
 
 	function getUser() {
 		return($this->get('gallery_user'));
 	}
+
 	function setUser($value) {
 		$this->set('gallery_user', $value);
 	}
@@ -91,7 +135,9 @@ class Gallery {
 	 *
 	 * @return string
 	 */
-	function getAlbumDir() { return $this->albumdir; }
+	function getAlbumDir() {
+		return $this->albumdir;
+	}
 
 	/**
 	 * Returns the DB field corresponding to the album sort type desired
@@ -99,21 +145,26 @@ class Gallery {
 	 * @param string $sorttype the desired sort
 	 * @return string
 	 */
-	function getAlbumSortKey($sorttype=null) {
-		if (empty($sorttype)) { $sorttype = $this->getSortType(); }
-		return lookupSortKey($sorttype, 'sort_order', 'folder');
+	function getAlbumSortKey($sorttype = null) {
+		if (empty($sorttype)) {
+			$sorttype = $this->getSortType();
+		}
+		return lookupSortKey($sorttype, 'sort_order', 'albums');
 	}
 
 	function getSortDirection() {
 		return $this->get('sort_direction');
 	}
+
 	function setSortDirection($value) {
 		$this->set('sort_direction', (int) ($value && true));
 	}
+
 	function getSortType() {
 		$type = $this->get('gallery_sorttype');
 		return $type;
 	}
+
 	function setSortType($value) {
 		$this->set('gallery_sorttype', $value);
 	}
@@ -132,10 +183,10 @@ class Gallery {
 	 *
 	 * @return  array
 	 */
-	function getAlbums($page=0, $sorttype=null, $direction=null, $care=true, $mine=NULL) {
+	function getAlbums($page = 0, $sorttype = null, $direction = null, $care = true, $mine = NULL) {
 
 		// Have the albums been loaded yet?
-		if (is_null($this->albums) || $care && $sorttype.$direction !== $this->lastalbumsort) {
+		if ($mine || is_null($this->albums) || $care && $sorttype . $direction !== $this->lastalbumsort) {
 
 			$albumnames = $this->loadAlbumNames();
 			$key = $this->getAlbumSortKey($sorttype);
@@ -143,13 +194,13 @@ class Gallery {
 
 			// Store the values
 			$this->albums = $albums;
-			$this->lastalbumsort = $sorttype.$direction;
+			$this->lastalbumsort = $sorttype . $direction;
 		}
 
 		if ($page == 0) {
 			return $this->albums;
 		} else {
-			return array_slice($this->albums, galleryAlbumsPerPage()*($page-1), galleryAlbumsPerPage());
+			return array_slice($this->albums, galleryAlbumsPerPage() * ($page - 1), galleryAlbumsPerPage());
 		}
 	}
 
@@ -161,28 +212,25 @@ class Gallery {
 	 */
 	private function loadAlbumNames() {
 		$albumdir = $this->getAlbumDir();
-
 		$dir = opendir($albumdir);
 		if (!$dir) {
 			if (!is_dir($albumdir)) {
-				$msg .= sprintf(gettext('Error: The \'albums\' directory (%s) cannot be found.'),$this->albumdir);
+				$msg .= sprintf(gettext('Error: The “albums” directory (%s) cannot be found.'), $this->albumdir);
 			} else {
-				$msg .= sprintf(gettext('Error: The \'albums\' directory (%s) is not readable.'),$this->albumdir);
+				$msg .= sprintf(gettext('Error: The “albums” directory (%s) is not readable.'), $this->albumdir);
 			}
-			die($msg);
+			zp_error($msg);
 		}
 		$albums = array();
 
 		while ($dirname = readdir($dir)) {
-			if ((is_dir($albumdir.$dirname) && (substr($dirname, 0, 1) != '.')) ||
-								hasDynamicAlbumSuffix($dirname)) {
+			if ($dirname{0} != '.' && (is_dir($albumdir . $dirname) || hasDynamicAlbumSuffix($dirname))) {
 				$albums[] = filesystemToInternal($dirname);
 			}
 		}
 		closedir($dir);
 		return zp_apply_filter('album_filter', $albums);
 	}
-
 
 	/**
 	 * Returns the a specific album in the array indicated by index.
@@ -194,12 +242,11 @@ class Gallery {
 	function getAlbum($index) {
 		$this->getAlbums();
 		if ($index >= 0 && $index < $this->getNumAlbums()) {
-			return new Album($this, $this->albums[$index]);
+			return newAlbum($this->albums[$index]);
 		} else {
 			return false;
 		}
 	}
-
 
 	/**
 	 * Returns the total number of TOPLEVEL albums in the gallery (does not include sub-albums)
@@ -207,7 +254,7 @@ class Gallery {
 	 * @param bool $publishedOnly set to true to exclude un-published albums
 	 * @return int
 	 */
-	function getNumAlbums($db=false, $publishedOnly=false) {
+	function getNumAlbums($db = false, $publishedOnly = false) {
 		$count = -1;
 		if (!$db) {
 			$this->getAlbums(0, NULL, NULL, false);
@@ -217,11 +264,10 @@ class Gallery {
 			if ($publishedOnly) {
 				$sql = 'WHERE `show`=1';
 			}
-			$count = db_count('albums',$sql);
+			$count = db_count('albums', $sql);
 		}
 		return $count;
 	}
-
 
 	/**
 	 * Populates the theme array and returns it. The theme array contains information about
@@ -240,32 +286,29 @@ class Gallery {
 						if (file_exists($themefile)) {
 							$theme_description = array();
 							require($themefile);
-							$themes[$dir8] = sanitize($theme_description, 1);
-						} else if (file_exists($themedir . "/$dir/theme.txt")) {
-							$themes[$dir8] = parseThemeDef($themedir . "/$dir/theme.txt");
+							$themes[$dir8] = $theme_description;
 						} else {
-							$themes[$dir8] = array('name'=>gettext('Unknown'), 'author'=>gettext('Unknown'), 'version'=>gettext('Unknown'), 'desc'=>gettext('<strong>Missing theme info file!</strong>'), 'date'=>gettext('Unknown'));
+							$themes[$dir8] = array('name' => gettext('Unknown'), 'author' => gettext('Unknown'), 'version' => gettext('Unknown'), 'desc' => gettext('<strong>Missing theme info file!</strong>'), 'date' => gettext('Unknown'));
 						}
 					}
 				}
-				ksort($themes,SORT_LOCALE_STRING);
+				ksort($themes, SORT_LOCALE_STRING);
 			}
 			$this->themes = $themes;
 		}
 		return $this->themes;
 	}
 
-
 	/**
 	 * Returns the foldername of the current theme.
-	 * if no theme is set, returns "default".
+	 * if no theme is set, picks the "first" theme.
 	 * @return string
 	 */
 	function getCurrentTheme() {
 		$theme = NULL;
 		if (empty($this->theme)) {
 			$theme = $this->get('current_theme');
-			if (empty($theme) || !file_exists(SERVERPATH."/".THEMEFOLDER."/$theme")) {
+			if (empty($theme) || !file_exists(SERVERPATH . "/" . THEMEFOLDER . "/$theme")) {
 				$themes = array_keys($this->getThemes());
 				if (!empty($themes)) {
 					$theme = array_shift($themes);
@@ -276,7 +319,6 @@ class Gallery {
 		return $this->theme;
 	}
 
-
 	/**
 	 * Sets the current theme
 	 * @param string the name of the current theme
@@ -285,43 +327,58 @@ class Gallery {
 		$this->set('current_theme', $this->theme = $theme);
 	}
 
-
 	/**
-	 * Returns the number of images from a database
-	 * Ideally one should call garbageCollect() before to make sure the database is current.
-	 * @param bool $publishedOnly set to true to count only published images.
+	 * Returns the number of images in the gallery
+	 * @param int $what 0: all images from the database
+	 * 									1: published images from the database
+	 * 									2: "viewable" images via the object model
 	 * @return int
 	 */
-	function getNumImages($publishedOnly=false) {
-		if ($publishedOnly) {
-			$rows = query_full_array("SELECT `id` FROM " . prefix('albums')." WHERE `show`=0");
-			if (is_array($rows)) {
-				$exclude = '';
-				foreach ($rows as $row)	{
-					if (!empty($row['id'])) {
-						$exclude .= " `albumid`!=".$row['id'].' AND ';
+	function getNumImages($what = 0) {
+		switch ((int) $what) {
+			case 0:
+				return db_count('images', '');
+				break;
+			case 1:
+				$rows = query("SELECT `id` FROM " . prefix('albums') . " WHERE `show`=0");
+				$idlist = array();
+				$exclude = 'WHERE `show`=1';
+				if ($rows) {
+					while ($row = db_fetch_assoc($rows)) {
+						$idlist[] = $row['id'];
+					}
+					if (!empty($idlist)) {
+						$exclude .= ' AND `albumid` NOT IN (' . implode(',', $idlist) . ')';
+					}
+					db_free_result($rows);
+				}
+				return db_count('images', $exclude);
+				break;
+			case 2:
+				$count = 0;
+				$albums = $this->getAlbums(0);
+				foreach ($albums as $analbum) {
+					$album = newAlbum($analbum);
+					if (!$album->isDynamic()) {
+						$count = $count + self::getImageCount($album);
 					}
 				}
-				$exclude = substr($exclude, 0, strlen($exclude)-5);
-			} else {
-				$exclude = '';
-			}
-			if ($publishedOnly) {
-				if (empty($exclude)) {
-					$exclude = '`show`=1';
-				} else {
-					$exclude = ' `show`=1 AND '.$exclude;
-				}
-			}
-			if (!empty($exclude)) {
-				$exclude = 'WHERE '.$exclude;
-			}
-		} else {
-			$exclude = '';
+				return $count;
+				break;
 		}
-		return db_count('images',$exclude);
 	}
 
+	private function getImageCount($album) {
+		$count = $album->getNumImages();
+		$albums = $album->getAlbums(0);
+		foreach ($albums as $analbum) {
+			$album = newAlbum($analbum);
+			if (!$album->isDynamic()) {
+				$count = $count + self::getImageCount($album);
+			}
+		}
+		return $count;
+	}
 
 	/**
 	 * Returns the count of comments
@@ -329,12 +386,12 @@ class Gallery {
 	 * @param bool $moderated set true if you want to see moderated comments
 	 * @return array
 	 */
-	function getNumComments($moderated=false) {
+	function getNumComments($moderated = false) {
 		$sql = '';
 		if (!$moderated) {
 			$sql = "WHERE `inmoderation`=0";
 		}
-		return db_count('comments',$sql);
+		return db_count('comments', $sql);
 	}
 
 	/** For every album in the gallery, look for its file. Delete from the database
@@ -348,11 +405,15 @@ class Gallery {
 	 * @param  int $restart Image ID to restart scan from
 	 * @return bool
 	 */
-	function garbageCollect($cascade=true, $complete=false, $restart='') {
+	function garbageCollect($cascade = true, $complete = false, $restart = '') {
+		global $_zp_gallery;
 		if (empty($restart)) {
 			setOption('last_garbage_collect', time());
 			/* purge old search cache items */
-			$sql = 'DELETE FROM '.prefix('search_cache').' WHERE `date`<'.db_quote(date('Y-m-d H:m:s',time()-SEARCH_CACHE_DURATION*60));
+			$sql = 'DELETE FROM ' . prefix('search_cache');
+			if (!$complete) {
+				$sql .= ' WHERE `date`<' . db_quote(date('Y-m-d H:m:s', time() - SEARCH_CACHE_DURATION * 60));
+			}
 			$result = query($sql);
 
 			/* clean the comments table */
@@ -360,92 +421,99 @@ class Gallery {
 			$this->commentClean('albums');
 			$this->commentClean('news');
 			$this->commentClean('pages');
-			// clean up obj_to_tag
+// clean up obj_to_tag
 			$dead = array();
-			$result = query_full_array("SELECT * FROM ".prefix('obj_to_tag'));
-			if (is_array($result)) {
-				foreach ($result as $row) {
+			$result = query("SELECT * FROM " . prefix('obj_to_tag'));
+			if ($result) {
+				while ($row = db_fetch_assoc($result)) {
 					$tbl = $row['type'];
-					$dbtag = query_single_row("SELECT * FROM ".prefix('tags')." WHERE `id`='".$row['tagid']."'");
+					$dbtag = query_single_row("SELECT `id` FROM " . prefix('tags') . " WHERE `id`='" . $row['tagid'] . "'", false);
 					if (!$dbtag) {
 						$dead[] = $row['id'];
 					}
-					$dbtag = query_single_row("SELECT * FROM ".prefix($tbl)." WHERE `id`='".$row['objectid']."'");
+					$dbtag = query_single_row("SELECT `id` FROM " . prefix($tbl) . " WHERE `id`='" . $row['objectid'] . "'", false);
 					if (!$dbtag) {
 						$dead[] = $row['id'];
 					}
 				}
+				db_free_result($result);
 			}
 			if (!empty($dead)) {
 				$dead = array_unique($dead);
-				query('DELETE FROM '.prefix('obj_to_tag').' WHERE `id`='.implode(' OR `id`=', $dead));
+				query('DELETE FROM ' . prefix('obj_to_tag') . ' WHERE `id`=' . implode(' OR `id`=', $dead));
 			}
-			// clean up admin_to_object
+// clean up admin_to_object
 			$dead = array();
-			$result = query_full_array("SELECT * FROM ".prefix('admin_to_object'));
-			if (is_array($result)) {
-				foreach ($result as $row) {
-					$dbtag = query_single_row("SELECT * FROM ".prefix('administrators')." WHERE `id`='".$row['adminid']."'");
+			$result = query("SELECT * FROM " . prefix('admin_to_object'));
+			if ($result) {
+				while ($row = db_fetch_assoc($result)) {
+					$dbtag = query_single_row("SELECT * FROM " . prefix('administrators') . " WHERE `id`='" . $row['adminid'] . "'", false);
 					if (!$dbtag) {
 						$dead[] = $row['id'];
 					}
 					$tbl = $row['type'];
-					//TODO: remove the following on v1.5
-					if ($row['type']=='album') {
-						$tbl = 'albums';
-					}
-					$dbtag = query_single_row("SELECT * FROM ".prefix($tbl)." WHERE `id`='".$row['objectid']."'");
+					$dbtag = query_single_row("SELECT `id` FROM " . prefix($tbl) . " WHERE `id`='" . $row['objectid'] . "'", false);
 					if (!$dbtag) {
 						$dead[] = $row['id'];
 					}
 				}
+				db_free_result($result);
 			}
 			if (!empty($dead)) {
 				$dead = array_unique($dead);
-				query('DELETE FROM '.prefix('admin_to_object').' WHERE `id`='.implode(' OR `id`=', $dead));
+				query('DELETE FROM ' . prefix('admin_to_object') . ' WHERE `id`=' . implode(' OR `id`=', $dead));
 			}
-			// clean up news2cat
+// clean up news2cat
 			$dead = array();
-			$result = query_full_array("SELECT * FROM ".prefix('news2cat'));
-			if (is_array($result)) {
-				foreach ($result as $row) {
-					$dbtag = query_single_row("SELECT * FROM ".prefix('news')." WHERE `id`='".$row['news_id']."'");
+			$result = query("SELECT * FROM " . prefix('news2cat'));
+			if ($result) {
+				while ($row = db_fetch_assoc($result)) {
+					$dbtag = query_single_row("SELECT `id` FROM " . prefix('news') . " WHERE `id`='" . $row['news_id'] . "'", false);
 					if (!$dbtag) {
 						$dead[] = $row['id'];
 					}
-					$dbtag = query_single_row("SELECT * FROM ".prefix('news_categories')." WHERE `id`='".$row['cat_id']."'");
+					$dbtag = query_single_row("SELECT `id` FROM " . prefix('news_categories') . " WHERE `id`='" . $row['cat_id'] . "'", false);
 					if (!$dbtag) {
 						$dead[] = $row['id'];
 					}
 				}
+				db_free_result($result);
 			}
 			if (!empty($dead)) {
 				$dead = array_unique($dead);
-				query('DELETE FROM '.prefix('news2cat').' WHERE `id`='.implode(' OR `id`=', $dead));
+				query('DELETE FROM ' . prefix('news2cat') . ' WHERE `id`=' . implode(' OR `id`=', $dead));
 			}
 
-			// Check for the existence albums
-			$sql = "SELECT * FROM " . prefix('albums');
-			$result = query($sql);
+// Check for the existence albums
 			$dead = array();
 			$live = array(''); // purge the root album if it exists
 			$deadalbumthemes = array();
-			// Load the albums from disk
-			while($row = db_fetch_assoc($result)) {
-				$valid = file_exists($albumpath = ALBUM_FOLDER_SERVERPATH.internalToFilesystem($row['folder'])) && (hasDynamicAlbumSuffix($albumpath) || (is_dir($albumpath) && strpos($albumpath,'/./') === false && strpos($albumpath,'/../') === false));
+// Load the albums from disk
+			$result = query("SELECT * FROM " . prefix('albums'));
+			while ($row = db_fetch_assoc($result)) {
+				$albumpath = internalToFilesystem($row['folder']);
+				$albumpath_valid = preg_replace('~/\.*/~', '/', $albumpath);
+				$albumpath_valid = ltrim(trim($albumpath_valid, '/'), './');
+				$illegal = $albumpath != $albumpath_valid;
+				$valid = file_exists(ALBUM_FOLDER_SERVERPATH . $albumpath_valid) && (hasDynamicAlbumSuffix($albumpath_valid) || is_dir(ALBUM_FOLDER_SERVERPATH . $albumpath_valid));
+				if ($valid && $illegal) { // maybe there is only one record so we can fix it.
+					$valid = query('UPDATE ' . prefix('albums') . ' SET `folder`=' . db_quote($albumpath_valid) . ' WHERE `id`=' . $row['id'], false);
+					debugLog(sprintf(gettext('Invalid album folder: %1$s %2$s'), $albumpath, $valid ? gettext('fixed') : gettext('discarded')));
+				}
 				if (!$valid || in_array($row['folder'], $live)) {
 					$dead[] = $row['id'];
-					if ($row['album_theme'] !== '') {  // orphaned album theme options table
+					if ($row['album_theme'] !== '') { // orphaned album theme options table
 						$deadalbumthemes[$row['id']] = $row['folder'];
 					}
 				} else {
 					$live[] = $row['folder'];
 				}
 			}
+			db_free_result($result);
 
 			if (count($dead) > 0) { /* delete the dead albums from the DB */
 				asort($dead);
-				$criteria =  '('.implode(',',$dead).')';
+				$criteria = '(' . implode(',', $dead) . ')';
 				$first = array_pop($dead);
 				$sql1 = "DELETE FROM " . prefix('albums') . " WHERE `id` IN $criteria";
 				$n = query($sql1);
@@ -454,91 +522,110 @@ class Gallery {
 					query($sql2);
 					$sql3 = "DELETE FROM " . prefix('comments') . " WHERE `type`='albums' AND `ownerid` IN $criteria";
 					query($sql3);
-					$sql4 = "DELETE FROM " . prefix('obj_to_tag'). " WHERE `type`='albums' AND `objectid` IN $criteria";
+					$sql4 = "DELETE FROM " . prefix('obj_to_tag') . " WHERE `type`='albums' AND `objectid` IN $criteria";
 					query($sql4);
 				}
 			}
 			if (count($deadalbumthemes) > 0) { // delete the album theme options tables for dead albums
-				foreach ($deadalbumthemes as $id=>$deadtable) {
-					$sql = 'DELETE FROM '.prefix('options').' WHERE `ownerid`='.$id;
+				foreach ($deadalbumthemes as $id => $deadtable) {
+					$sql = 'DELETE FROM ' . prefix('options') . ' WHERE `ownerid`=' . $id;
 					query($sql, false);
-
 				}
 			}
 		}
 
 		if ($complete) {
 			if (empty($restart)) {
+				/* check album parent linkage */
+				$albums = $_zp_gallery->getAlbums();
+				foreach ($albums as $album) {
+					checkAlbumParentid($album, NULL, 'debuglog');
+				}
+
 				/* refresh 'metadata' albums */
-				$albumids = query_full_array("SELECT `id`, `mtime`, `folder`, `dynamic` FROM " . prefix('albums'));
-				foreach ($albumids as $analbum) {
-					if (($mtime=filemtime(ALBUM_FOLDER_SERVERPATH.internalToFilesystem($analbum['folder']))) > $analbum['mtime']) {  // refresh
-						$album = new Album($this, $analbum['folder']);
-						$album->set('mtime', $mtime);
-						if ($this->getAlbumUseImagedate()) {
-							$album->setDateTime(NULL);
-						}
-						if ($album->isDynamic()) {
-							$data = file_get_contents($album->localpath);
-							$thumb = getOption('AlbumThumbSelect');
-							$words = $fields = '';
-							while (!empty($data)) {
-								$data1 = trim(substr($data, 0, $i = strpos($data, "\n")));
-								if ($i === false) {
-									$data1 = $data;
-									$data = '';
-								} else {
-									$data = substr($data, $i + 1);
-								}
-								if (strpos($data1, 'WORDS=') !== false) {
-									$words = "words=".urlencode(substr($data1, 6));
-								}
-								if (strpos($data1, 'THUMB=') !== false) {
-									$thumb = trim(substr($data1, 6));
-								}
-								if (strpos($data1, 'FIELDS=') !== false) {
-									$fields = "&searchfields=".trim(substr($data1, 7));
-								}
+				$albumids = query("SELECT `id`, `mtime`, `folder`, `dynamic` FROM " . prefix('albums'));
+				if ($albumids) {
+					while ($analbum = db_fetch_assoc($albumids)) {
+						if (($mtime = filemtime(ALBUM_FOLDER_SERVERPATH . internalToFilesystem($analbum['folder']))) > $analbum['mtime']) {
+// refresh
+							$album = newAlbum($analbum['folder']);
+							$album->set('mtime', $mtime);
+							if ($this->getAlbumUseImagedate()) {
+								$album->setDateTime(NULL);
 							}
-							if (!empty($words)) {
-								if (empty($fields)) {
-									$fields = '&searchfields=tags';
+							if ($album->isDynamic()) {
+								$data = file_get_contents($album->localpath);
+								$thumb = getOption('AlbumThumbSelect');
+								$words = $fields = '';
+								while (!empty($data)) {
+									$data1 = trim(substr($data, 0, $i = strpos($data, "\n")));
+									if ($i === false) {
+										$data1 = $data;
+										$data = '';
+									} else {
+										$data = substr($data, $i + 1);
+									}
+									if (strpos($data1, 'WORDS=') !== false) {
+										$words = "words=" . urlencode(substr($data1, 6));
+									}
+									if (strpos($data1, 'THUMB=') !== false) {
+										$thumb = trim(substr($data1, 6));
+									}
+									if (strpos($data1, 'FIELDS=') !== false) {
+										$fields = "&searchfields=" . trim(substr($data1, 7));
+									}
 								}
+								if (!empty($words)) {
+									if (empty($fields)) {
+										$fields = '&searchfields=tags';
+									}
+								}
+								$album->set('search_params', $words . $fields);
+								$album->set('thumb', $thumb);
 							}
-							$album->set('search_params',$words.$fields);
-							$album->set('thumb',$thumb);
+							$album->save();
+							zp_apply_filter('album_refresh', $album);
 						}
-						$album->save();
-						zp_apply_filter('album_refresh',$album);
 					}
+					db_free_result($albumids);
 				}
 
 				/* Delete all image entries that don't belong to an album at all. */
 
-				$albumids = query_full_array("SELECT `id` FROM " . prefix('albums'));                  /* all the album IDs */
+				$albumids = query("SELECT `id` FROM " . prefix('albums')); /* all the album IDs */
 				$idsofalbums = array();
-				foreach($albumids as $row) { $idsofalbums[] = $row['id']; }
-				$imageAlbums = query_full_array("SELECT DISTINCT `albumid` FROM " . prefix('images')); /* albumids of all the images */
+				if ($albumids) {
+					while ($row = db_fetch_assoc($albumids)) {
+						$idsofalbums[] = $row['id'];
+					}
+					db_free_result($albumids);
+				}
+				$imageAlbums = query("SELECT DISTINCT `albumid` FROM " . prefix('images')); /* albumids of all the images */
 				$albumidsofimages = array();
-				foreach($imageAlbums as $row) { $albumidsofimages[] = $row['albumid']; }
-				$orphans = array_diff($albumidsofimages, $idsofalbums);                                /* albumids of images with no album */
+				if ($imageAlbums) {
+					while ($row = db_fetch_assoc($imageAlbums)) {
+						$albumidsofimages[] = $row['albumid'];
+					}
+					db_free_result($imageAlbums);
+				}
+				$orphans = array_diff($albumidsofimages, $idsofalbums); /* albumids of images with no album */
 
-				if (count($orphans) > 0 ) { /* delete dead images from the DB */
+				if (count($orphans) > 0) { /* delete dead images from the DB */
 					$firstrow = array_pop($orphans);
-					$sql = "DELETE FROM ".prefix('images')." WHERE `albumid`='" . $firstrow . "'";
-					foreach($orphans as $id) {
+					$sql = "DELETE FROM " . prefix('images') . " WHERE `albumid`='" . $firstrow . "'";
+					foreach ($orphans as $id) {
 						$sql .= " OR `albumid`='" . $id . "'";
 					}
 					query($sql);
 
-					// Then go into existing albums recursively to clean them... very invasive.
+// Then go into existing albums recursively to clean them... very invasive.
 					foreach ($this->getAlbums(0) as $folder) {
-						$album = new Album($this, $folder);
+						$album = newAlbum($folder);
 						if (!$album->isDynamic()) {
-							if(is_null($album->getDateTime())) {  // see if we can get one from an image
-								$images = $album->getImages(0,0,'date','DESC');
-								if(count($images)>0) {
-									$image = newImage($album,array_shift($images));
+							if (is_null($album->getDateTime())) { // see if we can get one from an image
+								$images = $album->getImages(0, 0);
+								if (count($images) > 0) {
+									$image = newImage($album, array_shift($images));
 									$album->setDateTime($image->getDateTime());
 								}
 							}
@@ -553,25 +640,22 @@ class Gallery {
 
 			/* Look for image records where the file no longer exists. While at it, check for images with IPTC data to update the DB */
 
-			$start = array_sum(explode(" ",microtime()));  // protect against too much processing.
+			$start = array_sum(explode(" ", microtime())); // protect against too much processing.
 			if (!empty($restart)) {
-				$restartwhere = ' WHERE `id`>'.$restart.' AND `mtime`=0';
+				$restartwhere = ' WHERE `id`>' . $restart . ' AND `mtime`=0';
 			} else {
 				$restartwhere = ' WHERE `mtime`=0';
 			}
-			define('RECORD_LIMIT',5);
-			$sql = 'SELECT * FROM ' . prefix('images').$restartwhere.' ORDER BY `id` LIMIT '.(RECORD_LIMIT+2);
-			$images = query_full_array($sql);
-			if (count($images) > 0) {
+			define('RECORD_LIMIT', 5);
+			$sql = 'SELECT * FROM ' . prefix('images') . $restartwhere . ' ORDER BY `id` LIMIT ' . (RECORD_LIMIT + 2);
+			$images = query($sql);
+			if ($images) {
 				$c = 0;
-				foreach($images as $image) {
-					$sql = 'SELECT `folder` FROM ' . prefix('albums') . ' WHERE `id`="' . $image['albumid'] . '";';
-					$row = query_single_row($sql);
-					$imageName = internalToFilesystem(ALBUM_FOLDER_SERVERPATH . $row['folder'] . '/' . $image['filename']);
-					if (file_exists($imageName)) {
-						$mtime = filemtime($imageName);
-						if ($image['mtime'] != $mtime) { // file has changed since we last saw it
-							$imageobj = newImage(new Album($this, $row['folder']), $image['filename']);
+				while ($image = db_fetch_assoc($images)) {
+					$albumobj = getItemByID('albums', $image['albumid']);
+					if ($albumobj->exists && file_exists($imageName = internalToFilesystem(ALBUM_FOLDER_SERVERPATH . $albumobj->name . '/' . $image['filename']))) {
+						if ($image['mtime'] != $mtime = filemtime($imageName)) { // file has changed since we last saw it
+							$imageobj = newImage($albumobj, $image['filename']);
 							$imageobj->set('mtime', $mtime);
 							$imageobj->updateMetaData(); // prime the EXIF/IPTC fields
 							$imageobj->updateDimensions(); // update the width/height & account for rotation
@@ -581,98 +665,65 @@ class Gallery {
 					} else {
 						$sql = 'DELETE FROM ' . prefix('images') . ' WHERE `id`="' . $image['id'] . '";';
 						$result = query($sql);
-						$sql = 'DELETE FROM ' . prefix('comments') . ' WHERE `type` IN ('.zp_image_types('"').') AND `ownerid` ="' . $image['id'] . '";';
+						$sql = 'DELETE FROM ' . prefix('comments') . ' WHERE `type` IN (' . zp_image_types('"') . ') AND `ownerid` ="' . $image['id'] . '";';
 						$result = query($sql);
 					}
 					if (++$c >= RECORD_LIMIT) {
 						return $image['id']; // avoide excessive processing
 					}
 				}
+				db_free_result($images);
 			}
-
+// cleanup the tables
+			$resource = db_show('tables');
+			if ($resource) {
+				while ($row = db_fetch_assoc($resource)) {
+					$tbl = array_shift($row);
+					query('OPTIMIZE TABLE `' . $tbl . '`');
+				}
+				db_free_result($resource);
+			}
 		}
 		return false;
 	}
 
 	function commentClean($table) {
-		$ids = query_full_array('SELECT `id` FROM ' . prefix($table));       /* all the IDs */
+		$ids = query('SELECT `id` FROM ' . prefix($table)); /* all the IDs */
 		$idsofitems = array();
-		foreach($ids as $row) {
-			$idsofitems[] = $row['id'];
+		if ($ids) {
+			while ($row = db_fetch_assoc($ids)) {
+				$idsofitems[] = $row['id'];
+			}
+			db_free_result($ids);
 		}
-		$sql = "SELECT DISTINCT `ownerid` FROM " .	prefix('comments') . ' WHERE `type` ='.db_quote($table);
-		$commentOwners = query_full_array($sql); /* all the comments */
+		$sql = "SELECT DISTINCT `ownerid` FROM " . prefix('comments') . ' WHERE `type` =' . db_quote($table);
+		$commentOwners = query($sql); /* all the comments */
 		$idsofcomments = array();
-		foreach($commentOwners as $row) {
-			$idsofcomments [] = $row['ownerid'];
+		if ($commentOwners) {
+			while ($row = db_fetch_assoc($commentOwners)) {
+				$idsofcomments [] = $row['ownerid'];
+			}
+			db_free_result($commentOwners);
 		}
-		$orphans = array_diff($idsofcomments , $idsofitems );                 /* owner ids of comments with no owner */
+		$orphans = array_diff($idsofcomments, $idsofitems); /* owner ids of comments with no owner */
 
-		if (count($orphans) > 0 ) { /* delete dead comments from the DB */
-			$sql = "DELETE FROM " . prefix('comments') . " WHERE `type`=".db_quote($table)." AND (`ownerid`=" .implode(' OR `ownerid`=', $orphans).')';
+		if (count($orphans) > 0) { /* delete dead comments from the DB */
+			$sql = "DELETE FROM " . prefix('comments') . " WHERE `type`=" . db_quote($table) . " AND (`ownerid`=" . implode(' OR `ownerid`=', $orphans) . ')';
 			query($sql);
 		}
-
 	}
-
-	/**
-	 * Returns the size in bytes of the cache folder. WARNING: VERY SLOW.
-	 * @return int
-	 */
-	function sizeOfCache() {
-		$cachefolder = SERVERCACHE;
-		if (is_dir($cachefolder)) {
-			return dirsize($cachefolder);
-		} else {
-			return 0;
-		}
-	}
-
-
-	/**
-	 * Returns the size in bytes of the albums folder. WARNING: VERY SLOW.
-	 * @return int
-	 */
-	function sizeOfImages() {
-		$imagefolder = substr(ALBUM_FOLDER_SERVERPATH, 0, -1);
-		if (is_dir($imagefolder)) {
-			return dirsize($imagefolder);
-		} else {
-			return 0;
-		}
-	}
-
 
 	/**
 	 * Cleans out the cache folder
 	 *
 	 * @param string $cachefolder the sub-folder to clean
 	 */
-	function clearCache($cachefolder=NULL) {
+	static function clearCache($cachefolder = NULL) {
 		if (is_null($cachefolder)) {
 			$cachefolder = SERVERCACHE;
 		}
-		if (is_dir($cachefolder)) {
-			$handle = opendir($cachefolder);
-			while (false !== ($filename = readdir($handle))) {
-				$fullname = $cachefolder . '/' . $filename;
-				if (is_dir($fullname) && !(substr($filename, 0, 1) == '.')) {
-					if (($filename != '.') && ($filename != '..')) {
-						$this->clearCache($fullname);
-						clearstatcache();
-						rmdir($fullname);
-					}
-				} else {
-					if (file_exists($fullname) && !(substr($filename, 0, 1) == '.')) {
-						unlink($fullname);
-					}
-				}
-
-			}
-			closedir($handle);
-		}
+		zpFunctions::removeDir($cachefolder, true);
 	}
-
 
 	/**
 	 * Sort the album array based on either according to the sort key.
@@ -680,16 +731,19 @@ class Gallery {
 	 *
 	 * Returns an array with the albums in the desired sort order
 	 *
-	 * @param  array $albums array of album names
-	 * @param  string $sortkey the sorting scheme
+	 * @param array $albums array of album names
+	 * @param string $sortkey the sorting scheme
 	 * @param string $sortdirection
 	 * @param bool $mine set true/false to override ownership
 	 * @return array
 	 *
 	 * @author Todd Papaioannou (lucky@luckyspin.org)
-	 * @since  1.0.0
+	 * @since 1.0.0
 	 */
-	function sortAlbumArray($parentalbum, $albums, $sortkey='`sort_order`', $sortdirection=NULL, $mine=NULL) {
+	function sortAlbumArray($parentalbum, $albums, $sortkey = '`sort_order`', $sortdirection = NULL, $mine = NULL) {
+		if (count($albums) == 0) {
+			return array();
+		}
 		if (is_null($mine) && zp_loggedin(MANAGE_ALL_ALBUM_RIGHTS)) {
 			$mine = true;
 		}
@@ -698,9 +752,9 @@ class Gallery {
 			$obj = $this;
 			$viewUnpublished = $mine;
 		} else {
-			$albumid = '='.$parentalbum->getID();
+			$albumid = '=' . $parentalbum->getID();
 			$obj = $parentalbum;
-			$viewUnpublished = (zp_loggedin() && $obj->albumSubRights() & MANAGED_OBJECT_RIGHTS_EDIT);
+			$viewUnpublished = (zp_loggedin() && $obj->albumSubRights() & (MANAGED_OBJECT_RIGHTS_EDIT | MANAGED_OBJECT_RIGHTS_VIEW));
 		}
 
 		if (($sortkey == '`sort_order`') || ($sortkey == 'RAND()')) { // manual sort is always ascending
@@ -712,37 +766,38 @@ class Gallery {
 				$order = $obj->getSortDirection('album');
 			}
 		}
-		if (count($albums) == 0) return array();
-		$sql = 'SELECT * FROM ' .	prefix("albums") . ' WHERE `parentid`'.$albumid;
+		$sortkey = db_quote($sortkey, false);
+		$sql = 'SELECT * FROM ' . prefix("albums") . ' WHERE `parentid`' . $albumid . ' ORDER BY ' . $sortkey . ' ' . $sortdirection;
 		$result = query($sql);
 		$results = array();
 		//	check database aganist file system
 		while ($row = db_fetch_assoc($result)) {
 			$folder = $row['folder'];
-			if (($key = array_search($folder,$albums)) !== false) {	// album exists in filesystem
+			if (($key = array_search($folder, $albums)) !== false) { // album exists in filesystem
 				$results[$row['folder']] = $row;
 				unset($albums[$key]);
-			} else {																								// album no longer exists
+			} else { // album no longer exists
 				$id = $row['id'];
-				query("DELETE FROM ".prefix('albums')." WHERE `id`=$id"); // delete the record
-				query("DELETE FROM ".prefix('comments')." WHERE `type` ='images' AND `ownerid`= '$id'"); // remove image comments
+				query("DELETE FROM " . prefix('albums') . " WHERE `id`=$id"); // delete the record
+				query("DELETE FROM " . prefix('comments') . " WHERE `type` ='images' AND `ownerid`= '$id'"); // remove image comments
 				query("DELETE FROM " . prefix('obj_to_tag') . "WHERE `type`='albums' AND `objectid`=" . $id);
 				query("DELETE FROM " . prefix('albums') . " WHERE `id` = " . $id);
 			}
 		}
-		foreach ($albums as $folder) {	// these albums are not in the database
-			$albumobj = new Album($this,$folder);
-			if ($albumobj->exists) {	// fail to instantiate?
-				$results[$folder] = $albumobj->data;
+		db_free_result($result);
+		foreach ($albums as $folder) { // these albums are not in the database
+			$albumobj = newAlbum($folder);
+			if ($albumobj->exists) { // fail to instantiate?
+				$results[$folder] = $albumobj->getData();
 			}
 		}
 		//	now put the results in the right order
-		$results = sortByKey($results,$sortkey,$order);
+		$results = sortByKey($results, $sortkey, $order);
 		//	albums are now in the correct order
 		$albums_ordered = array();
-		foreach($results as $row) { // check for visible
+		foreach ($results as $row) { // check for visible
 			$folder = $row['folder'];
-			$album = new Album($this, $folder);
+			$album = newAlbum($folder);
 			switch (checkPublishDates($row)) {
 				case 1:
 					$album->setShow(0);
@@ -771,18 +826,24 @@ class Gallery {
 	 * counts visits to the object
 	 */
 	function countHit() {
-		$this->set('hitcounter', $this->get('hitcounter')+1);
+		$this->set('hitcounter', $this->get('hitcounter') + 1);
 		$this->save();
 	}
 
 	/**
 	 * Title to be used for the home (not Zenphoto gallery) WEBsite
 	 */
-	function getWebsiteTitle() {
-		return get_language_string($this->get('website_title'));
+	function getWebsiteTitle($locale = NULL) {
+		$text = $this->get('website_title');
+		if ($locale !== 'all') {
+			$text = get_language_string($text, $locale);
+		}
+		$text = zpFunctions::unTagURLs($text);
+		return $text;
 	}
+
 	function setWebsiteTitle($value) {
-		$this->set('website_title', $value);
+		$this->set('website_title', zpFunctions::tagURLs($value));
 	}
 
 	/**
@@ -791,6 +852,7 @@ class Gallery {
 	function getWebsiteURL() {
 		return $this->get('website_url');
 	}
+
 	function setWebsiteURL($value) {
 		$this->set('website_url', $value);
 	}
@@ -801,6 +863,7 @@ class Gallery {
 	function getSecurity() {
 		return $this->get('gallery_security');
 	}
+
 	function setSecurity($value) {
 		$this->set('gallery_security', $value);
 	}
@@ -811,6 +874,7 @@ class Gallery {
 	function getUserLogonField() {
 		return $this->get('login_user_field');
 	}
+
 	function setUserLogonField($value) {
 		$this->set('login_user_field', $value);
 	}
@@ -821,6 +885,7 @@ class Gallery {
 	function getAlbumUseImagedate() {
 		return $this->get('album_use_new_image_date');
 	}
+
 	function setAlbumUseImagedate($value) {
 		$this->set('album_use_new_image_date', $value);
 	}
@@ -831,28 +896,20 @@ class Gallery {
 	function getThumbSelectImages() {
 		return $this->get('thumb_select_images');
 	}
+
 	function setThumbSelectImages($value) {
 		$this->set('thumb_select_images', $value);
 	}
 
 	/**
-	* Option to show subalbum images in the thumbnail selector
-	*/
+	 * Option to show subalbum images in the thumbnail selector
+	 */
 	function getSecondLevelThumbs() {
 		return $this->get('multilevel_thumb_select_images');
 	}
+
 	function setSecondLevelThumbs($value) {
 		$this->set('multilevel_thumb_select_images', $value);
-	}
-
-	/**
-	 * Option of caching Album ZIP files
-	 */
-	function getPersistentArchive() {
-		return $this->get('persistent_archive');
-	}
-	function setPersistentArchive($value) {
-		$this->set('persistent_archive', $value);
 	}
 
 	/**
@@ -861,10 +918,10 @@ class Gallery {
 	function getGallerySession() {
 		return $this->get('album_session');
 	}
+
 	function setGallerySession($value) {
 		$this->set('album_session', $value);
 	}
-
 
 	/**
 	 *
@@ -874,6 +931,7 @@ class Gallery {
 	function isUnprotectedPage($page) {
 		return (in_array($page, $this->unprotected_pages));
 	}
+
 	function setUnprotectedPage($page, $on) {
 		if ($on) {
 			array_unshift($this->unprotected_pages, $page);
@@ -890,6 +948,7 @@ class Gallery {
 	function getAlbumPublish() {
 		return $this->get('album_publish');
 	}
+
 	function setAlbumPublish($v) {
 		$this->set('album_publish', $v);
 	}
@@ -897,6 +956,7 @@ class Gallery {
 	function getImagePublish() {
 		return $this->get('image_publish');
 	}
+
 	function setImagePublish($v) {
 		$this->set('image_publish', $v);
 	}
@@ -907,7 +967,7 @@ class Gallery {
 	 * @return array
 	 */
 	function getCodeblock() {
-		return $this->get("codeblock");
+		return zpFunctions::unTagURLs($this->get("codeblock"));
 	}
 
 	/**
@@ -915,16 +975,15 @@ class Gallery {
 	 *
 	 */
 	function setCodeblock($cb) {
-		$this->set("codeblock",$cb);
+		$this->set('codeblock', zpFunctions::tagURLs($cb));
 	}
-
 
 	/**
 	 * Checks if guest is loggedin for the album
 	 * @param unknown_type $hint
 	 * @param unknown_type $show
 	 */
-	function checkforGuest(&$hint=NULL, &$show=NULL) {
+	function checkforGuest(&$hint = NULL, &$show = NULL) {
 		if (!(GALLERY_SECURITY != 'public')) {
 			return false;
 		}
@@ -957,13 +1016,62 @@ class Gallery {
 
 	function save() {
 		setOption('gallery_data', serialize($this->data));
-		//TODO: remove on Zenphoto 1.5
-		if (defined('RELEASE')) {
-			foreach ($this->data as $option=>$value) {	//	for compatibility
-				setOption($option, $value);
-			}
-		}
+	}
+
+	/**
+	 *
+	 * "Magic" function to return a string identifying the object when it is treated as a string
+	 * @return string
+	 */
+	public function __toString() {
+		return 'Gallery object';
+	}
+
+	/**
+	 * registers object handlers for image varients
+	 * @global array $_zp_extra_filetypes
+	 * @param type $suffix
+	 * @param type $objectName
+	 */
+	static function addImageHandler($suffix, $objectName) {
+		global $_zp_extra_filetypes;
+		$_zp_extra_filetypes[strtolower($suffix)] = $objectName;
+	}
+
+	/**
+	 * Returns true if the file is an image
+	 *
+	 * @param string $filename the name of the target
+	 * @return bool
+	 */
+	static function validImage($filename) {
+		global $_zp_supported_images;
+		return in_array(getSuffix($filename), $_zp_supported_images);
+	}
+
+	/**
+	 * Returns true if the file is handled by an image handler plugin object
+	 *
+	 * @param string $filename
+	 * @return bool
+	 */
+	static function validImageAlt($filename) {
+		global $_zp_extra_filetypes;
+		$suffix = getSuffix($filename);
+		return isset($_zp_extra_filetypes[$suffix]) ? $_zp_extra_filetypes[$suffix] : '';
+	}
+
+	/**
+	 * registers object handlers for album varients
+	 * @global array $_zp_albumHandlers
+	 * @param type $suffix
+	 * @param type $objectName
+	 */
+	static function addAlbumHandler($suffix, $objectName) {
+		global $_zp_albumHandlers;
+		$_zp_albumHandlers[strtolower($suffix)] = $objectName;
 	}
 
 }
+
 ?>

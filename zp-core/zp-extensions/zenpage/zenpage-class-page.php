@@ -1,4 +1,5 @@
 <?php
+
 /**
  * zenpage page class
  *
@@ -6,15 +7,18 @@
  * @package plugins
  * @subpackage zenpage
  */
-
 class ZenpagePage extends ZenpageItems {
 
 	var $manage_rights = MANAGE_ALL_PAGES_RIGHTS;
 	var $manage_some_rights = ZENPAGE_PAGES_RIGHTS;
-	var $view_rights = VIEW_PAGES_RIGHTS;
+	var $view_rights = ALL_PAGES_RIGHTS;
 
-	function __construct($titlelink, $allowCreate=NULL) {
-		$new = parent::PersistentObject('pages', array('titlelink'=>$titlelink), 'titlelink', true, empty($titlelink), $allowCreate);
+	function __construct($titlelink, $allowCreate = NULL) {
+		if (is_array($titlelink)) {
+			$titlelink = $titlelink['titlelink'];
+		}
+		$new = $this->instantiate('pages', array('titlelink' => $titlelink), 'titlelink', true, empty($titlelink), $allowCreate);
+		$this->exists = $this->loaded;
 	}
 
 	/**
@@ -22,28 +26,36 @@ class ZenpagePage extends ZenpageItems {
 	 *
 	 * @return string
 	 */
-	function getSortOrder() { return $this->get('sort_order'); }
+	function getSortOrder() {
+		return $this->get('sort_order');
+	}
 
 	/**
 	 * Stores the sort order
 	 *
 	 * @param string $sortorder image sort order
 	 */
-	function setSortOrder($sortorder) { $this->set('sort_order', $sortorder); }
+	function setSortOrder($sortorder) {
+		$this->set('sort_order', $sortorder);
+	}
 
 	/**
 	 * Returns the guest user
 	 *
 	 * @return string
 	 */
-	function getUser() { return $this->get('user');	}
+	function getUser() {
+		return $this->get('user');
+	}
 
 	/**
 	 * Sets the guest user
 	 *
 	 * @param string $user
 	 */
-	function setUser($user) { $this->set('user', $user);	}
+	function setUser($user) {
+		$this->set('user', $user);
+	}
 
 	/**
 	 * Returns the password
@@ -51,7 +63,7 @@ class ZenpagePage extends ZenpageItems {
 	 * @return string
 	 */
 	function getPassword() {
-			if (GALLERY_SECURITY != 'public') {
+		if (GALLERY_SECURITY != 'public') {
 			return NULL;
 		} else {
 			return $this->get('password');
@@ -64,12 +76,7 @@ class ZenpagePage extends ZenpageItems {
 	 * @param string $pwd the cleartext password
 	 */
 	function setPassword($pwd) {
-		global $_zp_authority;
-		if (empty($pwd)) {
-			$this->set('password', "");
-		} else {
-			$this->set('password', $_zp_authority->passwordHash($this->get('user'), $pwd));
-		}
+		$this->set('password', $pwd);
 	}
 
 	/**
@@ -77,8 +84,13 @@ class ZenpagePage extends ZenpageItems {
 	 *
 	 * @return string
 	 */
-	function getPasswordHint() {
-		return get_language_string($this->get('password_hint'));
+	function getPasswordHint($locale = NULL) {
+		$text = ($this->get('password_hint'));
+		if ($locale !== 'all') {
+			$text = get_language_string($text, $locale);
+		}
+		$text = zpFunctions::unTagURLs($text);
+		return $text;
 	}
 
 	/**
@@ -86,7 +98,9 @@ class ZenpagePage extends ZenpageItems {
 	 *
 	 * @param string $hint the hint text
 	 */
-	function setPasswordHint($hint) { $this->set('password_hint', $hint); }
+	function setPasswordHint($hint) {
+		$this->set('password_hint', zpFunctions::tagURLs($hint));
+	}
 
 	/**
 	 * duplicates an article
@@ -94,10 +108,10 @@ class ZenpagePage extends ZenpageItems {
 	 */
 	function copy($newtitle) {
 		$newID = $newtitle;
-		$id = parent::copy(array('titlelink'=>$newID));
+		$id = parent::copy(array('titlelink' => $newID));
 		if (!$id) {
-			$newID = $newtitle.':'.seoFriendly(date('Y-m-d_H-i-s'));
-			$id = parent::copy(array('titlelink'=>$newID));
+			$newID = $newtitle . ':' . seoFriendly(date('Y-m-d_H-i-s'));
+			$id = parent::copy(array('titlelink' => $newID));
 		}
 		if ($id) {
 			$newobj = new ZenpagePage($newID);
@@ -121,10 +135,10 @@ class ZenpagePage extends ZenpageItems {
 			$sortorder = $this->getSortOrder();
 			if ($this->id) {
 				$success = $success && query("DELETE FROM " . prefix('obj_to_tag') . "WHERE `type`='pages' AND `objectid`=" . $this->id);
-				$success = $success && query("DELETE FROM ".prefix('comments')." WHERE ownerid = ".$this->getID().' AND type="pages"'); // delete any comments
+				$success = $success && query("DELETE FROM " . prefix('comments') . " WHERE ownerid = " . $this->getID() . ' AND type="pages"'); // delete any comments
 				//	remove subpages
-				$mychild = strlen($sortorder)+4;
-				$result = query_full_array('SELECT * FROM '.prefix('pages')." WHERE `sort_order` like '".$sortorder."-%'");
+				$mychild = strlen($sortorder) + 4;
+				$result = query_full_array('SELECT * FROM ' . prefix('pages') . " WHERE `sort_order` like '" . $sortorder . "-%'");
 				if (is_array($result)) {
 					foreach ($result as $row) {
 						if (strlen($row['sort_order']) == $mychild) {
@@ -138,68 +152,66 @@ class ZenpagePage extends ZenpageItems {
 		return $success;
 	}
 
-/**
- * Gets the parent pages recursivly to the page whose parentid is passed or the current object
- *
- * @param int $parentid The parentid of the page to get the parents of
- * @param bool $initparents
- * @return array
- */
-	function getParents(&$parentid='',$initparents=true) {
+	/**
+	 * Gets the parent pages recursivly to the page whose parentid is passed or the current object
+	 *
+	 * @param int $parentid The parentid of the page to get the parents of
+	 * @param bool $initparents
+	 * @return array
+	 */
+	function getParents(&$parentid = '', $initparents = true) {
 		global $parentpages, $_zp_zenpage;
 		$allitems = $_zp_zenpage->getPages();
-		if($initparents) {
+		if ($initparents) {
 			$parentpages = array();
 		}
-		if(empty($parentid)) {
+		if (empty($parentid)) {
 			$currentparentid = $this->getParentID();
 		} else {
 			$currentparentid = $parentid;
 		}
-		foreach($allitems as $item) {
+		foreach ($allitems as $item) {
 			$obj = new ZenpagePage($item['titlelink']);
 			$itemtitlelink = $obj->getTitlelink();
 			$itemid = $obj->getID();
 			$itemparentid = $obj->getParentID();
-			if($itemid == $currentparentid) {
-				array_unshift($parentpages,$itemtitlelink);
-				$obj->getParents($itemparentid,false);
+			if ($itemid == $currentparentid) {
+				array_unshift($parentpages, $itemtitlelink);
+				$obj->getParents($itemparentid, false);
 			}
 		}
 		return $parentpages;
 	}
 
-
-
-/**
- * Gets the sub pages recursivly by titlelink
- * @return array
- */
-	function getPages() {
+	/**
+	 * Gets the sub pages of a page
+	 * @param bool $published TRUE for published or FALSE for all pages including un-published
+	 * @param bool $toplevel ignored, left for parameter compatibility
+	 * @param int $number number of pages to get (NULL by default for all)
+	 * @param string $sorttype NULL for the standard order as sorted on the backend, "title", "date", "popular", "mostrated", "toprated", "random"
+	 * @param string $sortdirection false for ascending, true for descending
+	 * @return array
+	 */
+	function getPages($published = NULL, $toplevel = false, $number = NULL, $sorttype = NULL, $sortdirection = NULL) {
 		global $_zp_zenpage;
 		$subpages = array();
 		$sortorder = $this->getSortOrder();
-		$pages = $_zp_zenpage->getPages();
-		foreach($pages as $page) {
-			$pageobj = new ZenpagePage($page['titlelink']);
-			if($pageobj->getParentID() == $this->getID() && $pageobj->getSortOrder()  != $sortorder) { // exclude the page itself!
-				array_push($subpages,$pageobj->getTitlelink());
+		$pages = $_zp_zenpage->getPages($published, false, $number, $sorttype, $sortdirection, $this);
+		foreach ($pages as $page) {
+			if ($page['parentid'] == $this->getID() && $page['sort_order'] != $sortorder) { // exclude the page itself!
+				array_push($subpages, $page);
 			}
 		}
-		if(count($subpages) != 0) {
-			return $subpages;
-		} else {
-			return array();
-		}
+		return $subpages;
 	}
 
-/**
- * Gets the sub pages recursivly by titlelink
- * @return array
- * @deprecated
- */
+	/**
+	 * Gets the sub pages recursivly by titlelink
+	 * @return array
+	 * @deprecated
+	 */
 	function getSubPages() {
-		deprecated_function_notify(gettext('Use the Zenpage Page class method getPages().'));
+		Zenpage_internal_deprecations::getSubPages();
 		return $this->getPages();
 	}
 
@@ -208,18 +220,18 @@ class ZenpagePage extends ZenpageItems {
 	 * @param $hint
 	 * @param $show
 	 */
-	function checkforGuest(&$hint=NULL, &$show=NULL) {
+	function checkforGuest(&$hint = NULL, &$show = NULL) {
 		if (!parent::checkForGuest()) {
 			return false;
 		}
 		$pageobj = $this;
 		$hash = $pageobj->getPassword();
-		while(empty($hash) && !is_null($pageobj)) {
+		while (empty($hash) && !is_null($pageobj)) {
 			$parentID = $pageobj->getParentID();
 			if (empty($parentID)) {
 				$pageobj = NULL;
 			} else {
-				$sql = 'SELECT `titlelink` FROM '.prefix('pages').' WHERE `id`='.$parentID;
+				$sql = 'SELECT `titlelink` FROM ' . prefix('pages') . ' WHERE `id`=' . $parentID;
 				$result = query_single_row($sql);
 				$pageobj = new ZenpagePage($result['titlelink']);
 				$hash = $pageobj->getPassword();
@@ -228,7 +240,7 @@ class ZenpagePage extends ZenpageItems {
 		if (empty($hash)) { // no password required
 			return 'zp_public_access';
 		} else {
-			$authType = "zp_page_auth_" . $pageobj->get('id');
+			$authType = "zp_page_auth_" . $pageobj->getID();
 			$saved_auth = zp_getCookie($authType);
 			if ($saved_auth == $hash) {
 				return $authType;
@@ -241,12 +253,12 @@ class ZenpagePage extends ZenpageItems {
 		}
 	}
 
-/**
- * Checks if a page is protected and returns TRUE or FALSE
- * NOTE: This function does only check if a password is set not if it has been entered! Use $this->checkforGuest() for that.
- *
- * @return bool
- */
+	/**
+	 * Checks if a page is protected and returns TRUE or FALSE
+	 * NOTE: This function does only check if a password is set not if it has been entered! Use $this->checkforGuest() for that.
+	 *
+	 * @return bool
+	 */
 	function isProtected() {
 		return $this->checkforGuest() != 'zp_public_access';
 	}
@@ -271,7 +283,7 @@ class ZenpagePage extends ZenpageItems {
 			}
 			$mypages = $_zp_current_admin_obj->getObjects('pages');
 			if (!empty($mypages)) {
-				if (array_search($this->getTitlelink(),$mypages)!==false) {
+				if (array_search($this->getTitlelink(), $mypages) !== false) {
 					return true;
 				}
 			}
@@ -280,16 +292,25 @@ class ZenpagePage extends ZenpageItems {
 	}
 
 	/**
-	* Returns full path to a specific page
-	*
-	* @return string
-	*/
+	 * Returns full path to a specific page
+	 *
+	 * @return string
+	 */
+	function getLink() {
+		return zp_apply_filter('getLink', rewrite_path(_PAGES_ . '/' . $this->getTitlelink() . '/', '/index.php?p=pages&title=' . $this->getTitlelink()), $this, NULL);
+	}
+
+	/**
+	 * Returns full path to a specific page
+	 *
+	 * @return string
+	 * @deprecated since version 1.4.6
+	 */
 	function getPageLink() {
-		return $this->getPagesLinkPath().urlencode($this->getTitlelink());
+		Zenpage_internal_deprecations::getPageLink();
+		return $this->getLink();
 	}
 
 }
-
-
 
 ?>

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Core class for handling "non-image" files
  *
@@ -23,7 +24,7 @@
  * an image plus whatever you add. Of course you will need to override some of the image class functions to
  * implement the functionality of your new class.
  * 4. There is one VERY IMPORTANT method that you must provide which is not part of the "Image" base class. That
- * getBody() method. This method is called by template-functions.php in place of where it would normally put a URL
+ * getContent() method. This method is called by template-functions.php in place of where it would normally put a URL
  * to the image to show. This method must do everything needed to cause your image object to be viewable by the
  * browser.
  *
@@ -59,9 +60,7 @@
  * @package plugins
  *
  */
-
-
-class TextObject extends _Image {
+class TextObject extends Image {
 
 	protected $watermark = NULL;
 	protected $watermarkDefault = NULL;
@@ -73,13 +72,12 @@ class TextObject extends _Image {
 	 * @param string $filename the filename of the text file
 	 * @return TextObject
 	 */
-	function __construct($album, $filename) {
+	function __construct($album, $filename, $quiet = false) {
 
 		$this->watermark = getOption('TextObject_watermark');
 		$this->watermarkDefault = getOption('textobject_watermark_default_images');
 
-		$this->common_instantiate($album,$filename);
-
+		$this->common_instantiate($album, $filename, $quiet);
 	}
 
 	/**
@@ -87,30 +85,33 @@ class TextObject extends _Image {
 	 * @param $album
 	 * @param $filename
 	 */
-	function common_instantiate($album,$filename) {
+	function common_instantiate($album, $filename, $quiet = false) {
 		global $_zp_supported_images;
-		// $album is an Album object; it should already be created.
-		if (!is_object($album)) return NULL;
-		if (!$this->classSetup($album, $filename)) { // spoof attempt
+		$msg = false;
+		if (!is_object($album) || !$album->exists) {
+			$msg = gettext('Invalid Textobject instantiation: Album does not exist');
+		} else if (!$this->classSetup($album, $filename) || !file_exists($this->localpath) || is_dir($this->localpath)) {
+			$msg = gettext('Invalid Textobject instantiation: file does not exist');
+		}
+		if ($msg) {
 			$this->exists = false;
+			if (!$quiet) {
+				trigger_error($msg, E_USER_ERROR);
+			}
 			return;
 		}
 		$this->sidecars = $_zp_supported_images;
-		$this->objectsThumb = checkObjectsThumb($album->localpath, $filename);
-		// Check if the file exists.
-		if (!file_exists($this->localpath) || is_dir($this->localpath)) {
-			$this->exists = false;
-			return;
-		}
+		$this->objectsThumb = checkObjectsThumb($this->localpath);
 		$this->updateDimensions();
-		if (parent::PersistentObject('images', array('filename'=>$filename, 'albumid'=>$this->album->id), 'filename')) {
-			$title = $this->getDefaultTitle();
-			$this->set('title', $title);
-			$this->set('mtime', $ts = filectime($this->localpath));
-			$newdate = strftime('%Y-%m-%d %H:%M:%S', $ts);
+		$new = $this->instantiate('images', array('filename' => $filename, 'albumid' => $this->album->getID()), 'filename');
+		if ($new || $this->filemtime != $this->get('mtime')) {
+			if ($new)
+				$this->setTitle($this->displayname); $title = $this->displayname;
 			$this->updateMetaData();
+			$this->set('mtime', $this->filemtime);
 			$this->save();
-			zp_apply_filter('new_image', $this);
+			if ($new)
+				zp_apply_filter('new_image', $this);
 		}
 	}
 
@@ -121,22 +122,23 @@ class TextObject extends _Image {
 	 *
 	 * @return s
 	 */
-	function getThumbImageFile($path=NULL) {
+	function getThumbImageFile($path = NULL) {
+		global $_zp_gallery;
 		if (is_null($path)) {
 			$path = SERVERPATH;
 		}
 		if (is_null($this->objectsThumb)) {
-			switch(getSuffix($this->filename)) {
+			switch (getSuffix($this->filename)) {
 				default: // just in case we extend and are lazy...
 					$img = '/textDefault.png';
 					break;
 			}
-			$imgfile = $path . '/' . THEMEFOLDER . '/' . internalToFilesystem($this->album->gallery->getCurrentTheme()) . '/images/'.$img;
+			$imgfile = $path . '/' . THEMEFOLDER . '/' . internalToFilesystem($_zp_gallery->getCurrentTheme()) . '/images/' . $img;
 			if (!file_exists($imgfile)) {
-				$imgfile = $path . "/" . ZENFOLDER . '/'.PLUGIN_FOLDER .'/class-textobject/'.$img;
+				$imgfile = $path . "/" . ZENFOLDER . '/' . PLUGIN_FOLDER . '/class-textobject/' . $img;
 			}
 		} else {
-			$imgfile = ALBUM_FOLDER_SERVERPATH.$this->album->name.'/'.$this->objectsThumb;
+			$imgfile = ALBUM_FOLDER_SERVERPATH . internalToFilesystem($this->imagefolder) . '/' . $this->objectsThumb;
 		}
 		return $imgfile;
 	}
@@ -147,27 +149,33 @@ class TextObject extends _Image {
 	 * @param string $type 'image' or 'album'
 	 * @return string
 	 */
-	function getThumb($type='image') {
-		list($custom, $sw, $sh, $cw, $ch, $cx, $cy) = $this->getThumbCropping($type);
+	function getThumb($type = 'image') {
+		$ts = getOption('thumb_size');
+		$sw = getOption('thumb_crop_width');
+		$sh = getOption('thumb_crop_height');
+		list($custom, $cw, $ch, $cx, $cy) = $this->getThumbCropping($ts, $sw, $sh);
 		$wmt = $this->watermark;
 		if (empty($wmt)) {
 			$wmt = getWatermarkParam($this, WATERMARK_THUMB);
 		}
 		if (is_null($this->objectsThumb)) {
-			$cx = $cy = NULL;
+			$mtime = $cx = $cy = NULL;
 			$filename = makeSpecialImageName($this->getThumbImageFile());
 			if (!$this->watermarkDefault) {
 				$wmt = '!';
 			}
 		} else {
-			$filename = $this->objectsThumb;
+			$filename = filesystemToInternal($this->objectsThumb);
+			$mtime = filemtime(ALBUM_FOLDER_SERVERPATH . '/' . internalToFilesystem($this->imagefolder) . '/' . $this->objectsThumb);
 		}
-		$args = getImageParameters(array(getOption('thumb_size'), $sw, $sh, $cw, $ch, $cx, $cy, NULL, true, true, true, $wmt, NULL, NULL), $this->album->name);		$cachefilename = getImageCacheFilename($alb = $this->album->name, $this->filename, $args);
-		if (file_exists(SERVERCACHE . $cachefilename)	&& filemtime(SERVERCACHE . $cachefilename) > $this->filemtime) {
-			return WEBPATH . '/'.CACHEFOLDER . pathurlencode(imgSrcURI($cachefilename));
-		} else {
-			return getImageProcessorURI($args, $this->album->name, $filename);
-		}
+		$args = getImageParameters(array($ts, $sw, $sh, $cw, $ch, $cx, $cy, NULL, true, true, true, $wmt, NULL, NULL), $this->album->name);
+		$cachefilename = getImageCacheFilename($alb = $this->album->name, $this->filename, $args);
+		return getImageURI($args, $alb, $filename, $mtime);
+	}
+
+	function getBody($w = NULL, $h = NULL) {
+		TextObject_deprecated_functions::getBody();
+		$this->getContent($w, $h);
 	}
 
 	/**
@@ -177,17 +185,19 @@ class TextObject extends _Image {
 	 * @param int $h optional height
 	 * @return string
 	 */
-	function getBody($w=NULL, $h=NULL) {
+	function getContent($w = NULL, $h = NULL) {
 		$this->updateDimensions();
-		if (is_null($w)) $w = $this->getWidth();
-		if (is_null($h)) $h = $this->getHeight();
-		switch(getSuffix($this->filename)) {
+		if (is_null($w))
+			$w = $this->getWidth();
+		if (is_null($h))
+			$h = $this->getHeight();
+		switch (getSuffix($this->filename)) {
 			case 'txt':
 			case 'htm':
 			case 'html':
-				return '<span style="display:block;width:'.$w.'px;height:'.$h.'px;" class="textobject">'.@file_get_contents($this->localpath).'</span>';
+				return '<span style="display:block;width:' . $w . 'px;height:' . $h . 'px;" class="textobject">' . @file_get_contents($this->localpath) . '</span>';
 			default: // just in case we extend and are lazy...
-				return '<img src="'.$this->getThumb().'">';
+				return '<img src="' . html_encode(pathurlencode($this->getThumb())) . '">';
 		}
 	}
 
@@ -208,7 +218,7 @@ class TextObject extends _Image {
 	 * @param bool $effects ignored
 	 * @return string
 	 */
-	function getCustomImage($size, $width, $height, $cropw, $croph, $cropx, $cropy, $thumbStandin=false, $effects=NULL) {
+	function getCustomImage($size, $width, $height, $cropw, $croph, $cropx, $cropy, $thumbStandin = false, $effects = NULL) {
 		if ($thumbStandin) {
 			$wmt = $this->watermark;
 			if (empty($wmt)) {
@@ -217,58 +227,61 @@ class TextObject extends _Image {
 		} else {
 			$wmt = NULL;
 		}
-		$args = getImageParameters(array($size, $width, $height, $cropw, $croph, $cropx, $cropy, NULL, $thumbStandin, NULL, $thumbStandin, $wmt, NULL, $effects), $this->album->name);
-		if ($thumbStandin) {
+		if ($thumbStandin & 1) {
+			$args = getImageParameters(array($size, $width, $height, $cropw, $croph, $cropx, $cropy, NULL, $thumbStandin, NULL, $thumbStandin, $wmt, NULL, $effects), $this->album->name);
 			if ($this->objectsThumb == NULL) {
 				$filename = makeSpecialImageName($this->getThumbImageFile());
 				if (!$this->watermarkDefault) {
 					$args[11] = '!';
 				}
-				return getImageProcessorURI($args, $this->album->name, $filename);
+				$mtime = NULL;
 			} else {
-				$filename = $this->objectsThumb;
-				$cachefilename = getImageCacheFilename($alb = $this->album->name, $filename, $args);
-				if (file_exists(SERVERCACHE . $cachefilename) && filemtime(SERVERCACHE . $cachefilename) > $this->filemtime) {
-					return WEBPATH . '/'.CACHEFOLDER . pathurlencode(imgSrcURI($cachefilename));
-				} else {
-					return getImageProcessorURI($args, $this->album->name, $filename);
-				}
+				$filename = filesystemToInternal($this->objectsThumb);
+				$mtime = filemtime(ALBUM_FOLDER_SERVERPATH . '/' . internalToFilesystem($this->imagefolder) . '/' . $this->objectsThumb);
 			}
+			return getImageURI($args, $this->album->name, $filename, $mtime);
 		} else {
-			return $this->getBody($width, $height);
+			return $this->getContent($width, $height);
 		}
 	}
 
 	/**
 	 * (non-PHPdoc)
-	 * @see zp-core/_Image::getSizedImage()
+	 * @see zp-core/Image::getSizedImage()
 	 */
 	function getSizedImage($size) {
-		$width = $this->getWidth();
-		$height = $this->getHeight();
-		if ($width > $height) {	//portrait
-			$height = $height * $size/$width;
-		} else {
-			$width = $width * $size/$height;
+		switch (getOption('image_use_side')) {
+			case 'width':
+			case 'longest':
+				$w = $size;
+				$h = floor(($size * 24) / 36);
+				break;
+			case 'height':
+			case 'shortest':
+				$h = $size;
+				$w = floor(($size * 36) / 24);
+				break;
 		}
-		return $this->getBody($width, $height);
+
+		return $this->getContent($w, $h);
 	}
 
 	/**
 	 * (non-PHPdoc)
-	 * @see zp-core/_Image::updateDimensions()
+	 * @see zp-core/Image::updateDimensions()
 	 */
 	function updateDimensions() {
-		switch(getSuffix($this->filename)) {
-			case 'txt':
-			case 'htm':
-			case 'html':
+		$size = getOption('image_size');
+		switch (getOption('image_use_side')) {
+			case 'width':
+			case 'longest':
 				$this->set('width', getOption('image_size'));
 				$this->set('height', floor((getOption('image_size') * 24) / 36));
 				break;
-			default: // just in case we extend and are lazy...
-				$this->set('width', getOption('thumb_size'));
-				$this->set('height', getOption('thumb_size'));
+			case 'height':
+			case 'shortest':
+				$this->set('height', getOption('image_size'));
+				$this->set('width', floor((getOption('image_size') * 36) / 24));
 				break;
 		}
 	}

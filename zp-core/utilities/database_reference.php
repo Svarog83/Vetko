@@ -6,13 +6,12 @@
  */
 
 define('OFFSET_PATH', 3);
-chdir(dirname(dirname(__FILE__)));
 
 require_once(dirname(dirname(__FILE__)).'/admin-globals.php');
 
 $buttonlist[] = $mybutton = array(
-																	'category'=>gettext('info'),
-																	'enable'=>'1',
+																	'category'=>gettext('Info'),
+																	'enable'=>true,
 																	'button_text'=>gettext('Database quick reference'),
 																	'formname'=>'database_reference.php',
 																	'action'=>'utilities/database_reference.php',
@@ -23,7 +22,7 @@ $buttonlist[] = $mybutton = array(
 																	'rights'=> ADMIN_RIGHTS
 																	);
 
-admin_securityChecks(NULL, currentRelativeURL(__FILE__));
+admin_securityChecks(NULL, currentRelativeURL());
 
 if(isset($_POST['dbname']) || isset($_POST['dbuser']) || isset($_POST['dbpass']) || isset($_POST['dbhost'])) {
 	XSRFdefender('databaseinfo');
@@ -31,7 +30,8 @@ if(isset($_POST['dbname']) || isset($_POST['dbuser']) || isset($_POST['dbpass'])
 
 
 $webpath = WEBPATH.'/'.ZENFOLDER.'/';
-printAdminHeader(gettext('utilities'),gettext('reference'));
+$zenphoto_tabs['overview']['subtabs']=array(gettext('Database')=>'');
+printAdminHeader('overview','Database');
 ?>
 <link rel="stylesheet" href="../admin-statistics.css" type="text/css" media="screen" />
 <style>
@@ -65,21 +65,24 @@ h2 {
 <div id="main">
 <?php printTabs(); ?>
 <div id="content">
+<?php printSubtabs() ?>
+<div class="tabbox">
 <?php zp_apply_filter('admin_note','database', ''); ?>
-<h1><a name="top"></a><?php echo $mybutton['button_text']; ?></h1>
+<h1><span id="top"><?php echo $mybutton['button_text']; ?></span></h1>
 <p>
-	<?php echo $mybutton['title'];; ?>
+	<?php echo $mybutton['title']; ?>
 	<?php echo gettext("The internal Zenphoto table relations can be viewed on the PDF database reference that is included in the release package within the /docs_files folder of your Zenphoto installation. For more detailed info about the database use tools like phpMyAdmin."); ?>
 </p>
 <?php
-$database_name =db_name();
-$prefix = prefix();
+$database_name = db_name();
+$prefix = trim(prefix(),'`');
 $resource = db_show('tables');
 if ($resource) {
 	$result = array();
 	while ($row = db_fetch_assoc($resource)) {
 		$result[] = $row;
 	}
+	db_free_result($resource);
 } else {
 	$result = false;
 }
@@ -140,8 +143,10 @@ if (is_array($result)) {
 <script type="text/javascript">
 function toggleRow(id) {
 	if ($('#'+id).is(":visible")) {
+		$('#'+id+'_k').hide();
 		$('#'+id).hide();
 	} else {
+		$('#'+id+'_k').show();
 		$('#'+id).show();
 	}
 }
@@ -149,13 +154,14 @@ function toggleRow(id) {
 <?php
 $i = 0;
 foreach($tables as $table) {
+	$table = substr($table,strlen($prefix));
 	$i++;
 	?>
-	<h3><a href="javascript:toggleRow('t_<?php echo $i; ?>')"><?php echo str_replace($prefix,'',$table); ?></a></h3>
+	<h3><a href="javascript:toggleRow('t_<?php echo $i; ?>')"><?php echo $table; ?></a></h3>
 	<table id = "t_<?php echo $i; ?>" class="bordered" <?php if ($i>1) { ?>style="display: none;" <?php } ?>>
 		<tr>
 			<?php
-			$cols = $tablecols = db_list_fields(str_replace($prefix, '', $table), true);
+			$cols = $tablecols = db_list_fields($table);
 			$cols = array_shift($cols);
 			foreach ($cols as $col=>$value) {
 				 ?>
@@ -165,7 +171,6 @@ foreach($tables as $table) {
 			?>
 		</tr>
 		<?php
-		//echo "<pre>"; print_r($tablecols); echo "</pre>";
 		$rowcount = 0;
 		foreach($tablecols as $col) {
 			$rowcount++;
@@ -194,10 +199,49 @@ foreach($tables as $table) {
 		}
 	 ?>
  </table>
- <?php
+	<?php
+	$sql = 'SHOW KEYS FROM '.prefix($table);
+	$result = query_full_array($sql);
+	$nest = '';
+	?>
+	<div style="width:40%">
+	<table id = "t_<?php echo $i; ?>_k" class="bordered" <?php if ($i>1) { ?>style="display: none;" <?php } ?>>
+		<tr>
+			<th<?php echo $class; ?>>
+				<?php echo gettext('Key'); ?>
+			</th>
+			<th<?php echo $class; ?>>
+				<?php echo gettext('Column'); ?>
+			</th>
+		</tr>
+	<?php
+	foreach ($result as $key) {
+		?>
+		<tr>
+			<td<?php echo $class; ?>>
+			<?php
+			if ($nest != $key['Key_name']) {
+				echo $nest = $key['Key_name'];
+				if (!$key['Non_unique']) {
+					echo '*';
+				}
+			}
+			?>
+			</td>
+			<td<?php echo $class; ?>>
+				<?php echo $key['Column_name']; ?>
+			</td>
+		</tr>
+		<?php
+	}
+	?>
+	</table>
+	</div>
+	<?php
+
 }
 ?>
-
+</div>
 </div><!-- content -->
 </div><!-- main -->
 <?php printAdminFooter(); ?>

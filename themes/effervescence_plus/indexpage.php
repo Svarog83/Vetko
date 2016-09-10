@@ -2,23 +2,19 @@
 
 // force UTF-8 Ø
 if (!defined('WEBPATH')) die();
-$themeResult = getTheme($zenCSS, $themeColor, 'kish-my father');
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-	<?php zp_apply_filter('theme_head'); ?>
+	<meta charset="<?php echo LOCAL_CHARSET; ?>">
 	<?php
+	zp_apply_filter('theme_head');
 	if (getOption('effervescence_daily_album_image_effect')) {
 		setOption('image_custom_images', getOption('effervescence_daily_album_image_effect'), false);
 	}
 	?>
-	<title><?php $mainsite = getMainSiteName(); echo (empty($mainsite))?gettext("Zenphoto gallery"):$mainsite; ?></title>
-	<meta http-equiv="content-type" content="text/html; charset=<?php echo LOCAL_CHARSET; ?>" />
-	<link rel="stylesheet" href="<?php echo pathurlencode($zenCSS); ?>" type="text/css" />
-	<link rel="stylesheet" href="<?php echo WEBPATH.'/'.THEMEFOLDER; ?>/effervescence_plus/common.css" type="text/css" />
-	<script type="text/javascript" src="<?php echo  $_zp_themeroot ?>/scripts/bluranchors.js"></script>
+	<?php printHeadTitle(); ?>
 </head>
 
 <body onload="blurAnchors()">
@@ -32,7 +28,7 @@ $themeResult = getTheme($zenCSS, $themeColor, 'kish-my father');
 			<div id="logo">
 				<?php
 				if (getOption('Allow_search')) {
-					printSearchForm(NULL,'search',$_zp_themeroot.'/images/search.png',gettext('Search gallery'));
+					printSearchForm(NULL,'search',$_zp_themeroot.'/images/search.png',gettext('Search'));
 				}
 				printLogo();
 				?>
@@ -42,7 +38,10 @@ $themeResult = getTheme($zenCSS, $themeColor, 'kish-my father');
 		<!-- Crumb Trail Navigation -->
 		<div id="wrapnav">
 			<div id="navbar">
-				<span><?php printHomeLink('', ' | '); echo (empty($mainsite))?'&nbsp;':$mainsite; ?></span>
+				<span><?php
+				if ($_zp_gallery->getWebsiteURL()) printHomeLink('', ' | ');
+				echo gettext('Home');
+				?></span>
 			</div>
 		</div> <!-- wrapnav -->
 

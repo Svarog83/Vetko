@@ -1,346 +1,239 @@
 <?php
+
 /**
- * Provides rudimentary user groups
+ * User group management. You can create groups with common <i>rights</i> and assign users
+ * to the groups. Then you can alter these user's rights simply by changing the <i>group</i> rights.
+ *
+ * Templates can also be used. The difference between a <i>group</i> and a <i>template</i> is that the latter
+ * simply sets the user <i>rights</i> one time. Afterwards the user is independent from the <i>template</i>.
  *
  * @author Stephen Billard (sbillard)
  * @package plugins
- * @subpackage usermanagement
+ * @subpackage users
  */
-
 // force UTF-8 Ø
 
-$plugin_is_filter = 5|ADMIN_PLUGIN;
+$plugin_is_filter = 5 | ADMIN_PLUGIN;
 $plugin_description = gettext("Provides rudimentary user groups.");
 $plugin_author = "Stephen Billard (sbillard)";
-$plugin_version = '1.4.2';
 
-zp_register_filter('admin_tabs', 'user_groups_admin_tabs');
-zp_register_filter('admin_alterrights', 'user_groups_admin_alterrights');
-zp_register_filter('save_admin_custom_data', 'user_groups_save_admin');
-zp_register_filter('edit_admin_custom_data', 'user_groups_edit_admin');
 
-/**
- * Saves admin custom data
- * Called when an admin is saved
- *
- * @param string $updated true if there has been an update to the user
- * @param object $userobj admin user object
- * @param string $i prefix for the admin
- * @param bool $alter will be true if critical admin data may be altered
- * @return bool
- */
-function user_groups_save_admin($updated, $userobj, $i, $alter) {
-	global $_zp_authority;
-	if ($alter) {
-		$administrators = $_zp_authority->getAdministrators('all');
-		if (isset($_POST[$i.'group'])) {
-			$groupname = sanitize($_POST[$i.'group']);
-			$oldgroup = $userobj->getGroup();
+zp_register_filter('admin_tabs', 'user_groups::admin_tabs');
+zp_register_filter('admin_alterrights', 'user_groups::admin_alterrights');
+zp_register_filter('save_admin_custom_data', 'user_groups::save_admin');
+zp_register_filter('edit_admin_custom_data', 'user_groups::edit_admin');
+
+class user_groups {
+
+	/**
+	 * Merges rights for multiple group memebership or templates
+	 * @param object $userobj
+	 * @param array $groups
+	 */
+	static function merge_rights($userobj, $groups) {
+		global $_zp_authority;
+		$templates = false;
+		$custom = $objects = array();
+		$oldgroups = $userobj->getGroup();
+		$rights = 0;
+		foreach ($groups as $key => $groupname) {
 			if (empty($groupname)) {
-				if (!empty($oldgroup)) {
-					$group = $_zp_authority->newAdministrator($oldgroup, 0);
-					$userobj->setRights($group->getRights());
-					$userobj->setObjects($group->getObjects());
-				}
+				//	force the first template to happen
+				$group = new Zenphoto_Administrator('', 0);
+				$group->setName('template');
 			} else {
-				$group = $_zp_authority->newAdministrator($groupname, 0);
-				$userobj->setRights($group->getRights());
-				$userobj->setObjects($group->getObjects());
-				if ($group->getName() == 'template') {
-					$groupname = '';
+				$group = Zenphoto_Authority::newAdministrator($groupname, 0);
+			}
+			if ($group->getName() == 'template') {
+				unset($groups[$key]);
+				if ($userobj->getID() > 0 && !$templates) {
+					//	fetch the existing rights and objects
+					$templates = true; //	but only once!
+					$rights = $userobj->getRights();
+					$objects = $userobj->getObjects();
 				}
 			}
-			if ($groupname != $oldgroup) {
-				$updated = true;
-				$userobj->setGroup($groupname);
-			}
-		}
-	}
-	return $updated;
-}
-
-/**
- * Returns table row(s) for edit of an admin user's custom data
- *
- * @param string $html always empty
- * @param $userobj Admin user object
- * @param string $i prefix for the admin
- * @param string $background background color for the admin row
- * @param bool $current true if this admin row is the logged in admin
- * @return string
- */
-function user_groups_edit_admin($html, $userobj, $i, $background, $current) {
-	global $gallery, $_zp_authority, $_zp_zenpage;
-	$group = $userobj->getGroup();
-	$admins = $_zp_authority->getAdministrators('all');
-	$ordered = array();
-	$groups = array();
-	$hisgroup = NULL;
-	$adminordered = array();
-	foreach ($admins as $key=>$admin) {
-		$ordered[$key] = $admin['user'];
-		if ($group == $admin['user']) $hisgroup = $admin;
-	}
-	asort($ordered);
-	foreach ($ordered as $key=>$user) {
-		$adminordered[] = $admins[$key];
-		if (!$admins[$key]['valid']) {
-			$groups[] = $admins[$key];
-		}
-	}
-	if (empty($groups)) return ''; // no groups setup yet
-	if (zp_loggedin(ADMIN_RIGHTS)) {
-		$albumlist = array();
-		$allalb = array();
-		foreach ($gallery->getAlbums() as $folder) {
-			$alb = new Album($gallery, $folder);
-			$name = $alb->getTitle();
-			$albumlist[$name] = $folder;
-			$allalb[] = "'#managed_albums_".$i.'_'.postIndexEncode($folder)."'";
-		}
-		if (getOption('zp_plugin_zenpage')) {
-			$pagelist = array();
-			$allpag = array();
-			$pages = $_zp_zenpage->getPages(false);
-			foreach ($pages as $page) {
-				if (!$page['parentid']) {
-					$pagelist[get_language_string($page['title'])] = $page['titlelink'];
-					$allpag[] = "'#managed_pages_".$i.'_'.postIndexEncode($page['titlelink'])."'";
-				}
-			}
-			$newslist = array();
-			$allnew = array();
-			$categories = $_zp_zenpage->getAllCategories(false);
-			foreach ($categories as $category) {
-				$newslist[get_language_string($category['titlelink'])] = $category['title'];
-				$allnew[] = "'#managed_news_".$i.'_'.postIndexEncode($category['titlelink'])."'";
-			}
-		}
-		$rights = array();
-		foreach ($_zp_authority->getRights() as $rightselement=>$right) {
-			if ($right['display']) {
-				$rights[] = "'#".$rightselement.'-'.$i."'";
-			}
-		}
-		$grouppart =	'
-			<script type="text/javascript">
-				// <!-- <![CDATA[
-				function groupchange'.$i.'(obj) {
-					var disable = obj.value != \'\';
-					var albdisable = false;
-					var checkedalbums = [];
-					var checked = 0;
-					var uncheckedalbums = [];
-					var unchecked = 0;
-					var allalbums = ['.implode(',', $allalb).'];
-					var allalbumsc = '.count($allalb).';';
-			if (getOption('zp_plugin_zenpage')) {
-				$grouppart .=	'
-						var allpages = ['.implode(',', $allpag).'];
-						var allpagesc = '.count($allpag).';
-						var allnews = ['.implode(',', $allnew).'];
-						var allnewsc = '.count($allnew).';';
-					}
-		$grouppart .=	'
-					var rights = ['.implode(',',$rights).'];
-					var rightsc = '.count($rights).';
-					for (i=0;i<rightsc;i++) {
-						$(rights[i]).attr(\'disabled\',disable);
-					}
-					for (i=0;i<allalbumsc;i++) {
-						$(allalbums[i]).attr(\'disabled\',disable);
-					}';
-			if (getOption('zp_plugin_zenpage')) {
-				$grouppart .=	'
-					for (i=0;i<allpagesc;i++) {
-						$(allpages[i]).attr(\'disabled\',disable);
-					}
-					for (i=0;i<allnewsc;i++) {
-						$(allnews[i]).attr(\'disabled\',disable);
-					}';
-			}
-		$grouppart .=	'
-					$(\'#hint'.$i.'\').html(obj.options[obj.selectedIndex].title);
-					if (disable) {
-						switch (obj.value) {';
-		foreach ($groups as $user) {
-			$grouppart .= '
-							case \''.$user['user'].'\':
-								target = '.$user['rights'].';';
-			if (getOption('zp_plugin_zenpage')) {
-				$codelist = array('album','pages','news');
-			} else {
-				$codelist = array('album');
-			}
-			foreach ($codelist as $mo) {
-				$cv = populateManagedObjectsList($mo,$user['id']);
-				switch ($mo) {
-					case 'album':
-						$xv = array_diff($albumlist, $cv);
-						break;
-					case 'pages':
-						$xv = array_diff($pagelist, $cv);
-						break;
-					case 'news':
-						$xv = array_diff($newslist, $cv);
-						break;
-				}
-
-				$cvo = array();
-				foreach ($cv as $moid) {
-					$cvo[] = "'#managed_".$mo."_".$i.'_'.postIndexEncode($moid)."'";
-				}
-				$xvo = array();
-				foreach ($xv as $moid) {
-					$xvo[] = "'#managed_".$mo."_".$i.'_'.postIndexEncode($moid)."'";
-				}
-				$grouppart .= '
-									checked'.$mo.' = ['.implode(',',$cvo).'];
-									checked'.$mo.'c = '.count($cvo).';
-									unchecked'.$mo.' = ['.implode(',',$xvo).'];
-									unchecked'.$mo.'c = '.count($xvo).';';
-			}
-			if ($user['name']=='template') {
-				$albdisable = 'false';
-			} else {
-				$albdisable = 'true';
-			}
-			$grouppart .= '
-								break;';
-		}
-		$grouppart .= '
-							}
-						for (i=0;i<checkedalbumc;i++) {
-							$(checkedalbum[i]).attr(\'checked\',\'checked\');
-						}
-						for (i=0;i<uncheckedalbumc;i++) {
-							$(uncheckedalbum[i]).attr(\'checked\',\'\');
-						}';
-		foreach ($groups as $user) {
-			$grouppart .= '
-						for (i=0;i<checkedpagesc;i++) {
-							$(checkedpages[i]).attr(\'checked\',\'checked\');
-						}
-						for (i=0;i<uncheckedpagesc;i++) {
-							$(uncheckedpages[i]).attr(\'checked\',\'\');
-						}
-						for (i=0;i<checkednewsc;i++) {
-							$(checkednews[i]).attr(\'checked\',\'checked\');
-						}
-						for (i=0;i<uncheckednewsc;i++) {
-							$(uncheckednews[i]).attr(\'checked\',\'\');
-						}';
-		}
-			$grouppart .= '
-						for (i=0;i<rightsc;i++) {
-							if ($(rights[i]).val()&target) {
-								$(rights[i]).attr(\'checked\',\'checked\');
-							} else {
-								$(rights[i]).attr(\'checked\',\'\');
-							}
-						}
-					}
-				}';
-		if (is_array($hisgroup)) {
-			$grouppart .= '
-				window.onload = function() {';
-			foreach ($codelist as $mo) {
-				$cv = populateManagedObjectsList($mo,$user['id']);
-				switch ($mo) {
-					case 'album':
-						$list = $albumlist;
-						break;
-					case 'pages':
-						$list = $pagelist;
-						break;
-					case 'news':
-						$list = $newslist;
-						break;
-				}
-				foreach ($list as $moid) {
-					if (in_array($moid,$cv)) {
-						$grouppart .= '
-						$(\'#managed_'.$mo.'_'.$i.'_'.postIndexEncode($moid).'\').attr(\'checked\',\'checked\');';
-					} else {
-						$grouppart .= '
-						$(\'#managed_'.$mo.'_'.$i.'_'.postIndexEncode($moid).'\').attr(\'checked\',\'\');';
-					}
-				}
-			}
-			$grouppart .= '
-				}';
+			$rights = $group->getRights() | $rights;
+			$objects = array_merge($group->getObjects(), $objects);
+			$custom[] = $group->getCustomData();
 		}
 
-		$grouppart .= '
-				//]]> -->
-			</script>';
-		$grouppart .= '<select name="'.$i.'group" onchange="javascript:groupchange'.$i.'(this);"'.'>'."\n";
-		$grouppart .= '<option value="" title="'.gettext('*no group affiliation').'">'.gettext('*no group selected').'</option>'."\n";
-		$selected_hint = gettext('no group affiliation');
-		foreach ($groups as $user) {
-			if ($user['name']=='template') {
-				$type = '<strong>'.gettext('Template:').'</strong> ';
+		$userobj->setCustomData(array_shift($custom)); //	for now it is first come, first served.
+		// unique objects
+		$newobjects = array();
+		foreach ($objects as $object) {
+			$key = serialize(array('type' => $object['type'], 'data' => $object['data']));
+			if (array_key_exists($key, $newobjects)) {
+				if (array_key_exists('edit', $object)) {
+					$newobjects[$key]['edit'] = @$newobjects[$key]['edit'] | $object['edit'];
+				}
 			} else {
-				$type = '';
+				$newobjects[$key] = $object;
 			}
-			$hint = $type.'<em>'.html_encode($user['custom_data']).'</em>';
-			if ($group == $user['user']) {
-				$selected = ' selected="selected"';
-				$selected_hint = $hint;
-				} else {
-				$selected = '';
-			}
-			$grouppart .= '<option'.$selected.' value="'.$user['user'].'" title="'.sanitize($hint,3).'">'.$user['user'].'</option>'."\n";
 		}
-		$grouppart .= '</select>'."\n";
-		$grouppart .= '<span class="hint'.$i.'" id="hint'.$i.'" style="width:15em;">'.$selected_hint."</span>\n";
-	} else {
-		if ($group) {
-			$grouppart = $group;
+		$objects = array();
+		foreach ($newobjects as $object) {
+			$objects[] = $object;
+		}
+		$userobj->setGroup($newgroups = implode(',', $groups));
+		$userobj->setRights($rights);
+		$userobj->setObjects($objects);
+		return $newgroups != $oldgroups || $templates;
+	}
+
+	/**
+	 * Saves admin custom data
+	 * Called when an admin is saved
+	 *
+	 * @param string $updated true if there has been an update to the user
+	 * @param object $userobj admin user object
+	 * @param string $i prefix for the admin
+	 * @param bool $alter will be true if critical admin data may be altered
+	 * @return bool
+	 */
+	static function save_admin($updated, $userobj, $i, $alter) {
+		if ($alter && $userobj->getValid()) {
+			if (isset($_POST[$i . 'group'])) {
+				$newgroups = sanitize($_POST[$i . 'group']);
+				$updated = self::merge_rights($userobj, $newgroups) || $updated;
+			}
+		}
+		return $updated;
+	}
+
+	static function groupList($userobj, $i, $background, $current, $template) {
+		global $_zp_authority, $_zp_zenpage, $_zp_gallery;
+		$group = $userobj->getGroup();
+		$admins = $_zp_authority->getAdministrators('groups');
+		$groups = array();
+		$hisgroups = explode(',', $userobj->getGroup());
+		$admins = sortMultiArray($admins, 'user');
+		foreach ($admins as $user) {
+			if ($template || $user['name'] != 'template') {
+				$groups[] = $user;
+			}
+		}
+		if (empty($groups))
+			return gettext('no groups established'); // no groups setup yet
+		$grouppart = '
+		<script type="text/javascript">
+			// <!-- <![CDATA[
+			function groupchange' . $i . '(type) {
+				switch (type) {
+				case 0:	//	none
+					$(\'.user-' . $i . '\').prop(\'disabled\',false);
+					$(\'.templatelist' . $i . '\').prop(\'checked\',false);
+					$(\'.grouplist' . $i . '\').prop(\'checked\',false);
+					break;
+				case 1:	//	group
+					$(\'.user-' . $i . '\').prop(\'disabled\',true);
+					$(\'.user-' . $i . '\').prop(\'checked\',false);
+					$(\'#noGroup_' . $i . '\').prop(\'checked\',false);
+					$(\'.templatelist' . $i . '\').prop(\'checked\',false);
+					break;
+				case 2:	//	template
+					$(\'.user-' . $i . '\').prop(\'disabled\',false);
+					$(\'#noGroup_' . $i . '\').prop(\'checked\',false);
+					$(\'.grouplist' . $i . '\').prop(\'checked\',false);
+					break;
+			}
+		}
+		//]]> -->
+	</script>' . "\n";
+
+		$grouppart .= '<ul class="customchecklist">' . "\n";
+		$grouppart .= '<label title="' . gettext('*no group affiliation') . '"><input type="checkbox" id="noGroup_' . $i . '" name="' . $i . 'group[]" value="" onclick="groupchange' . $i . '(0);" />' . gettext('*no group selected') . '</label>' . "\n";
+
+		foreach ($groups as $key => $user) {
+			if ($user['name'] == 'template') {
+				$type = gettext(' (Template)');
+				$highlight = ' class="grouphighlight"';
+				$class = 'templatelist' . $i;
+				$case = 2;
+			} else {
+				$type = $highlight = '';
+				$class = 'grouplist' . $i;
+				$case = 1;
+			}
+			if (in_array($user['user'], $hisgroups)) {
+				$checked = ' checked="checked"';
+			} else {
+				$checked = '';
+			}
+			$grouppart .= '<label title="' . html_encode($user['custom_data']) . $type . '"' . $highlight . '><input type="checkbox" class="' . $class . '" name="' . $i . 'group[]" value="' . $user['user'] . '" onclick="groupchange' . $i . '(' . $case . ');"' . $checked . ' />' . html_encode($user['user']) . '</label>' . "\n";
+		}
+
+		$grouppart .= "</ul>\n";
+
+		return $grouppart;
+	}
+
+	/**
+	 * Returns table row(s) for edit of an admin user's custom data
+	 *
+	 * @param string $html
+	 * @param $userobj Admin object
+	 * @param string $i prefix for the admin
+	 * @param string $background background color for the admin row
+	 * @param bool $current true if this admin row is the logged in admin
+	 * @return string
+	 */
+	static function edit_admin($html, $userobj, $i, $background, $current) {
+		if (!$userobj->getValid())
+			return $html;
+		if (zp_loggedin(ADMIN_RIGHTS)) {
+			if ($userobj->getID() >= 0) {
+				$notice = ' ' . gettext("Applying a template will merge the template with the current <em>rights</em> and <em>objects</em>.");
+			} else {
+				$notice = '';
+			}
+			$grouppart = self::groupList($userobj, $i, $background, $current, true);
 		} else {
-			$grouppart = gettext('no group affiliation');
+			$notice = '';
+			if ($group = $userobj->getGroup()) {
+				$grouppart = '<code>' . $group . '</code>';
+			} else {
+				$grouppart = '<code>' . gettext('no group affiliation') . '</code>';
+			}
 		}
-		$grouppart = ' <em>'.$grouppart.'</em><input type="hidden" name="'.$i.'group" value="'.$group.'" />'."\n";
+		$result = "\n" . '<tr' . ((!$current) ? ' style="display:none;"' : '') . ' class="userextrainfo">' . "\n" .
+						'<td width="20%"' . ((!empty($background)) ? ' style="' . $background . '"' : '') . ' valign="top">' . "\n" . sprintf(gettext('User group membership: %s'), $grouppart) . "\n" .
+						"</td>\n<td" . ((!empty($background)) ? ' style="' . $background . '"' : '') . ">" . '<div class="notebox"><p>' . gettext('Templates are highlighted.') . $notice . '</p><p>' . gettext('<strong>Note:</strong> When a group is assigned <em>rights</em> and <em>managed objects</em> are determined by the group!') . '</p></div></td>' . "\n" .
+						"</tr>\n";
+		return $html . $result;
 	}
-	$result =
-		'<tr'.((!$current)? ' style="display:none;"':'').' class="userextrainfo">
-			<td colspan="2" width="20%"'.((!empty($background)) ? ' style="'.$background.'"':'').' valign="top">'.gettext('User group membership').
-						$grouppart.'<br />'.gettext('<strong>Note:</strong> When a group is assigned <em>rights</em> and <em>managed albums</em> are determined by the group!').'</td>
-			<td'.((!empty($background)) ? ' style="'.$background.'"':'').' valign="top" width="345">'.
-				'</td>
-			</tr>'."\n";
-	return $html.$result;
-}
 
-function user_groups_admin_tabs($tabs) {
-	global $_zp_null_account;
-	if ((zp_loggedin(ADMIN_RIGHTS) && !$_zp_null_account)) {
-		if (isset($tabs['users']['subtabs'])) {
-			$subtabs = $tabs['users']['subtabs'];
-		} else {
-			$subtabs = array();
+	static function admin_tabs($tabs) {
+		global $_zp_current_admin_obj;
+		if ((zp_loggedin(ADMIN_RIGHTS) && $_zp_current_admin_obj->getID())) {
+			if (isset($tabs['users']['subtabs'])) {
+				$subtabs = $tabs['users']['subtabs'];
+			} else {
+				$subtabs = array();
+			}
+			$subtabs[gettext('users')] = 'admin-users.php?page=users&tab=users';
+			$subtabs[gettext('assignments')] = PLUGIN_FOLDER . '/user_groups/user_groups-tab.php?page=users&tab=assignments';
+			$subtabs[gettext('groups')] = PLUGIN_FOLDER . '/user_groups/user_groups-tab.php?page=users&tab=groups';
+			$tabs['users'] = array('text'		 => gettext("admin"),
+							'link'		 => WEBPATH . "/" . ZENFOLDER . '/admin-users.php?page=users&tab=users',
+							'subtabs'	 => $subtabs,
+							'default'	 => 'users');
 		}
-		$subtabs[gettext('users')] = 'admin-users.php?page=users&amp;tab=users';
-		$subtabs[gettext('assignments')] = PLUGIN_FOLDER.'/user_groups/user_groups-tab.php?page=users&amp;tab=assignments';
-		$subtabs[gettext('groups')] = PLUGIN_FOLDER.'/user_groups/user_groups-tab.php?page=users&amp;tab=groups';
-		$tabs['users'] = array(	'text'=>gettext("admin"),
-														'link'=>WEBPATH."/".ZENFOLDER.'/admin-users.php?page=users&amp;tab=users',
-														'subtabs'=>$subtabs,
-														'default'=>'users');
+		return $tabs;
 	}
-	return $tabs;
-}
 
-function user_groups_admin_alterrights($alterrights, $userobj) {
-	global $_zp_authority;
-	$group = $userobj->getGroup();
-	$admins = $_zp_authority->getAdministrators('groups');
-	foreach ($admins as $admin) {
-		if ($group == $admin['user']) {
-			return ' disabled="disabled"';
+	static function admin_alterrights($alterrights, $userobj) {
+		global $_zp_authority;
+		$group = $userobj->getGroup();
+		$admins = $_zp_authority->getAdministrators('groups');
+		foreach ($admins as $admin) {
+			if ($group == $admin['user']) {
+				return ' disabled="disabled"';
+			}
 		}
+		return $alterrights;
 	}
-	return $alterrights;
+
 }
 
 ?>

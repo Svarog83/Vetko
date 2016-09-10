@@ -5,139 +5,174 @@
  * @package plugins
  */
 define('OFFSET_PATH', 1);
-require_once(dirname(__FILE__).'/admin-globals.php');
+require_once(dirname(__FILE__) . '/admin-globals.php');
 
-admin_securityChecks(NULL, currentRelativeURL(__FILE__));
+admin_securityChecks(NULL, currentRelativeURL());
 
 if (isset($_GET['action'])) {
-	$action = sanitize($_GET['action'],3);
-	$file = SERVERPATH.'/'.DATA_FOLDER . '/'.sanitize($_POST['filename'],3);
+	$action = sanitize($_GET['action'], 3);
+	$what = sanitize($_GET['filename'], 3);
+	$file = SERVERPATH . '/' . DATA_FOLDER . '/' . $what . '.log';
 	XSRFdefender($action);
 	if (zp_apply_filter('admin_log_actions', true, $file, $action)) {
 		switch ($action) {
 			case 'clear_log':
+				$_zp_mutex->lock();
 				$f = fopen($file, 'w');
-				ftruncate($f,0);
+				if (@ftruncate($f, 0)) {
+					$class = 'messagebox';
+					$result = sprintf(gettext('%s log was emptied.'), $what);
+				} else {
+					$class = 'errorbox';
+					$result = sprintf(gettext('%s log could not be emptied.'), $what);
+				}
 				fclose($f);
 				clearstatcache();
+				$_zp_mutex->unlock();
 				if (basename($file) == 'security.log') {
-					zp_apply_filter('admin_log_actions', true, $file, $action);	// have to record the fact
+					zp_apply_filter('admin_log_actions', true, $file, $action); // have to record the fact
 				}
 				break;
 			case 'delete_log':
-				@unlink($file);
+				$_zp_mutex->lock();
+				@chmod($file, 0777);
+				if (@unlink($file)) {
+					$class = 'messagebox';
+					$result = sprintf(gettext('%s log was removed.'), $what);
+				} else {
+					$class = 'errorbox';
+					$result = sprintf(gettext('%s log could not be removed.'), $what);
+				}
 				clearstatcache();
+				$_zp_mutex->unlock();
 				unset($_GET['tab']); // it is gone, after all
 				if (basename($file) == 'security.log') {
-					zp_apply_filter('admin_log_actions', true, $file, $action);	// have to record the fact
+					zp_apply_filter('admin_log_actions', true, $file, $action); // have to record the fact
 				}
 				break;
 			case 'download_log':
-				include_once(SERVERPATH.'/'.ZENFOLDER . '/archive.php');
-				$subtab = sanitize($_GET['tab'],3);
-				$dest = SERVERPATH.'/'.DATA_FOLDER . '/'.$subtab. ".zip";
-				$rp = dirname($file);
-				$z = new zip_file($dest);
-				$z->set_options(array('basedir' => $rp, 'inmemory' => 0, 'recurse' => 0, 'storepaths' => 1));
-				$z->add_files(array(basename($file)));
-				$z->create_archive();
-				header('Content-Type: application/zip');
-				header('Content-Disposition: attachment; filename="' . $subtab . '.zip"');
-				header("Content-Length: " . filesize($dest));
-				printLargeFileContents($dest);
-				unlink($dest);
+				$tab = html_encode(sanitize($_GET['tab'], 3));
+				$tabparts = explode('-', $tab);
+				$logbases = array('debug', 'security', 'setup');
+				$zipname = '';
+				if (in_array($tabparts[0], $logbases)) {
+					if (count($tabparts) == 2) {
+						$lognumber = sanitize_numeric($tabparts[1]);
+						$zipname = $tabparts[0] . '-' . $lognumber . '.zip';
+					} else {
+						$zipname = $tabparts[0] . '.zip';
+					}
+				}
+				if($zipname) {
+					if (class_exists('ZipArchive')) {
+						$zip = new ZipArchive;
+						$zip->open($zipname, ZipArchive::CREATE);
+						$zip->addFile($file, basename($file));
+						$zip->close();
+						ob_get_clean();
+						header("Pragma: public");
+						header("Expires: 0");
+						header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+						header("Cache-Control: private", false);
+						header("Content-Type: application/zip");
+						header("Content-Disposition: attachment; filename=" . basename($zipname) . ";" );
+						header("Content-Transfer-Encoding: binary");
+						header("Content-Length: " . filesize($zipname));
+						readfile($zipname);
+						// remove zip file from temp path
+						unlink($zipname);
+						exit;
+					} else {
+						include_once(SERVERPATH . '/' . ZENFOLDER . '/lib-zipStream.php');
+						$zip = new ZipStream($zipname);
+						$zip->add_file_from_path(internalToFilesystem(basename($file)),internalToFilesystem($file));
+						$zip->finish();
+					}
+				}
 				break;
 		}
 	}
 }
 
 list($subtabs, $default) = getLogTabs();
-$zenphoto_tabs['logs'] = array(	'text'=>gettext("logs"),
-												'link'=>WEBPATH."/".ZENFOLDER.'/admin-logs.php?page=logs',
-												'subtabs'=>$subtabs,
-												'default'=>$default);
+$zenphoto_tabs['logs'] = array('text'		 => gettext("logs"),
+				'link'		 => WEBPATH . "/" . ZENFOLDER . '/admin-logs.php?page=logs',
+				'subtabs'	 => $subtabs,
+				'default'	 => $default);
 
-printAdminHeader('logs',$default);
+printAdminHeader('logs', $default);
 echo "\n</head>";
 ?>
 
 <body>
 
-<?php	printLogoAndLinks(); ?>
-<div id="main">
-	<?php
-	printTabs();
-	?>
-	<div id="content">
-	<?php
-	if ($default) {
-		$logfiletext = str_replace('_', ' ',$default);
-		$logfiletext = strtoupper(substr($logfiletext, 0, 1)).substr($logfiletext, 1);
-		$logfile = SERVERPATH . "/" . DATA_FOLDER . '/'.$default.'.log';
-		if (file_exists($logfile) && filesize($logfile) > 0) {
-			$logtext = explode("\n",file_get_contents($logfile));
-		} else {
-			$logtext = array();
-		}
+	<?php printLogoAndLinks(); ?>
+	<div id="main">
+		<?php
+		printTabs();
 		?>
-		<h1><?php echo gettext("View logs:");?></h1>
-
-		<?php $subtab = printSubtabs($default); ?>
-			<!-- A log -->
-			<div id="theme-editor" class="tabbox">
-				<?php zp_apply_filter('admin_note','logs', $subtab); ?>
-				<form name="delete_log" action="?action=delete_log&amp;page=logs&amp;tab=<?php echo $subtab; ?>" method="post" style="float: left">
-					<?php XSRFToken('delete_log');?>
-					<input type="hidden" name="action" value="delete" />
-					<input type="hidden" name="filename" value="<?php echo $subtab; ?>.log" />
-					<div class="buttons">
-						<button type="submit" class="tooltip" id="delete_log_<?php echo $subtab; ?>" title="<?php printf(gettext("Delete %s"),$logfiletext);?>">
-							<img src="images/edit-delete.png" style="border: 0px;" alt="delete" /> <?php echo gettext("Delete");?>
-						</button>
-					</div>
-				</form>
-				<?php
-				if (!empty($logtext)) {
-					?>
-					<form name="clear_log" action="?action=clear_log&amp;page=logs&amp;tab=<?php echo $subtab; ?>" method="post" style="float: left">
-						<?php XSRFToken('clear_log');?>
-						<input type="hidden" name="action" value="clear" />
-						<input type="hidden" name="filename" value="<?php echo $subtab; ?>.log" />
-						<div class="buttons">
-							<button type="submit" class="tooltip" id="clear_log_<?php echo $subtab; ?>" title="<?php printf(gettext("Reset %s"),$logfiletext);?>">
-								<img src="images/refresh.png" style="border: 0px;" alt="clear" /> <?php echo gettext("Reset");?>
-							</button>
-						</div>
-					</form>
-
-					<form name="download_log" action="?action=download_log&amp;page=logs&amp;tab=<?php echo $subtab; ?>" method="post" style="float: left">
-						<?php XSRFToken('download_log');?>
-						<input type="hidden" name="action" value="download" />
-						<input type="hidden" name="filename" value="<?php echo $subtab; ?>.log" />
-						<div class="buttons">
-							<button type="submit" class="tooltip" id="download_log_<?php echo $subtab; ?>" title="<?php printf(gettext("Download %s ZIP file"),$logfiletext);?>">
-								<img src="images/down.png" style="border: 0px;" alt="download" /> <?php echo gettext("Download");?>
-							</button>
-						</div>
-					</form>
-					<?php
+		<div id="content">
+			<?php
+			if ($default) {
+				$logfiletext = str_replace('_', ' ', $default);
+				$logfiletext = strtoupper(substr($logfiletext, 0, 1)) . substr($logfiletext, 1);
+				$logfile = SERVERPATH . "/" . DATA_FOLDER . '/' . $default . '.log';
+				if (file_exists($logfile) && filesize($logfile) > 0) {
+					$logtext = explode("\n", file_get_contents($logfile));
+				} else {
+					$logtext = array();
 				}
 				?>
-				<br clear="all" />
-				<br />
-				<blockquote class="logtext">
+				<h1><?php echo gettext("View logs:"); ?></h1>
+
+				<?php $subtab = printSubtabs(); ?>
+				<!-- A log -->
+				<div id="theme-editor" class="tabbox">
+					<?php zp_apply_filter('admin_note', 'logs', $subtab); ?>
 					<?php
-					if (!empty($logtext)) {
-						$header = array_shift($logtext);
-						$fields = explode("\t", $header);
-						if (count($fields) > 1) { // there is a header row, display in a table
+					if (isset($result)) {
+						?>
+						<div class="<?php echo $class; ?> fade-message">
+							<h2><?php echo $result; ?></h2>
+						</div>
+						<?php
+					}
+					?>
+					<form method="post" action="<?php echo WEBPATH . '/' . ZENFOLDER . '/admin-logs.php'; ?>?action=change_size&amp;page=logs&amp;tab=<?php echo html_encode($subtab) . '&amp;filename=' . html_encode($subtab); ?>" >
+						<span class="button buttons">
+							<a href="<?php echo WEBPATH . '/' . ZENFOLDER . '/admin-logs.php?action=delete_log&amp;page=logs&amp;tab=' . html_encode($subtab) . '&amp;filename=' . html_encode($subtab); ?>&amp;XSRFToken=<?php echo getXSRFToken('delete_log'); ?>">
+								<img src="images/edit-delete.png" /><?php echo gettext('Delete'); ?></a>
+						</span>
+						<?php
+						if (!empty($logtext)) {
 							?>
-							<table id="log_table">
-								<?php
-								if (!empty($header)) {
-									?>
-									<tr>
-										<?php
+							<span class="button buttons">
+								<a href="<?php echo WEBPATH . '/' . ZENFOLDER . '/admin-logs.php?action=clear_log&amp;page=logs&amp;tab=' . html_encode($subtab) . '&amp;filename=' . html_encode($subtab); ?>&amp;XSRFToken=<?php echo getXSRFToken('clear_log'); ?>">
+									<img src="images/refresh.png" /><?php echo gettext('Reset'); ?></a>
+							</span>
+							<span class="button buttons">
+								<a href="<?php echo WEBPATH . '/' . ZENFOLDER . '/admin-logs.php?action=download_log&amp;page=logs&amp;tab=' . html_encode($subtab) . '&amp;filename=' . html_encode($subtab); ?>&amp;XSRFToken=<?php echo getXSRFToken('download_log'); ?>">
+									<img src="images/arrow_down.png" /><?php echo gettext('Download'); ?></a>
+							</span>
+							<?php
+						}
+						?>
+					</form>
+					<br class="clearall" />
+					<br />
+					<blockquote class="logtext">
+						<?php
+						if (!empty($logtext)) {
+							$header = array_shift($logtext);
+							$fields = explode("\t", $header);
+							if (count($fields) > 1) { // there is a header row, display in a table
+								?>
+								<table id="log_table">
+									<?php
+									if (!empty($header)) {
+										?>
+										<tr>
+											<?php
 											foreach ($fields as $field) {
 												?>
 												<th>
@@ -145,67 +180,67 @@ echo "\n</head>";
 												</th>
 												<?php
 											}
-										?>
-									</tr>
-									<?php
-								}
-								foreach ($logtext as $line) {
-									?>
-									<tr>
-									<?php
-									$fields = explode("\t", $line);
-									foreach ($fields as $key=>$field) {
-										?>
-										<td>
-										<?php
-										if ($field) {
 											?>
-											<span class="nowrap"><?php echo html_encode($field); ?></span>
-											<?php
-										}
+										</tr>
+										<?php
+									}
+									foreach ($logtext as $line) {
 										?>
-										</td>
+										<tr>
+											<?php
+											$fields = explode("\t", trim($line));
+											foreach ($fields as $key => $field) {
+												?>
+												<td>
+													<?php
+													if ($field) {
+														?>
+														<span class="nowrap"><?php echo html_encode($field); ?></span>
+														<?php
+													}
+													?>
+												</td>
+												<?php
+											}
+											?>
+										</tr>
 										<?php
 									}
 									?>
-									</tr>
-									<?php
-								}
-								?>
-							</table>
-							<?php
-						} else {
-							array_unshift($logtext, $header);
-							foreach ($logtext as $line) {
-								if ($line) {
-									?>
-									<p>
-										<span class="nowrap">
-										<?php
-										echo str_replace(' ','&nbsp;',html_encode(strip_tags($line)));
+								</table>
+								<?php
+							} else {
+								array_unshift($logtext, $header);
+								foreach ($logtext as $line) {
+									if ($line) {
 										?>
-										</span>
-									</p>
-									<?php
+										<p>
+											<span class="nowrap">
+												<?php
+												echo str_replace(' ', '&nbsp;', html_encode(getBare(trim($line))));
+												?>
+											</span>
+										</p>
+										<?php
+									}
 								}
 							}
 						}
-					}
-					?>
-				</blockquote>
-			</div>
-			<?php
-		} else {
+						?>
+					</blockquote>
+				</div>
+				<?php
+			} else {
+				?>
+				<h2><?php echo gettext("There are no logs to view."); ?></h2>
+				<?php
+			}
 			?>
-			<h2><?php echo gettext("There are no logs to view.");?></h2>
-			<?php
-		}
-		?>
+		</div>
 	</div>
-</div>
-<?php printAdminFooter(); ?>
-<?php // to fool the validator
-echo "\n</body>";
-echo "\n</html>";
-
-?>
+	<?php printAdminFooter(); ?>
+	<?php
+	// to fool the validator
+	echo "\n</body>";
+	echo "\n</html>";
+	?>

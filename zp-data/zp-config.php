@@ -44,9 +44,14 @@ if ( $local_server )
 }
 else
 {
-    $conf['mysql_user'] = 'vetkonet';
+    /*$conf['mysql_user'] = 'vetkonet';
     $conf['mysql_pass'] = 'u55GhIT6';
     $conf['mysql_host'] = 'mysql1038.servage.net';
+    $conf['mysql_database'] = 'vetkonet';*/
+
+	$conf['mysql_user'] = 'root';
+    $conf['mysql_pass'] = 'dtnjrhtc';
+    $conf['mysql_host'] = 'localhost';
     $conf['mysql_database'] = 'vetkonet';
 }
 // If you are having problems with displaying some characters you may have to change

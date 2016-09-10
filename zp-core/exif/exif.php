@@ -1,6 +1,6 @@
 <?php
 /*
-	Exifer 1.6
+	Exifer 1.7
 	Extracts EXIF information from digital photos.
 
 	Originally created by:
@@ -210,6 +210,8 @@ function lookup_tag($tag) {
 		case '8822': $tag = 'ExposureProgram'; break;          // integer value 1-9
 		case '8824': $tag = 'SpectralSensitivity'; break;      // ??
 		case '8827': $tag = 'ISOSpeedRatings'; break;          // integer 0-65535
+		case '8830': $tag = 'SensitivityType'; break;          // integer 0-7
+		case '8832': $tag = 'RecommendedExposureIndex'; break; // ???
 		case '9000': $tag = 'ExifVersion'; break;              // ??
 		case '9003': $tag = 'DateTimeOriginal'; break;         // YYYY:MM:DD HH:MM:SS
 		case '9004': $tag = 'DateTimeDigitized'; break;        // YYYY:MM:DD HH:MM:SS
@@ -349,6 +351,13 @@ function lookup_type(&$type,&$size) {
 }
 
 //================================================================================================
+// truncates unreasonable read data requests.
+//================================================================================================
+function validSize($bytesofdata) {
+	return min(8191,max(0,$bytesofdata));
+}
+
+//================================================================================================
 // processes a irrational number
 //================================================================================================
 function unRational($data, $type, $intel) {
@@ -411,7 +420,7 @@ function formatData($type,$tag,$intel,$data) {
 					$data = formatExposure(unRational($data,$type,$intel));
 					break;
 				case '829d': // FNumber
-					$data = 'f/'.unRational($data,$type,$intel);
+					$data = 'f/'.round(unRational($data,$type,$intel),2);
 					break;
 				case '9204': // ExposureBiasValue
 					$data = round(unRational($data,$type,$intel), 2) . ' EV';
@@ -492,6 +501,18 @@ function formatData($type,$tag,$intel,$data) {
 						default:	$data = gettext('Unknown').': '.$data;	break;
 					}
 					break;
+				case '8830':	// SensitivityType
+					switch ($data) {
+						case 1:		$data = gettext('Standard Output Sensitivity');	break;
+						case 2:		$data = gettext('Recommended Exposure Index');	break;
+						case 3:		$data = gettext('ISO Speed');	break;
+						case 4:		$data = gettext('Standard Output Sensitivity and Recommended Exposure Index');	break;
+						case 5:		$data = gettext('Standard Output Sensitivity and ISO Speed');	break;
+						case 6:		$data = gettext('Recommended Exposure Index and ISO Speed');	break;
+						case 7:		$data = gettext('Standard Output Sensitivity, Recommended Exposure Index and ISO Speed');	break;
+						default:	$data = gettext('Unknown').': '.$data;	break;
+					}
+					break;
 				case '9207':	// MeteringMode
 					switch ($data) {
 						case 1:		$data = gettext('Average');	break;
@@ -506,8 +527,8 @@ function formatData($type,$tag,$intel,$data) {
 					break;
 				case '9208':	// LightSource
 					switch ($data) {
-						case 1:		$data = gettext('Daylight');	break;
-						case 2:				$data = gettext('Fluorescent');	break;
+						case 1:			$data = gettext('Daylight');	break;
+						case 2:			$data = gettext('Fluorescent');	break;
 						case 3:			$data = gettext('Tungsten');	break;	// 3 Tungsten (Incandescent light)
 													// 4 Flash
 													// 9 Fine Weather
@@ -532,19 +553,23 @@ function formatData($type,$tag,$intel,$data) {
 					break;
 				case '9209':	// Flash
 					switch ($data) {
-						case 0:			$data = gettext('No Flash');	break;
+
+
+						case 0:
+						case 16:
+						case 24:
+						case 32:
+						case 64:
+						case 80:		$data = gettext('No Flash');	break;
 						case 1:			$data = gettext('Flash');	break;
 						case 5:			$data = gettext('Flash, strobe return light not detected');	break;
 						case 7:			$data = gettext('Flash, strobe return light detected');	break;
 						case 9:			$data = gettext('Compulsory Flash');	break;
 						case 13:		$data = gettext('Compulsory Flash, Return light not detected');	break;
 						case 15:		$data = gettext('Compulsory Flash, Return light detected');	break;
-						case 16:		$data = gettext('No Flash');	break;
-						case 24:		$data = gettext('No Flash');	break;
 						case 25:		$data = gettext('Flash, Auto-Mode');	break;
 						case 29:		$data = gettext('Flash, Auto-Mode, Return light not detected');	break;
 						case 31:		$data = gettext('Flash, Auto-Mode, Return light detected');	break;
-						case 32:		$data = gettext('No Flash');	break;
 						case 65:		$data = gettext('Red Eye');	break;
 						case 69:		$data = gettext('Red Eye, Return light not detected');	break;
 						case 71:		$data = gettext('Red Eye, Return light detected');	break;
@@ -662,12 +687,12 @@ function formatData($type,$tag,$intel,$data) {
 
 function formatExposure($data) {
 	if (strpos($data,'/')===false) {
-		if ($data > 1) {
-			return round($data, 2).' '.gettext('sec');
+		if ($data >= 1) {
+			return round($data, 2).' sec';
 		} else {
 			$n=0; $d=0;
 			ConvertToFraction($data, $n, $d);
-			return $n.'/'.$d.' '.gettext('sec');
+			return $n.'/'.$d.' sec';
 		}
 	} else {
 		return gettext('Bulb');
@@ -702,13 +727,13 @@ function read_entry(&$result,$in,$seek,$intel,$ifd_name,$globalOffset) {
 	// 4 byte number of elements
 	$count = bin2hex(fread($in, 4));
 	if ($intel == 1) $count = intel2Moto($count);
-	$bytesofdata = $size*hexdec($count);
+	$bytesofdata = validSize($size*hexdec($count));
 
 	// 4 byte value or pointer to value if larger than 4 bytes
 	$value = fread( $in, 4 );
 
 	if ($bytesofdata <= 4) {   // if datatype is 4 bytes or less, its the value
-		$data = $value;
+		$data = substr($value,0,$bytesofdata);
 	} else if ($bytesofdata < 100000) {        // otherwise its a pointer to the value, so lets go get it
 		$value = bin2hex($value);
 		if ($intel == 1) $value = intel2Moto($value);
@@ -723,7 +748,10 @@ function read_entry(&$result,$in,$seek,$intel,$ifd_name,$globalOffset) {
 		return;
 	}
 	if ($tag_name == 'MakerNote') { // if its a maker tag, we need to parse this specially
-		$make = $result['IFD0']['Make'];
+		$make = '';
+		if (array_key_exists('Make', $result['IFD0'])) {
+			$make = $result['IFD0']['Make'];
+		}
 		if ($result['VerboseOutput'] == 1) {
 			$result[$ifd_name]['MakerNote']['RawData'] = $data;
 		}
@@ -849,7 +877,7 @@ if ($result['ValidJpeg'] == 1) {
 				$result['JFIF']['Data'] = $data;
 			}
 
-			$result['JFIF']['Identifier'] = substr($data,0,5);;
+			$result['JFIF']['Identifier'] = substr($data,0,5);
 			$result['JFIF']['ExtensionCode'] =  bin2hex(substr($data,6,1));
 
 			$globalOffset+=hexdec($size)+2;

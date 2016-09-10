@@ -5,8 +5,7 @@
 html { /* Moz */
 	margin: 0;
 	padding: 0;
-	font-family: "Helvetica Neue", "Lucida Grande", Helvetica, Arial,
-		sans-serif;
+	font-family: "Helvetica Neue", "Lucida Grande", Arial, Helvetica, sans-serif;
 	color: #222;
 }
 
@@ -79,8 +78,7 @@ body {
 	font-weight: normal;
 	float: left;
 	width: 590px;
-	font-family: "Helvetica Neue", "Lucida Grande", Helvetica, Arial,
-		sans-serif;
+	font-family: "Helvetica Neue", "Lucida Grande", Arial, Helvetica, sans-serif;
 }
 
 #breadcrumb a {
@@ -103,7 +101,7 @@ body {
 	width: 890px;
 	padding: 45px 25px 45px 25px;
 	background-color: white;
-	font-size: 14px;
+	font-size: 13px;
 	margin-left: 5px;
 }
 
@@ -116,21 +114,26 @@ body {
 	padding-top: 0.8em;
 	padding-left: 3.6em;
 	padding-right: 0em;
-	font-size: 1.2em;
+	font-size: 13px;
 	line-height: 1.6em;
 }
-
 #content-left h3, #content-left h2 {
-	font-size: 1.5em;
-	line-height: 1.1em;
+	font-size: 18px;
+	line-height: 18px;
 	margin-bottom: 0.3em;
 	font-weight: normal;
 	color: black;
 }
 
+#content-left h2 {
+	font-size: 20px;
+	line-height: 24px;
+	color: black;
+}
+
 /* "Show more results" link for search */
 #content-left h3 small {
-	font-size: 1em;
+	font-size: 13px;
 	font-weight: normal;
 	}
 
@@ -138,13 +141,13 @@ body {
 #content-left h4 {
 	margin-bottom: 10px;
 	font-weight: normal;
-	font-size: 1.2em;
+	font-size: 13px;
 }
 	
 
 
 #content-left p {
-	font-size: 1.1em;
+	font-size: 13px;
 	line-height: 1.5em;
 	margin-bottom: 1em;
 	clear: both;
@@ -172,7 +175,7 @@ body {
 
 .menu {
 	margin-top: 0em;
-	font-size: 1.3em;
+	font-size: 13px;
 	padding: 1em 0 0.8em 1em;
 	border-bottom: 1px dashed darkgray;
 	height: 100%;
@@ -234,8 +237,7 @@ body {
 		font-size: 13px;
 	letter-spacing: 0;
 		font-style: normal;
-	font-family: "Helvetica Neue", "Lucida Grande", Helvetica, Arial,
-		sans-serif;
+	font-family: "Helvetica Neue", "Lucida Grande", Arial, Helvetica, sans-serif;
 }
 
 #footer {
@@ -319,7 +321,7 @@ blockquote {
 /* Page Navigation
 ------------------------------ */
 ul.pagelist {
-	font-size: 1em;
+	font-size: 13px;
 	clear: both;
 	padding: 0;
 	margin: 10px 0 10px 0;
@@ -416,14 +418,14 @@ ul.pagelist li.next {
 ------------------------------ */
 #images {
 	float: left;
-	width: 590px;
+	width: 650px;
 	border: 0px solid gray;
 }
 
 .imagethumb a,.imagethumb a:hover {
 	display: block;
 	padding: 7px;
-	margin: 0px 12px 12px 0px;
+	margin: 0px 6px 12px 0px;
 	line-height: 0px;
 	border: 1px solid #e6e6e6;
 	background-color: #FBFBF8;
@@ -447,7 +449,7 @@ ul.pagelist li.next {
 ------------------------------ */
 #albums {
 	float: left;
-	width: 590px;
+	width: 650px;
 	border: 0px solid gray;
 	font-size: 10px;
 }
@@ -461,6 +463,7 @@ ul.pagelist li.next {
 	background: #FBFBF8;
 	line-height: 100%;
 	height: 95px;
+	position: relative;
 }
 
 .album a img {
@@ -475,7 +478,7 @@ ul.pagelist li.next {
 }
 
 #albums h3 {
-	font-size: 1.6em;
+	font-size: 15px;
 	letter-spacing: 0.1em;
 	padding: 0;
 	margin: 0px 0px 5px 0px;
@@ -489,7 +492,7 @@ ul.pagelist li.next {
 
 .album p {
 	line-height: 12px;
-	font-size: 11px;
+	font-size: 12px;
 	padding: 0px 0px 0px;
 	margin: 0px;
 }
@@ -497,6 +500,8 @@ ul.pagelist li.next {
 .albumdesc small {
 	color: gray;
 }
+
+
 
 /* Individual Image
 ------------------------------ */
@@ -517,9 +522,9 @@ ul.pagelist li.next {
 
 #image div {
 	display: block;
-	line-height: 1.6em;
+	line-height: 17px;
 	text-align: left;
-	font-size: 1.6em;
+	font-size: 13px;
 	}
 
 /* centering flowplayer 3 and jPlayer on image.php (and jplayer playlists elsewhere) */
@@ -538,7 +543,7 @@ ul.pagelist li.next {
 	border: 0px solid #D5E6EE;
 	background: transparent;
 	margin-right: 1em;
-	font-size: 1.4em; 
+	font-size: 13px; 
 }
 
 .imgnav .imgprevious a {
@@ -551,7 +556,7 @@ ul.pagelist li.next {
 	top: -40px;
 	left: 100px;
 	padding: 0;
-	font-size: 120%;
+	font-size: 13px;
 	text-decoration: none;
 	line-height: 180%;
 	color: #82996F;
@@ -580,7 +585,7 @@ ul.pagelist li.next {
 	top: -40px;
 	right: 100px;
 	padding: 0px 0;
-	font-size: 120%;
+	font-size: 13px;
 	text-decoration: none;
 	line-height: 180%;
 	color: #82996F;
@@ -611,6 +616,29 @@ ul.pagelist li.next {
 #narrow {
 	width: 580px;
 	margin-top: 5px;
+}
+
+
+/* favorites styles */
+.album .imageFavorites {
+position: absolute;
+right: 5px;
+bottom: 5px;
+z-index: 2000;
+}
+.imagethumb {
+	position: relative;
+}
+
+.imagethumb .imageFavorites {
+position: absolute;
+right: 12px;
+bottom: 18px;
+z-index: 2000;
+}
+
+.imageFavorites input:hover {
+cursor: pointer !important;
 }
 
 /* Paged thumbs nav
@@ -651,7 +679,7 @@ ul.pagelist li.next {
 	width: 155px;
 	height: 20px;
 	padding-top: 10px;
-	font-size: 1em;
+	font-size: 13px;
 	float: left;
 }
 
@@ -659,7 +687,7 @@ ul.pagelist li.next {
 	width: 100px;
 	height: 20px;
 	padding-top: 10px;
-	font-size: 1em;
+	font-size: 13px;
 	float: right;
 	text-align: center;
 }
@@ -678,7 +706,7 @@ ul.pagelist li.next {
 	width: 100px;
 	height: 20px;
 	padding-top: 10px;
-	font-size: 1em;
+	font-size: 13px;
 	float: right;
 	text-align: center;
 }
@@ -687,7 +715,7 @@ ul.pagelist li.next {
 ------------------------------ */
 #comments {
 	clear: both;
-	width: 560px;
+	width: 100%;
 	margin-top: 10px;
 	padding: 0;
 	border-top: 1px dashed darkgray;
@@ -695,8 +723,8 @@ ul.pagelist li.next {
 }
 
 #comments h3 {
-	font-size: 1.4em;
-	line-height: 1.6em;
+	font-size: 15px;
+	line-height: 17px;
 	margin-top: 0.5em;
 	margin-bottom: 0.5em;
 	letter-spacing: 0;
@@ -760,7 +788,7 @@ textarea {
 	padding: 4px;
 	width: 100%;
 	color: #5A5A4B;
-	font: 100%/ 200% "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font: 100%/ 200% "Helvetica Neue", Arial, Helvetica, sans-serif;
 	border: 1px solid #e5e5e5;
 	background-color: #f1f1f1; 
 }
@@ -769,12 +797,13 @@ textarea {
 	cursor: pointer;
 }
 
-.pushbutton {
+.button {
 	cursor: pointer;
 	padding: 5px 10px;
 	border: 1px solid #e5e5e5;
 	background-color: #f1f1f1; 
 }
+
 
 label {
 	cursor: pointer;
@@ -784,47 +813,15 @@ label:hover {
 	color: #000;
 }
 
+
+
 #map {
 	margin-left: -77px;
 }
 
 #rating {
 	margin-top: 10px;
-}
-
-/* Admin Toolbox
------------------------------- */
-#admin,#admin_data {
-	position: fixed;
-	right: 0px;
-	top: 0px;
-	width: 130px;
-	border-bottom: 1px solid #E6E6DF;
-	border-left: 1px solid #E6E6DF;
-	background: #fff;
-	z-index: 1001;
-	text-align: left;
-	font-size: 1.3em;
-}
-
-#admin_data {
-	top: 0px;
-	padding-top: 20px;
-	z-index: 1000;
-	line-height: 1.6em;
-}
-
-#admin h3 {
-	font-weight: normal;
-	color: #999;
-	margin: 0;
-	padding: 0;
-	text-align: center;
-	font-size: 1.1em;
-}
-
-#admin h3:hover {
-	color: #036;
+	clear: left;
 }
 
 /* Search Box
@@ -841,9 +838,9 @@ label:hover {
 	background: transparent;
 }
 
-#search input.pushbutton {
+#search input.button {
 	padding: 4px;
-	font-size: 80%;
+	font-size: 13px;
 	border: 1px solid darkgray;
 	background-color: #f1f1f1; 
 }
@@ -907,13 +904,13 @@ ul.archive .year {
 	margin-top: 0px;
 	text-align: left;
 	font-weight: bold;
-	font-size: 1.2em;
+	font-size: 13px;
   margin-left: -30px;
   margin-right: 0px;
 }
 
 ul.archive .month {
-	font-size: 1em;
+	font-size: 13px;
 	list-style: none;
 	border-top: 0px solid #E6E6DF;
 	padding-top: 5px;
@@ -930,7 +927,7 @@ ul.archive .archive-active a {
 
 #archive h3 {
 	background-color: transparent;
-	font-size: 1.5em;
+	font-size: 15px;
 	letter-spacing: 0.1em;
 }
 
@@ -952,13 +949,17 @@ ul.archive .archive-active a {
 	background: #fff;
 	border-top: 3px solid #E6E6DF;
 	border-bottom: 3px solid #E6E6DF;
-	font-size: 18px;
+	font-size: 13px;
 	font-weight: bold;
 	text-align: left;
 }
 
 /* Error Messages
 ------------------------------ */
+.error {
+	color: #C33;
+	font-weight: bold;
+}
 .errorbox {
 	padding: 20px;
 	background-color: #FDD;
@@ -967,7 +968,7 @@ ul.archive .archive-active a {
 	border-right: 1px solid #FAA;
 	border-bottom: 5px solid #FAA;
 	margin-bottom: 10px;
-	font-size: 100%;
+	font-size: 13px;
 	color: #DD6666;
 }
 
@@ -1032,12 +1033,12 @@ hr {
 }
 
 .newstype {
-	font-size: 0.8em;
+	font-size: 11px;
 }
 
 .langselector {
 	margin-top: 0em;
-	font-size: 1.3em;
+	font-size: 13px;
 	padding: 2em 0em 0.8em 3em;
 	border-bottom: 0px dashed darkgray;
 	height: 100%;
@@ -1049,52 +1050,33 @@ hr {
 /* zenphoto/zenpage link
 ---------------------------*/
 #zen-part {
-	font-size: 1.7em;
+	font-size: 17px;
 	font-family: Arial, Helvetica, sans-serif;
 }
 
 #photo-part {
-	font-size: 0.9em;
+	font-size: 9px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-weight: bold;
 }
 
 #IE-clear-part {
-	font-size: 12px;
+	font-size: 13px;
 	font-weight: normal;
 }
 
-/* login form */
-table.password td.userlabel{
-	text-align:left;
+img#captcha {
+display: block;
+float: left;
+margin-bottom: 5px;
 }
-table.password td.userinput{
-	text-align:left;
+input#code {
+float: left;
+margin-left: 10px;
+width: 10em !important;
 }
-
-table.password td.userinput input, td.passwordinput input {
-	width: 15em;
-}
-
-/* login form */
-table.password td.passwordlabel{
-	text-align:left;
-}
-
-table.password td.passwordinput{
-	text-align:left;
-}
-
-table.password td.submit{
-	text-align:left;
-}
-
-table.password td.hint{
-	text-align:left;
-}
-.captchainputbox {
-	width: 6.6em;
-	padding: 2px;
+#recaptcha_widget_div {
+float: left;
 }
 
 
@@ -1111,7 +1093,7 @@ table.password td.hint{
 	border-top: 1px solid #eee;
 	border-left: 1px solid #eee;
 	font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
-	font-size: 100%;
+	font-size: 13px;
 	line-height: 130%;
 	text-decoration: none;
 	font-weight: bold;
@@ -1197,8 +1179,6 @@ button.positive,.buttons a.positive {
 	color: #fff;
 }
 
-
-
 /* slideshowlink */ 
 
 #slideshowlink {
@@ -1249,6 +1229,7 @@ font-style: italic;
 
 /*CSS3 rounded edges */
 .album,
+.button,
 #slideshowlink a,
 textarea,
 #exif_link a,
@@ -1283,7 +1264,7 @@ width: 24px;
 height: 16px;
 }
 .textobject {
-	font-size: 12px;
+	font-size: 13px;
 	line-height: 16px;
 	text-align: left !important;
 	text-decoration: none !important;
@@ -1298,7 +1279,7 @@ height: 16px;
 	border-color: #FFDEB5;
 	border-style: solid;
 	margin-bottom: 10px;
-	font-size: 100%;
+	font-size: 13px;
 	-moz-border-radius: 5px;
 	-khtml-border-radius: 5px;
 	-webkit-border-radius: 5px;
@@ -1311,7 +1292,7 @@ height: 16px;
 
 .notebox h2,.notebox strong {
 	color: #663300;
-	font-size: 100%;
+	font-size: 13px;
 	font-weight: bold;
 	margin-bottom: 1em;
 }
@@ -1328,19 +1309,20 @@ height: 16px;
 
 .messagebox h2 {
 	color: #006633;
-	font-size: 100%;
+	font-size: 15px;
 	font-weight: bold;
 	margin-bottom: 1em;
 }
 /* Login
 ------------------------------ */
 #loginform {
+	text-align: left;
 	padding: 10px;
-	width: 370px;
+	width: 350px;
 	margin: 25px auto;
 	margin-top: 15%;
 	margin-left: 0 auto;
-	font-size: 100%;
+	font-size: 13px;
 	background: #F7F8F9;
 	border-top: 1px solid #BAC9CF;
 	border-left: 1px solid #BAC9CF;
@@ -1350,7 +1332,6 @@ height: 16px;
 	-khtml-border-radius: 5px 5px 5px 5px;
 	-webkit-border-radius: 5px 5px 5px 5px;
 	border-radius: 5px 5px 5px 5px;
-	color:black;
 }
 
 #loginform fieldset {
@@ -1359,12 +1340,14 @@ height: 16px;
 	-webkit-border-radius: 5px 5px 5px 5px;
 	border-radius: 5px 5px 5px 5px;
 	border: 1px solid lightgray;
-	text-align:center;
+	padding:10px;
+	text-align:left;
 }
 
-#loginform .textfield {
+#loginform input.textfield {
 	margin: 0px;
-	font-size: 100%;
+	width:270px;
+	font-size: 13px;
 	padding: 4px;
 }
 
@@ -1392,6 +1375,47 @@ label:hover {
 	color: #000;
 }
 
-#registration_form {
-	width:370px;
+#registration_form p, #commentform p, #mailform p {
+clear: both;
+}
+
+#registration_form label,
+#commentform label,
+#mailform label {
+width: 30% !important;
+float: left; 
+display: block;
+}
+
+form label strong {
+color: red;
+}
+
+#registration_form input[type="text"],
+#registration_form input[type="password"],
+#mailform input[type="text"],
+#commentform input[type="text"]{
+width: 65%;
+}
+
+input.button {
+padding: 5px 8px 5px 8px!important;
+margin: 5px 0 0 0;
+}
+
+#mailform textarea, 
+#commentform textarea#comment {
+clear: both;
+width: 95% !important;
+height: 150px;
+}
+
+.clearall {
+clear: both !important;
+}
+.clearleft {
+clear: left !important;
+}
+.clearright {
+clear: right !important;
 }
