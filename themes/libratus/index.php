@@ -1,15 +1,28 @@
 <?php include ('inc-header.php'); ?>
 		
 		<?php if ($_zp_page == 1) { ?>
-		<div id="ss-wrap">
+		<div id="ss-wrap" style="cursor: pointer;" title="Click to open the album">
 			<ul id="cbp-bislideshow" class="cbp-bislideshow">
-				<?php 
+				<?php
+				/**
+				 * @var $image Image
+				 */
 				$images = getImageStatistic(5,getOption('libratus_ss_type'),getOption('libratus_ss_album'),true);
 				foreach ($images as $image) {
-				echo '<li>';
-				$html = '<img src="' . html_encode(pathurlencode($image->getCustomImage(1200,null,null,null,null,null,null,true))) . '" alt="' . html_encode($image->getTitle()) . '" />';
-				echo zp_apply_filter('custom_image_html', $html, false);
-				echo '</li>';
+
+					/**
+					 * @var $album Album
+					 */
+					$album = $image->getAlbum();
+					$url = $album->getLink();
+					$title = $album->getTitle();
+
+					echo '<li title="Test title">';
+					//echo '<a href="'.$url.'" title="'.html_encode($title).'">';
+					$html = '<img src="' . html_encode(pathurlencode($image->getCustomImage(1200,null,null,null,null,null,null,true))) . '" title="'.$url.'" albumTitle="'.html_encode($album->getTitle()).'"  alt="' . html_encode($image->getTitle()) . '" />';
+					echo zp_apply_filter('custom_image_html', $html, false);
+					//echo '</a>';
+					echo '</li>';
 				} ?>
 			</ul>
 		<?php } else { ?>
@@ -18,7 +31,7 @@
 			
 			<div id="home-logo">
 				<div class="inner pad">
-					<h1 id="logo-text" ><?php printGalleryTitle(); ?></h1>
+					<h1 id="logo-text" ></h1>
 				</div>
 			</div>
 			
@@ -27,7 +40,7 @@
 					<?php if (getGalleryDesc()) { ?>
 					<div id="gal-desc">
 						<div class="inner pad">
-							<div><?php echo shortenContent(getGalleryDesc(),400,'...'); ?></div>
+							<div><span id="index_title"><?php echo getGalleryDesc(); ?></span></div>
 						</div>
 					</div>
 					<?php } ?>
