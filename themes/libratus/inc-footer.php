@@ -16,6 +16,19 @@
 				<?php } ?>
 				</div>
 				
+				<?php if (class_exists('RSS')) { ?>
+				<div id="rsslinks">
+					<i class="fa fa-rss fa-fw"></i>
+					<?php if (($_zp_gallery_page == 'news.php') && (getOption('RSS_articles'))) {
+					printRSSLink('News','',gettext('RSS News'),'',false); 
+					} elseif (($_zp_gallery_page == 'pages.php') && (getOption('RSS_pages'))) {
+					printRSSLink('Pages','',gettext('RSS Pages'),'',false);
+					} elseif (getOption('RSS_album_image')) {
+					printRSSLink('Gallery','',gettext('RSS Gallery'),'',false);
+					} ?>
+				</div>
+				<?php } ?>
+
 			</div>
 		</div>
 		
@@ -360,14 +373,12 @@ var cbpBGSlideshow = (function() {
 		$items = $slideshow.children( 'li' ),
 		itemsCount = $items.length,
 		$controls = $( '#cbp-bicontrols' ),
-		$titleDiv = $('#index_title'),
-		$ssWrapDiv = $('#ss-wrap'),
 		navigation = {
 			$navPrev : $controls.find( 'span.cbp-biprev' ),
 			$navNext : $controls.find( 'span.cbp-binext' ),
 			$navPlayPause : $controls.find( 'span.cbp-bipause' )
 		},
-		// current item's index
+		// current item´s index
 		current = 0,
 		// timeout
 		slideshowtime,
@@ -384,19 +395,13 @@ var cbpBGSlideshow = (function() {
 			if( Modernizr.backgroundsize ) {
 				$items.each( function() {
 					var $item = $( this );
-					var img = $item.find( 'img' );
-					$item.css( 'background-image', 'url(' + img.attr( 'src' ) + ')' );
+					$item.css( 'background-image', 'url(' + $item.find( 'img' ).attr( 'src' ) + ')' );
 				} );
 			}
 			else {
 				$slideshow.find( 'img' ).show();
 				// for older browsers add fallback here (image size and centering)
 			}
-			var img = $($items[current]).find('img');
-			var title  = img.attr('alt');
-			var albumTitle = img.attr('albumTitle');
-			$titleDiv.html(title + " ("+albumTitle+")");
-
 			// show first item
 			$items.eq( current ).css( 'opacity', 1 );
 			// initialize/bind the events
@@ -453,16 +458,6 @@ var cbpBGSlideshow = (function() {
 
 		// new item
 		var $newItem = $items.eq( current );
-
-		var img = $newItem.find('img');
-		var title  = img.attr('alt');
-		var url = img.attr('title');
-		var albumTitle = img.attr('albumTitle');
-		$titleDiv.html(title + " ("+albumTitle+")");
-		$ssWrapDiv.click(function(){
-			window.location = url;
-		});
-
 		// show / hide items
 		$oldItem.css( 'opacity', 0 );
 		$newItem.css( 'opacity', 1 );

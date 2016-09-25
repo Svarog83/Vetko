@@ -35,7 +35,7 @@ if (is_object($randomImage) && $randomImage->exists) {
 	<meta charset="<?php echo LOCAL_CHARSET; ?>" />
 	<?php 
 	zp_apply_filter('theme_head');
-	printHeadTitle();
+	printHeadTitle(); 
 	?>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
@@ -119,7 +119,7 @@ if (is_object($randomImage) && $randomImage->exists) {
 			</li>
 			<?php } ?>
 			<li><span class="gallery-menu-divider"><?php echo gettext('Gallery'); ?></span>
-				<?php /*printAlbumMenuList('list',false,'','active','sub','active','', false);*/ ?>
+				<?php printAlbumMenuList('list',false,'','active','sub','active','',true); ?>
 			</li>
 		</ul>
 	</nav>
