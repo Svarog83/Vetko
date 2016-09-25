@@ -437,7 +437,6 @@ function cacheImage($newfilename, $imgfile, $args, $allow_watermark = false, $th
 		}
 
 		// Create the cached file (with lots of compatibility)...
-		file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/sql.txt', 'NewFile:' . $newfile . "\r\n", FILE_APPEND);
 		@chmod($newfile, 0777);
 		if (zp_imageOutput($newim, getSuffix($newfile), $newfile, $quality)) { //	successful save of cached image
 			if (getOption('ImbedIPTC') && getSuffix($newfilename) == 'jpg' && GRAPHICS_LIBRARY != 'Imagick') { // the imbed function works only with JPEG images

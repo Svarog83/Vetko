@@ -1057,8 +1057,7 @@ class Gallery {
 	 */
 	static function validImageAlt($filename) {
 		global $_zp_extra_filetypes;
-		$suffix = getSuffix($filename);
-		return isset($_zp_extra_filetypes[$suffix]) ? $_zp_extra_filetypes[$suffix] : '';
+		return @$_zp_extra_filetypes[getSuffix($filename)];
 	}
 
 	/**

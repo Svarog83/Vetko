@@ -125,7 +125,6 @@ class static_html_cache {
 		}
 
 		$excludeList = array_merge(explode(",", getOption('static_cache_excludedpages')), array('404.php/', 'password.php/'));
-
 		foreach ($excludeList as $item) {
 			$page_to_exclude = explode("/", $item);
 			if ($_zp_gallery_page == trim($page_to_exclude[0])) {
@@ -144,10 +143,9 @@ class static_html_cache {
 	 */
 	function startHTMLCache() {
 		global $_zp_gallery_page, $_zp_script_timer;
-
 		if ($this->enabled && $accessType = $this->checkIfAllowedPage()) {
-			$cachefilepath = $this->createCacheFilepath($accessType);
 			$_zp_script_timer['static cache start'] = microtime();
+			$cachefilepath = $this->createCacheFilepath($accessType);
 			if (!empty($cachefilepath)) {
 				$cachefilepath = SERVERPATH . '/' . STATIC_CACHE_FOLDER . "/" . $cachefilepath;
 				if (file_exists($cachefilepath)) {
@@ -173,28 +171,14 @@ class static_html_cache {
 						echo "<!-- " . sprintf(gettext('Cached content of %3$s served by static_html_cache in %1$.4f seconds plus %2$.4f seconds unavoidable Zenphoto overhead.'), $end - $start_cache, $start_cache - $start, date('D, d M Y H:i:s', filemtime($cachefilepath))) . " -->\n";
 						exitZP();
 					}
-					$this->deletestatic_html_cacheFile($cachefilepath);
 				}
+				$this->deletestatic_html_cacheFile($cachefilepath);
 				if (ob_start()) {
 					$this->pageCachePath = $cachefilepath;
 				}
 			}
 			unset($_zp_script_timer['static cache start']); // leave it out of the summary page
 		}
-
-
-		//delete all caches for admin
-		if(zp_loggedin(ADMIN_RIGHTS))
-		{
-			$cachefilepath = $this->createCacheFilepath('public_access');
-			$cachefilepath = SERVERPATH . '/' . STATIC_CACHE_FOLDER . "/" . $cachefilepath;
-
-			$fileExists = file_exists($cachefilepath);
-			if($fileExists) {
-				$this->deletestatic_html_cacheFile($cachefilepath);
-			}
-		}
-
 	}
 
 	/**

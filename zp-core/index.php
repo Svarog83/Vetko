@@ -37,7 +37,7 @@ checkInstall();
 if (MOD_REWRITE || isset($_GET['z']))
 	rewriteHandler();
 
-$_zp_script_timer['require'] = microtime();
+//$_zp_script_timer['require'] = microtime();
 /**
  * Invoke the controller to handle requests
  */
@@ -46,7 +46,7 @@ require_once(SERVERPATH . "/" . ZENFOLDER . '/controller.php');
 
 $_index_theme = $_zp_script = '';
 $_zp_page_check = 'checkPageValidity';
-$_zp_script_timer['controller'] = microtime();
+//$_zp_script_timer['controller'] = microtime();
 // Display an arbitrary theme-included PHP page
 if (isset($_GET['p'])) {
 	$_index_theme = prepareCustomPage();
@@ -63,7 +63,7 @@ if (isset($_GET['p'])) {
 	$_index_theme = setupTheme();
 }
 
-$_zp_script_timer['theme setup'] = microtime();
+//$_zp_script_timer['theme setup'] = microtime();
 $_zp_script = zp_apply_filter('load_theme_script', $_zp_script, $zp_request);
 
 $custom = SERVERPATH . '/' . THEMEFOLDER . '/' . internalToFilesystem($_index_theme) . '/functions.php';
@@ -90,7 +90,7 @@ if (!preg_match('~' . ZENFOLDER . '~', $_zp_script)) {
 				zpFunctions::pluginDebug($extension, $priority, $start);
 			}
 			$_zp_loaded_plugins[$extension] = $extension;
-					$_zp_script_timer['load '.$extension] = microtime();
+			//		$_zp_script_timer['load '.$extension] = microtime();
 		}
 	}
 }
@@ -109,7 +109,7 @@ if ($_zp_page < 0) {
 	$zp_request = $_zp_page_check($zp_request, $_zp_gallery_page, $_zp_page);
 }
 
-$_zp_script_timer['theme scripts'] = microtime();
+//$_zp_script_timer['theme scripts'] = microtime();
 if ($zp_request && $_zp_script && file_exists($_zp_script = SERVERPATH . "/" . internalToFilesystem($_zp_script))) {
 	if (checkAccess($hint, $show)) { // ok to view
 	} else {
@@ -134,9 +134,9 @@ if ($zp_request && $_zp_script && file_exists($_zp_script = SERVERPATH . "/" . i
 	$_zp_HTML_cache->abortHTMLCache();
 	include(SERVERPATH . "/" . ZENFOLDER . '/404.php');
 }
-$_zp_script_timer['theme script load'] = microtime();
+//$_zp_script_timer['theme script load'] = microtime();
 zp_apply_filter('zenphoto_information', $_zp_script, $_zp_loaded_plugins, $_index_theme);
-$_zp_script_timer['expose information'] = microtime();
+//$_zp_script_timer['expose information'] = microtime();
 db_close(); // close the database as we are done
 echo "\n";
 list($usec, $sec) = explode(' ', array_shift($_zp_script_timer));
